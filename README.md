@@ -1,4 +1,4 @@
-# HRM - Human Resource Management
+# PROFIARENA
 
 A web application for HR management, developed as part of the course **Selected Topics in Computer Science** at the Faculty of Science.
 

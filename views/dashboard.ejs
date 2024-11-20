@@ -1,0 +1,11 @@
+<% if(loggedIn) { %>
+    <h2>Welcome</h2>
+
+  <div class="mt-4">
+    <p class="fw-bold">JWT token:</p>
+    <p class="text-muted"> <%= token %></p>
+</div>
+
+  <% } else { %>
+    <h2> Welcome to dashboard. </h2>
+    <% } %>
