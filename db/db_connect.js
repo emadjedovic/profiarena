@@ -27,4 +27,24 @@ const sequelize = new Sequelize(
   }
 })();
 
-module.exports = sequelize;
+// Define a function to sync the database
+async function syncDatabase() {
+  try {
+    // Drop all tables (optional, be careful with this in production)
+    await sequelize.drop();
+
+    // Sync the models (create tables if they don't exist)
+    await sequelize.sync();
+    console.log("All tables dropped and recreated.");
+  } catch (error) {
+    console.error("Error while creating tables:", error);
+  } finally {
+    await sequelize.close(); // Close connection
+  }
+}
+
+// Call the syncDatabase function
+// syncDatabase();
+
+// Export the function for use in other files
+module.exports = { syncDatabase, sequelize };

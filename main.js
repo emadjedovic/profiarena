@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 const connectFlash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy; // Import LocalStrategy
+const { syncDatabase } = require("./db/db_connect")
+
 
 const app = express();
 

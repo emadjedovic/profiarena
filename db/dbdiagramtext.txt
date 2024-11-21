@@ -3,13 +3,13 @@ Project Profiarena {
 }
 
 Table Users {
-    id              serial [pk]
+    id              int [primary key]
     email           varchar(50) [unique, not null]
     password        varchar(50) [not null]
-    role            varchar(50) [not null]
+    role            varchar(50) [not null] // hr or candidate
     first_name      varchar(50) [not null]
     last_name       varchar(50) [not null]
-    phone           varchar(15)
+    phone           varchar(15) [not null]
     address         text
     date_of_birth   date
     company_name    varchar(255)
@@ -19,22 +19,26 @@ Table Users {
 }
 
 Table Job_Postings {
-    id                  serial [pk]
+    id                  int [primary key]
     title               varchar(100) [not null]
     description         text [not null]
     hr_id               int [not null, ref: > Users.id]
-    location            varchar(100)
-    application_deadline date
-    status              varchar(50) [default: 'active']
-    required_fields     jsonb
+    city           varchar(50) [not null]
+	street_address varchar(100)
+    application_deadline date [not null]
+    is_active           binary // default 1 - active
+    cv_field                  binary // default 0 - dont include
+    cover_letter_field        binary // default 0 - dont include
+    portfolio_field       binary // default 0 - dont include
+    certificates_field        binary // default 0 - dont include
     company             varchar(100) [not null]
 }
 
 Table Applications {
-    id                  serial [pk]
+    id                  int [primary key]
     candidate_id        int [not null, ref: > Users.id]
     job_posting_id      int [not null, ref: > Job_Postings.id]
-    status              varchar(50) [default: 'applied']
+    application_status_id              int [not null, ref: > Application_Status.id]
     submitted_at        timestamp [default: `now()`]
     cv                  varchar(255)
     cover_letter        varchar(255)
@@ -42,12 +46,17 @@ Table Applications {
     certificates        varchar(255)
 }
 
+Table Application_Status {
+id 	int [primary key]
+status_desc	varchar(50) [not null] // applied, invited, shortlisted, rejected
+}
+
 Table Application_Score {
-    id                  serial [pk]
+    id                  int [primary key]
     application_id      int [not null, ref: > Applications.id]
     hr_id int [not null, ref: > Users.id]
     candidate_id        int [not null, ref: > Users.id]
-    score               int
+    score               int [not null] // limit from 1 to 5
     comments            text
 }
 
@@ -57,13 +66,19 @@ Table Interview_Schedule {
     hr_id               int [not null, ref: > Users.id]
     candidate_id        int [not null, ref: > Users.id]
     time                timestamp [not null]
-    address             varchar(100) [not null]
-    status              varchar(50) [default: 'scheduled']
+city	varchar(50) [not null]
+    street_address             varchar(100) [not null]
+    interview_status_id              varchar(50) [not null] 
     feedback            text
 }
 
+Table Interview_Status {
+id                  int [primary key]
+status_desc	varchar(50) [not null] // scheduled
+}
+
 Table Chat {
-    id                  serial [pk]
+    id                  int [primary key]
     sender_id           int [not null, ref: > Users.id]
     receiver_id         int [not null, ref: > Users.id]
     message             text [not null]
@@ -72,7 +87,7 @@ Table Chat {
 }
 
 Table Notifications {
-    id                  serial [pk]
+    id                  int [primary key]
     user_id             int [not null, ref: > Users.id]
     message             text [not null]
     type                varchar(50)
@@ -81,7 +96,7 @@ Table Notifications {
 }
 
 Table Email_Notifications {
-    id              serial [pk]
+    id              int [primary key]
     recipient_id    int [not null, ref: > Users.id]
     subject         varchar(255) [not null]
     body            text [not null]
@@ -91,7 +106,7 @@ Table Email_Notifications {
 
 
 Table Reports {
-    id              serial [pk]
+    id              int [primary key]
     generated_by    int [not null, ref: > Users.id]
     report_type     varchar(50) [not null] // e.g., candidates, job_postings
     generated_at    timestamp [default: `now()`]
