@@ -1,5 +1,6 @@
-const { DataTypes, Sequelize } = require('sequelize');
-const sequelize = require('../db/db_connect'); // Adjust this to point to your database configuration
+const { DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
+const sequelize = require('../db/db_connect');
 
 const User = sequelize.define(
   'User',
@@ -12,12 +13,10 @@ const User = sequelize.define(
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
-      trim: true,
     },
     lastName: {
       type: DataTypes.STRING,
       allowNull: false,
-      trim: true,
     },
     email: {
       type: DataTypes.STRING,
@@ -28,22 +27,35 @@ const User = sequelize.define(
       },
     },
     zipCode: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 1000,
-        max: 99999,
-      },
+      type: DataTypes.STRING, // Changed to STRING to handle zip codes like '71000'
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
   },
   {
-    timestamps: true, // Automatically handles createdAt and updatedAt
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          const hashedPassword = await bcrypt.hash(user.password, 10);
+          user.password = hashedPassword;
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.password) {
+          const hashedPassword = await bcrypt.hash(user.password, 10);
+          user.password = hashedPassword;
+        }
+      },
+    },
   }
 );
 
-// Virtual attribute for fullName
-User.prototype.fullName = function () {
-  return `${this.firstName} ${this.lastName}`;
+User.prototype.validPassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
 };
+
 
 module.exports = User;

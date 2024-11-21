@@ -20,7 +20,7 @@
   <p class="text-muted"> <%= token %></p>
   <div>
       <a
-        href="<%= `/users/${currentUser._id}/delete?_method=DELETE` %>"
+        href="<%= `/users/${currentUser.id}/delete?_method=DELETE` %>"
         onclick="return confirm('Are you sure you want to delete your account?')"
         class="btn btn-danger mt-1"
         >Delete Account</a

@@ -8,6 +8,7 @@ const getUserParams = (body) => ({
   firstName: body.firstName,
   lastName: body.lastName,
   email: body.email,
+  password: body.password,
   zipCode: parseInt(body.zipCode, 10),
 });
 
@@ -26,33 +27,32 @@ const index = (req, res, next) => {
 
 // Render users/index view
 const indexView = (req, res) => {
-  console.log("Rendering users/index...\n");
   res.render('users/index');
 };
 
 // Render new user form
 const newUser = (req, res) => {
-  console.log("Rendering users/new...\n");
   res.render('users/new');
 };
 
-// Create a new user
 const createUser = (req, res, next) => {
   if (req.skip) next();
 
+  // Get the user data and create the user
   User.create(getUserParams(req.body))
     .then((user) => {
-      req.flash('success', `${user.fullName()} account created successfully!`);
-      res.locals.redirect = '/users';
+      req.flash("success", `${user.firstName} ${user.lastName}'s account created successfully!`);
+      res.locals.redirect = "/users";
       next();
     })
     .catch((error) => {
       console.log(`Error creating user: ${error.message}`);
-      req.flash('error', `Failed to create user because: ${error.message}`);
-      res.locals.redirect = '/users/new';
+      req.flash("error", `Failed to create user account because: ${error.message}.`);
+      res.locals.redirect = "/users/new";
       next();
     });
 };
+
 
 // Redirect to a given path
 const redirectView = (req, res, next) => {
