@@ -1,10 +1,10 @@
 <div class="container" style="width: 400px">
-  <form action="/create" class="form text-center" method="POST">
+  <form action="/register" class="form text-center" method="POST">
     <!-- First Name -->
     <input
       type="text"
       name="first_name"
-      id="inputfirst_name"
+      id="inputFirstName"
       placeholder="First name"
       class="form-control m-2"
       autofocus
@@ -15,7 +15,7 @@
     <input
       type="text"
       name="last_name"
-      id="inputlast_name"
+      id="inputLastName"
       placeholder="Last name"
       class="form-control m-2"
       required
@@ -52,31 +52,15 @@
     />
 
     <!-- Role Selection -->
-    <div class="m-3">
-      <p>I am a...</p>
-      <div class="form-check">
-        <input
-          type="radio"
-          name="role"
-          id="roleHR"
-          value="0"
-          class="form-check-input"
-          required
-        />
-        <label for="roleHR" class="form-check-label">HR Manager</label>
-      </div>
-      <div class="form-check">
-        <input
-          type="radio"
-          name="role"
-          id="roleTalent"
-          value="1"
-          class="form-check-input"
-          required
-        />
-        <label for="roleTalent" class="form-check-label">Talent</label>
-      </div>
-    </div>
+<div class="m-3">
+  <label for="role" class="form-label">I am a...</label>
+  <select name="role" id="role" class="form-select" required>
+    <option value="" disabled selected>Select your role</option>
+    <option value="0">HR Manager</option>
+    <option value="1">Talent</option>
+  </select>
+</div>
+
 
     <!-- Submit Button -->
     <button type="submit" class="btn btn-outline-dark m-4">Register</button>

@@ -1,16 +1,20 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts");
 const methodOverride = require("method-override");
-const User = require("./models/user"); // Sequelize User model
+const User = require("./models/user");
 const expressSession = require("express-session");
 const cookieParser = require("cookie-parser");
 const connectFlash = require("connect-flash");
 const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy; // Import LocalStrategy
+const LocalStrategy = require("passport-local").Strategy;
 const { syncDatabase } = require("./db/db_connect")
-
+const favicon = require('serve-favicon');
+const path = require('path')
 
 const app = express();
+
+// Serve the favicon
+app.use(favicon(path.join(__dirname, 'public', 'favicon2.ico')));
 
 // MIDDLEWARE
 app.use(express.static("public"));

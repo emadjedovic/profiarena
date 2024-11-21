@@ -10,6 +10,7 @@ const getUserParams = (body) => ({
   last_name: body.last_name,
   email: body.email,
   password: body.password,
+  role_id: body.role_id,
 });
 
 const fetchTalents = (req, res, next) => {
@@ -25,7 +26,7 @@ const fetchTalents = (req, res, next) => {
 };
 
 const renderTalentList = (req, res) => {
-  res.render("talents/listTalents");
+  res.render("listTalents");
 };
 
 const renderRegister = (req, res) => {
@@ -56,14 +57,12 @@ const register = (req, res, next) => {
     });
 };
 
-// Redirect to a given path
 const redirectView = (req, res, next) => {
   const redirectPath = res.locals.redirect;
   if (redirectPath) res.redirect(redirectPath);
   else next();
 };
 
-// Fetch a user by ID
 const fetchUser = (req, res, next) => {
   const userId = req.params.id;
 
@@ -80,19 +79,19 @@ const fetchUser = (req, res, next) => {
 
 const renderUser = (req, res) => {
   if (res.locals.currentUser) {
-    res.render("talents/showTalent");
+    res.render("showTalent");
   } else {
     const userName = "Guest";
     res.render("profile", { name: userName });
   }
 };
 
-const renderEditInfo = (req, res, next) => {
+const renderEditUser = (req, res, next) => {
   const userId = req.params.id;
 
   User.findByPk(userId)
     .then((user) => {
-      res.render("editInfo", { user });
+      res.render("editUser", { user });
     })
     .catch((error) => {
       console.log(`Error fetching user by ID: ${error.message}`);
@@ -100,7 +99,6 @@ const renderEditInfo = (req, res, next) => {
     });
 };
 
-// Update user
 const updateUser = (req, res, next) => {
   const userId = req.params.id;
 
@@ -117,7 +115,6 @@ const updateUser = (req, res, next) => {
     });
 };
 
-// Delete user
 const deleteUser = (req, res, next) => {
   const userId = req.params.id;
 
@@ -134,12 +131,10 @@ const deleteUser = (req, res, next) => {
     });
 };
 
-// Render login form
 const login = (req, res) => {
   res.render("login");
 };
 
-// Authenticate user
 const authenticate = (req, res, next) => {
   passport.authenticate("local", (error, user, info) => {
     if (error) {
@@ -172,7 +167,6 @@ const authenticate = (req, res, next) => {
   })(req, res, next);
 };
 
-// Logout user
 const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
@@ -182,7 +176,6 @@ const logout = (req, res, next) => {
   });
 };
 
-// Validation
 const { body, validationResult } = require("express-validator");
 
 const validate = [
@@ -245,7 +238,7 @@ module.exports = {
   validate,
   logout,
   fetchTalents,
-  renderEditInfo,
+  renderEditUser,
   renderRegister,
   renderUser,
   renderTalentList,

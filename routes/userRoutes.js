@@ -3,11 +3,10 @@ const usersController = require("../controllers/usersController");
 
 
 router.get("/", usersController.fetchUser, usersController.renderUser);
-router.get("/talents", usersController.fetchTalents, usersController.renderTalentList)
 router.get("/register", usersController.renderRegister);
 // determine whether data meets the requirements to continue to the create action
 router.post(
-  "/create",
+  "/register",
   usersController.validate,
   usersController.register,
   usersController.redirectView
@@ -17,7 +16,7 @@ router.post("/login", usersController.authenticate);
 
 router.get("/logout", usersController.logout, usersController.redirectView);
 router.get("/:id", usersController.fetchUser, usersController.renderUser);
-router.get("/:id/edit", usersController.renderEditInfo);
+router.get("/:id/edit", usersController.renderEditUser);
 // Process data from the edit form, and display the user show page.
 router.put(
   "/:id/update",
