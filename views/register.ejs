@@ -1,0 +1,84 @@
+<div class="container" style="width: 400px">
+  <form action="/create" class="form text-center" method="POST">
+    <!-- First Name -->
+    <input
+      type="text"
+      name="first_name"
+      id="inputfirst_name"
+      placeholder="First name"
+      class="form-control m-2"
+      autofocus
+      required
+    />
+
+    <!-- Last Name -->
+    <input
+      type="text"
+      name="last_name"
+      id="inputlast_name"
+      placeholder="Last name"
+      class="form-control m-2"
+      required
+    />
+
+    <!-- Password -->
+    <input
+      type="password"
+      name="password"
+      id="inputPassword"
+      placeholder="Password"
+      class="form-control m-2"
+      required
+    />
+
+    <!-- Email -->
+    <input
+      type="email"
+      name="email"
+      id="inputEmail"
+      placeholder="Email address"
+      class="form-control m-2"
+      required
+    />
+
+    <!-- Phone -->
+    <input
+      type="text"
+      name="phone"
+      id="inputPhone"
+      placeholder="Phone number"
+      class="form-control m-2"
+      required
+    />
+
+    <!-- Role Selection -->
+    <div class="m-3">
+      <p>I am a...</p>
+      <div class="form-check">
+        <input
+          type="radio"
+          name="role"
+          id="roleHR"
+          value="0"
+          class="form-check-input"
+          required
+        />
+        <label for="roleHR" class="form-check-label">HR Manager</label>
+      </div>
+      <div class="form-check">
+        <input
+          type="radio"
+          name="role"
+          id="roleTalent"
+          value="1"
+          class="form-check-input"
+          required
+        />
+        <label for="roleTalent" class="form-check-label">Talent</label>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-outline-dark m-4">Register</button>
+  </form>
+</div>

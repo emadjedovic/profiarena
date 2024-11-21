@@ -1,0 +1,24 @@
+<% if(loggedIn) { %>
+  <h2>Welcome, <%= currentUser.first_name %> <%= currentUser.last_name %>.</h2>
+  <table class="table">
+      <tr>
+        <th>Email</th>
+        <td><%= currentUser.email %></td>
+      </tr>
+    </table>
+    <a href="<%=`/${user.id}/edit`%>" class="btn btn-outline-dark mt-1"> Edit Your Info </a>
+<div class="mt-4">
+  <div>
+      <a
+        href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
+        onclick="return confirm('Are you sure you want to delete your account?')"
+        class="btn btn-danger mt-1"
+        >Delete Account</a
+      >
+    </div>
+  </div>
+</div>
+
+<% } else { %>
+  <h3> Please log in or register first.<h3>
+  <% } %>

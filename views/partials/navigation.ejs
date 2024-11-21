@@ -16,10 +16,10 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mx-5">
         <li class="nav-item">
-          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="/">Profile</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/users">Users</a>
+          <a class="nav-link" href="/talents">Talents</a>
         </li>
       </ul>
 
@@ -28,15 +28,15 @@
         <ul class="navbar-nav">
           <% if (loggedIn) { %>
           <li class="nav-item">
-            <a class="nav-link" href="/users/logout">LOG OUT </a>
+            <a class="nav-link" href="/logout">LOG OUT </a>
           </li>
           <% } else { %>
 
           <li class="nav-item">
-            <a class="nav-link" href="/users/new">REGISTER </a>
+            <a class="nav-link" href="/register">REGISTER </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/users/login">LOGIN </a>
+            <a class="nav-link" href="/login">LOGIN </a>
           </li>
         </ul>
         <% } %>

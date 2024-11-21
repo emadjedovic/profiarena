@@ -6,75 +6,95 @@ Table Users {
     id              int [primary key]
     email           varchar(50) [unique, not null]
     password        varchar(50) [not null]
-    role            varchar(50) [not null] // hr or candidate
+    role _id        int [not null, ref: > Role.id]
     first_name      varchar(50) [not null]
     last_name       varchar(50) [not null]
     phone           varchar(15) [not null]
     address         text
     date_of_birth   date
     company_name    varchar(255)
+about 	text
     education       text
     skills          text
     languages       text
+socials text
+cv                  varchar(255)
+    projects          varchar(255)
+    certificates        varchar(255)
+}
+
+Table Role
+{
+id              int [primary key]
+status_desc	varchar(50) [not null] // hr or candidate
 }
 
 Table Job_Postings {
-    id                  int [primary key]
-    title               varchar(100) [not null]
-    description         text [not null]
-    hr_id               int [not null, ref: > Users.id]
-    city           varchar(50) [not null]
-	street_address varchar(100)
-    application_deadline date [not null]
-    is_active           binary // default 1 - active
-    cv_field                  binary // default 0 - dont include
-    cover_letter_field        binary // default 0 - dont include
-    portfolio_field       binary // default 0 - dont include
-    certificates_field        binary // default 0 - dont include
-    company             varchar(100) [not null]
+    id                      int [primary key]
+    title                   varchar(100) [not null]
+    description             text [not null]
+    hr_id                   int [not null, ref: > Users.id]
+    city                    varchar(50) [not null]
+    street_address          varchar(100)
+    application_deadline    date [not null]
+    is_active               boolean // default 1 - active
+    cv_field                boolean // default 0 - don't include
+    cover_letter_field      boolean // default 0 - don't include
+    projects_field          boolean // default 0 - don't include
+    certificates_field      boolean // default 0 - don't include
+    company                 varchar(100) [not null]
 }
 
 Table Applications {
-    id                  int [primary key]
-    candidate_id        int [not null, ref: > Users.id]
-    job_posting_id      int [not null, ref: > Job_Postings.id]
-    application_status_id              int [not null, ref: > Application_Status.id]
-    submitted_at        timestamp [default: `now()`]
-    cv                  varchar(255)
-    cover_letter        varchar(255)
-    portfolio           varchar(255)
-    certificates        varchar(255)
+    id                      int [primary key]
+    candidate_id            int [not null, ref: > Users.id]
+    job_posting_id          int [not null, ref: > Job_Postings.id]
+    application_status_id   int [not null, ref: > Application_Status.id]
+    submitted_at            timestamp [default: `now()`]
+    selected_at             timestamp // when a candidate is selected
+    rejected_at             timestamp // when a candidate is rejected
+    cv                      varchar(255)
+    cover_letter            varchar(255)
+    projects                varchar(255)
+    certificates            varchar(255)
 }
 
 Table Application_Status {
 id 	int [primary key]
-status_desc	varchar(50) [not null] // applied, invited, shortlisted, rejected
+status_desc	varchar(50) [not null] // applied, viewed, invited, shortlisted, rejected
 }
 
 Table Application_Score {
-    id                  int [primary key]
-    application_id      int [not null, ref: > Applications.id]
-    hr_id int [not null, ref: > Users.id]
-    candidate_id        int [not null, ref: > Users.id]
-    score               int [not null] // limit from 1 to 5
-    comments            text
+    id                      int [primary key]
+    application_id          int [not null, ref: > Applications.id]
+    hr_id                   int [not null, ref: > Users.id]
+    candidate_id            int [not null, ref: > Users.id]
+    education_score         int // from 1 to 5
+    skills_score            int // from 1 to 5
+    experience_score        int // from 1 to 5
+    languages_score         int // from 1 to 5
+    certificate_score       int // from 1 to 5
+    projects_score          int // from 1 to 5
+    total_score             int // dynamically calculated
+    comments                text
 }
 
 Table Interview_Schedule {
-    id                  serial [pk]
+    id                  int [primary key]
     application_id      int [not null, ref: > Applications.id]
     hr_id               int [not null, ref: > Users.id]
     candidate_id        int [not null, ref: > Users.id]
     time                timestamp [not null]
 city	varchar(50) [not null]
     street_address             varchar(100) [not null]
-    interview_status_id              varchar(50) [not null] 
+interview_status_id int [not null, ref: > Interview_Status.id]
     feedback            text
 }
 
-Table Interview_Status {
+Table Interview_Status
+{
 id                  int [primary key]
-status_desc	varchar(50) [not null] // scheduled
+status_desc	varchar(50) [not null] // not_confirmed, confirmed, finished
 }
 
 Table Chat {
@@ -104,12 +124,10 @@ Table Email_Notifications {
     status          varchar(50) [default: 'pending'] // pending, sent, failed
 }
 
-
-Table Reports {
-    id              int [primary key]
-    generated_by    int [not null, ref: > Users.id]
-    report_type     varchar(50) [not null] // e.g., candidates, job_postings
-    generated_at    timestamp [default: `now()`]
-    report_data     jsonb [not null]
-    report_file     varchar(255) // path
+Table Report_Generation {
+    id                      int [primary key]
+    report_name             varchar(100) [not null]
+    generated_at            timestamp [default: `now()`]
+    parameters             jsonb // store any parameters used to generate the report
+    report_data            text // or link to a file containing the report data
 }

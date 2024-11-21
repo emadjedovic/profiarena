@@ -1,22 +1,23 @@
 const router = require("express").Router();
 const usersController = require("../controllers/usersController");
 
-// When usersController.index completes your query and adds your data
-// to the res object, indexView is called to render the view.
-router.get("/", usersController.index, usersController.indexView);
-router.get("/new", usersController.newUser);
+
+router.get("/", usersController.fetchUser, usersController.renderUser);
+router.get("/talents", usersController.fetchTalents, usersController.renderTalentList)
+router.get("/register", usersController.renderRegister);
 // determine whether data meets the requirements to continue to the create action
 router.post(
   "/create",
   usersController.validate,
-  usersController.createUser,
+  usersController.register,
   usersController.redirectView
 );
 router.get("/login", usersController.login);
 router.post("/login", usersController.authenticate);
+
 router.get("/logout", usersController.logout, usersController.redirectView);
-router.get("/:id", usersController.showUser, usersController.showView);
-router.get("/:id/edit", usersController.showEdit);
+router.get("/:id", usersController.fetchUser, usersController.renderUser);
+router.get("/:id/edit", usersController.renderEditInfo);
 // Process data from the edit form, and display the user show page.
 router.put(
   "/:id/update",
@@ -28,5 +29,12 @@ router.delete(
   usersController.deleteUser,
   usersController.redirectView
 );
+
+router.get("/thanks", (req, res) => {
+  res.render("thanks");
+});
+
+
+router.use(usersController.verifyJWT)
 
 module.exports = router;

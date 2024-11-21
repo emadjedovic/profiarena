@@ -27,6 +27,17 @@ const sequelize = new Sequelize(
   }
 })();
 
+async function populateRoles() {
+  const Role = require('../models/role'); // Adjust path as needed
+  try {
+    await Role.findOrCreate({ where: { id: 0, name: 'hr' } });
+    await Role.findOrCreate({ where: { id: 1, name: 'candidate' } });
+    console.log('Default roles have been populated.');
+  } catch (error) {
+    console.error('Error populating default roles:', error);
+  }
+}
+
 // Define a function to sync the database
 async function syncDatabase() {
   try {
@@ -35,6 +46,7 @@ async function syncDatabase() {
 
     // Sync the models (create tables if they don't exist)
     await sequelize.sync();
+    await populateRoles();  // Populate roles
     console.log("All tables dropped and recreated.");
   } catch (error) {
     console.error("Error while creating tables:", error);
@@ -47,4 +59,4 @@ async function syncDatabase() {
 // syncDatabase();
 
 // Export the function for use in other files
-module.exports = { syncDatabase, sequelize };
+module.exports = { sequelize };

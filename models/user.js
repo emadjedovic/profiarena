@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
-const {sequelize} = require('../db/db_connect');
+const { sequelize } = require('../db/db_connect');
+const Role = require('./role');  // Assuming Role is in the same directory
 
 const User = sequelize.define(
   'User',
@@ -10,11 +11,19 @@ const User = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    firstName: {
+    role_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Role,  // Reference to the Role model
+        key: 'id',
+      },
+    },
+    first_name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    lastName: {
+    last_name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -26,13 +35,46 @@ const User = sequelize.define(
         isEmail: true,
       },
     },
-    zipCode: {
-      type: DataTypes.STRING, // Changed to STRING to handle zip codes like '71000'
-      allowNull: false,
-    },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING(15),
+      allowNull: false,
+    },
+    company_name: {
+      type: DataTypes.STRING(255),
+    },
+    address: {
+      type: DataTypes.TEXT,
+    },
+    date_of_birth: {
+      type: DataTypes.DATE,
+    },
+    about: {
+      type: DataTypes.TEXT,
+    },
+    education: {
+      type: DataTypes.TEXT,
+    },
+    skills: {
+      type: DataTypes.TEXT,
+    },
+    languages: {
+      type: DataTypes.TEXT,
+    },
+    socials: {
+      type: DataTypes.TEXT,
+    },
+    cv: {
+      type: DataTypes.STRING(255),
+    },
+    projects: {
+      type: DataTypes.STRING(255),
+    },
+    certificates: {
+      type: DataTypes.STRING(255),
     },
   },
   {
@@ -53,9 +95,8 @@ const User = sequelize.define(
   }
 );
 
-User.prototype.validPassword = async function(password) {
+User.prototype.validPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
-
 
 module.exports = User;

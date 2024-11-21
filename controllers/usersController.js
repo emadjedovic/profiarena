@@ -1,19 +1,18 @@
-const User = require('../models/user');
-const passport = require('passport');
-const jsonWebToken = require('jsonwebtoken');
-const { Op } = require('sequelize');
+const User = require("../models/user");
+const passport = require("passport");
+const jsonWebToken = require("jsonwebtoken");
+const { Op } = require("sequelize");
+const { StatusCodes } = require("http-status-codes");
 
 // Extract user parameters from request body
 const getUserParams = (body) => ({
-  firstName: body.firstName,
-  lastName: body.lastName,
+  first_name: body.first_name,
+  last_name: body.last_name,
   email: body.email,
   password: body.password,
-  zipCode: parseInt(body.zipCode, 10),
 });
 
-// Fetch all users
-const index = (req, res, next) => {
+const fetchTalents = (req, res, next) => {
   User.findAll()
     .then((users) => {
       res.locals.users = users;
@@ -25,34 +24,37 @@ const index = (req, res, next) => {
     });
 };
 
-// Render users/index view
-const indexView = (req, res) => {
-  res.render('users/index');
+const renderTalentList = (req, res) => {
+  res.render("talents/listTalents");
 };
 
-// Render new user form
-const newUser = (req, res) => {
-  res.render('users/new');
+const renderRegister = (req, res) => {
+  res.render("register");
 };
 
-const createUser = (req, res, next) => {
+const register = (req, res, next) => {
   if (req.skip) next();
 
   // Get the user data and create the user
   User.create(getUserParams(req.body))
     .then((user) => {
-      req.flash("success", `${user.firstName} ${user.lastName}'s account created successfully!`);
-      res.locals.redirect = "/users";
+      req.flash(
+        "success",
+        `${user.first_name} ${user.last_name}'s account created successfully!`
+      );
+      res.locals.redirect = "/";
       next();
     })
     .catch((error) => {
       console.log(`Error creating user: ${error.message}`);
-      req.flash("error", `Failed to create user account because: ${error.message}.`);
-      res.locals.redirect = "/users/new";
+      req.flash(
+        "error",
+        `Failed to create user account because: ${error.message}.`
+      );
+      res.locals.redirect = "/register";
       next();
     });
 };
-
 
 // Redirect to a given path
 const redirectView = (req, res, next) => {
@@ -62,7 +64,7 @@ const redirectView = (req, res, next) => {
 };
 
 // Fetch a user by ID
-const showUser = (req, res, next) => {
+const fetchUser = (req, res, next) => {
   const userId = req.params.id;
 
   User.findByPk(userId)
@@ -76,18 +78,21 @@ const showUser = (req, res, next) => {
     });
 };
 
-// Render user details
-const showView = (req, res) => {
-  res.render('users/show');
+const renderUser = (req, res) => {
+  if (res.locals.currentUser) {
+    res.render("talents/showTalent");
+  } else {
+    const userName = "Guest";
+    res.render("profile", { name: userName });
+  }
 };
 
-// Render edit user form
-const showEdit = (req, res, next) => {
+const renderEditInfo = (req, res, next) => {
   const userId = req.params.id;
 
   User.findByPk(userId)
     .then((user) => {
-      res.render('users/edit', { user });
+      res.render("editInfo", { user });
     })
     .catch((error) => {
       console.log(`Error fetching user by ID: ${error.message}`);
@@ -101,13 +106,13 @@ const updateUser = (req, res, next) => {
 
   User.update(getUserParams(req.body), { where: { id: userId } })
     .then(() => {
-      req.flash('success', 'User updated successfully!');
-      res.locals.redirect = `/users/${userId}`;
+      req.flash("success", "User updated successfully!");
+      res.locals.redirect = `/${userId}`;
       next();
     })
     .catch((error) => {
       console.log(`Error updating user by ID: ${error.message}`);
-      req.flash('error', `Failed to update user because: ${error.message}`);
+      req.flash("error", `Failed to update user because: ${error.message}`);
       next(error);
     });
 };
@@ -118,51 +123,51 @@ const deleteUser = (req, res, next) => {
 
   User.destroy({ where: { id: userId } })
     .then(() => {
-      req.flash('success', 'User deleted successfully!');
-      res.locals.redirect = '/users';
+      req.flash("success", "User deleted successfully!");
+      res.locals.redirect = "/";
       next();
     })
     .catch((error) => {
       console.log(`Error deleting user: ${error.message}`);
-      req.flash('error', `Failed to delete user because: ${error.message}`);
+      req.flash("error", `Failed to delete user because: ${error.message}`);
       next(error);
     });
 };
 
 // Render login form
 const login = (req, res) => {
-  res.render('users/login');
+  res.render("login");
 };
 
 // Authenticate user
 const authenticate = (req, res, next) => {
-  passport.authenticate('local', (error, user, info) => {
+  passport.authenticate("local", (error, user, info) => {
     if (error) {
-      req.flash('error', 'Authentication error.');
-      return res.redirect('/users/login');
+      req.flash("error", "Authentication error.");
+      return res.redirect("/login");
     }
 
     if (!user) {
-      req.flash('error', 'Failed to login.');
-      return res.redirect('/users/login');
+      req.flash("error", "Failed to login.");
+      return res.redirect("/login");
     }
 
     req.login(user, (loginError) => {
       if (loginError) {
-        req.flash('error', 'Login failed.');
-        return res.redirect('/users/login');
+        req.flash("error", "Login failed.");
+        return res.redirect("/login");
       }
 
       const signedToken = jsonWebToken.sign(
         { data: user.id },
-        'secret_encoding_passphrase',
-        { expiresIn: '1d' }
+        "secret_encoding_passphrase",
+        { expiresIn: "1d" }
       );
 
       req.session.token = signedToken;
 
-      req.flash('success', 'Logged in!');
-      res.redirect('/');
+      req.flash("success", "Logged in!");
+      res.redirect("/");
     });
   })(req, res, next);
 };
@@ -171,55 +176,78 @@ const authenticate = (req, res, next) => {
 const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
-    req.flash('success', 'You have been logged out!');
-    res.locals.redirect = '/';
+    req.flash("success", "You have been logged out!");
+    res.locals.redirect = "/";
     next();
   });
 };
 
 // Validation
-const { body, validationResult } = require('express-validator');
+const { body, validationResult } = require("express-validator");
 
 const validate = [
-  body('email')
+  body("email")
     .normalizeEmail({ all_lowercase: true })
     .trim()
     .isEmail()
-    .withMessage('Email is invalid'),
-  body('zipCode')
-    .notEmpty()
-    .withMessage('Zip code is required')
-    .isInt()
-    .withMessage('Zip code must be a number')
-    .isLength({ min: 4, max: 5 })
-    .withMessage('Zip code must be between 4 and 5 digits'),
-  body('password').notEmpty().withMessage('Password cannot be empty'),
+    .withMessage("Email is invalid"),
+  body("password").notEmpty().withMessage("Password cannot be empty"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const messages = errors.array().map((e) => e.msg);
-      req.flash('error', messages.join(' and '));
-      res.locals.redirect = '/users/new';
+      req.flash("error", messages.join(" and "));
+      res.locals.redirect = "/register";
       return res.redirect(res.locals.redirect);
     }
     next();
   },
 ];
 
+// Middleware to verify JWT for protected routes
+const verifyJWT = async (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from the Authorization header
+  if (!token) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      error: true,
+      message: "Token is required.",
+    });
+  }
+
+  try {
+    const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); // Verify the token
+    const user = await User.findByPk(payload.data); // Use Sequelize's findByPk
+    if (!user) {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        error: true,
+        message: "No User account found.",
+      });
+    }
+    req.user = user; // Attach user to the request
+    next();
+  } catch (error) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      error: true,
+      message: "Invalid or expired token.",
+    });
+  }
+};
+
 module.exports = {
   getUserParams,
-  index,
-  indexView,
-  newUser,
-  createUser,
+  register,
   redirectView,
-  showUser,
-  showView,
-  showEdit,
+  fetchUser,
   updateUser,
   deleteUser,
   login,
   authenticate,
   validate,
   logout,
+  fetchTalents,
+  renderEditInfo,
+  renderRegister,
+  renderUser,
+  renderTalentList,
+  verifyJWT,
 };
