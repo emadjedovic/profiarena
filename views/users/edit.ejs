@@ -1,0 +1,35 @@
+<!-- apply the existing users attribute values in edit form-->
+<!-- submit the form with a POST method to the /users/:id/update?_method=PUT route.  -->
+
+<div class="container" style="width: 400px">
+  <form method="POST" class="form text-center" action="<%=`/users/${user._id}/update?_method=PUT`%>">
+    <h2>Edit user:</h2>
+    <input
+      type="text"
+      class="form-control m-2"
+      name="firstName"
+      id="inputFirstName"
+      value="<%=user.firstName %>"
+      placeholder="First"
+      autofocus
+    />
+    <input
+      type="text"
+      class="form-control m-2"
+      name="lastName"
+      id="inputLastName"
+      value="<%=user.lastName %>"
+      placeholder="Last"
+    />
+    <input
+      type="text"
+      class="form-control m-2"
+      name="zipCode"
+      id="inputZipCode"
+      pattern="\d*"
+      value="<%= user.zipCode %>"
+      placeholder="Zip Code"
+    />
+    <button type="submit" class="btn btn-outline-dark m-2">UPDATE</button>
+  </form>
+</div>

@@ -19,16 +19,23 @@
           <a class="nav-link" href="/">Home</a>
         </li>
         <li class="nav-item">
-          Register
+          <a class="nav-link" href="/users">Users</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/users/new">Register</a>
         </li>
       </ul>
 
       <!-- Login/Logout section -->
       <div class="ms-auto">
         <% if (loggedIn) { %>
-        LOG OUT
+        <a href="/users/logout">
+          <button class="btn btn-outline-dark">LOG OUT</button>
+        </a>
         <% } else { %>
-        LOGIN
+        <a href="/users/login">
+          <button class="btn btn-outline-dark">LOGIN</button>
+        </a>
         <% } %>
       </div>
     </div>

@@ -1,11 +1,34 @@
 <% if(loggedIn) { %>
-    <h2>Welcome</h2>
+  <h2>Welcome, <%= currentUser.firstName %>.</h2>
+  <table class="table">
+      <tr>
+          <th>Name</th>
+          <td><%= currentUser.firstName %> <%= currentUser.lastName %></td>
+      </tr>
+      <tr>
+        <th>Email</th>
+        <td><%= currentUser.email %></td>
+      </tr>
+      <tr>
+        <th>Zip Code</th>
+        <td><%= currentUser.zipCode %></td>
+      </tr>
+    </table>
 
-  <div class="mt-4">
-    <p class="fw-bold">JWT token:</p>
-    <p class="text-muted"> <%= token %></p>
+<div class="mt-4">
+  <p class="fw-bold">JWT token:</p>
+  <p class="text-muted"> <%= token %></p>
+  <div>
+      <a
+        href="<%= `/users/${currentUser._id}/delete?_method=DELETE` %>"
+        onclick="return confirm('Are you sure you want to delete your account?')"
+        class="btn btn-danger mt-1"
+        >Delete Account</a
+      >
+    </div>
+  </div>
 </div>
 
-  <% } else { %>
-    <h2> Welcome to dashboard. </h2>
-    <% } %>
+<% } else { %>
+  <h2> Welcome to dashboard. Please log in for more content. </h2>
+  <% } %>
