@@ -1,11 +1,14 @@
 const router = require("express").Router();
-const { createJobPosting, fetchTalents, renderTalentList } = require("../controllers/hrController");
+const {
+  createJobPosting,
+  fetchTalents,
+  fetchJobPostingsByHrId,
+  fetchJobPostingById
+} = require("../controllers/hrController");
 
 router.post("/create-job-posting", createJobPosting);
-router.get(
-    "/talents",
-    fetchTalents,
-    renderTalentList
-  );
+router.get("/job-posting/:id", fetchJobPostingById)
+router.get("/my-job-postings", fetchJobPostingsByHrId);
+router.get("/talents", fetchTalents);
 
 module.exports = router;

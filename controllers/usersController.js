@@ -21,7 +21,6 @@ const getUserParams = (body) => {
 // Register a new user
 const register = async (req, res, next) => {
   if (req.skip) next();
-  console.log("req.body: ", req.body);
 
   // Get the user data and hash the password
   const { password } = req.body;
@@ -58,8 +57,8 @@ const register = async (req, res, next) => {
         console.log("Error logging in after registration:", err);
         return next(err);
       }
-      res.locals.redirect = "/home";
-      next();
+      res.locals.user = user;
+      res.redirect("/home");
     });
   } catch (error) {
     console.log(`Error creating user: ${error.message}`);
@@ -67,19 +66,18 @@ const register = async (req, res, next) => {
       "error",
       `Failed to create user account because: ${error.message}.`
     );
-    res.locals.redirect = "/register";
-    next();
+    res.redirect("/register");
   }
 };
 
 // Fetch a user by ID
 const fetchUser = async (req, res, next) => {
   const userId = req.params.id;
-  console.log("fetch user: ", req.params.id);
 
   try {
-    const result = await client.query(userQueries.fetchUserById, [userId]); // Use the query from queries.js
+    const result = await client.query(userQueries.getUserById, [userId]); // Use the query from queries.js
     res.locals.user = result.rows[0];
+    res.render("profile");
     next();
   } catch (error) {
     console.log(`Error fetching user by ID: ${error.message}`);
@@ -90,7 +88,6 @@ const fetchUser = async (req, res, next) => {
 // Update a user
 const updateUser = async (req, res, next) => {
   const userId = req.params.id;
-  console.log("Req body: ", req.body);
 
   const { first_name, last_name, email, company_name } = req.body;
 
@@ -109,8 +106,7 @@ const updateUser = async (req, res, next) => {
     ]); // Use the query from queries.js
 
     req.flash("success", "User updated successfully!");
-    res.locals.redirect = `/${userId}`;
-    next();
+    res.redirect(`/${userId}`);
   } catch (error) {
     console.log(`Error updating user by ID: ${error.message}`);
     req.flash("error", `Failed to update user because: ${error.message}`);
@@ -126,8 +122,7 @@ const deleteUser = async (req, res, next) => {
     await client.query(userQueries.deleteUser, [userId]); // Use the query from queries.js
 
     req.flash("success", "User deleted successfully!");
-    res.locals.redirect = "/";
-    next();
+    res.redirect("/");
   } catch (error) {
     console.log(`Error deleting user: ${error.message}`);
     req.flash("error", `Failed to delete user because: ${error.message}`);
@@ -135,34 +130,12 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-// Render register page
-const renderRegister = (req, res) => {
-  res.render("register");
-};
-
-// Redirect view
-const redirectView = (req, res, next) => {
-  const redirectPath = res.locals.redirect;
-  if (redirectPath) res.redirect(redirectPath);
-  else next();
-};
-
-// Render profile page
-const renderProfile = (req, res) => {
-  res.render("profile");
-};
-
-// Render home page
-const renderHome = (req, res) => {
-  res.render("home");
-};
-
 // Render the edit user page
 const renderEditUser = async (req, res, next) => {
   const userId = req.params.id;
 
   try {
-    const result = await client.query(userQueries.fetchUserById, [userId]);
+    const result = await client.query(userQueries.getUserById, [userId]);
     const user = result.rows[0];
     res.render("editUser", { user });
   } catch (error) {
@@ -171,45 +144,38 @@ const renderEditUser = async (req, res, next) => {
   }
 };
 
-// Render login page
-const login = (req, res) => {
-  res.render("login");
-};
-
 // Authenticate user login
 const authenticate = (req, res, next) => {
   passport.authenticate("local", (error, user, info) => {
     if (error) {
-      console.log("Authentication error:", error); // Log the error
       req.flash("error", "Authentication error.");
       return res.redirect("/login");
     }
 
     if (!user) {
-      console.log("Failed to login:", info ? info.message : "No user"); // Log info from Passport
       req.flash("error", "Failed to login.");
       return res.redirect("/login");
     }
 
     req.login(user, (loginError) => {
       if (loginError) {
-        console.log("Login error:", loginError); // Log the login error
         req.flash("error", "Login failed.");
         return res.redirect("/login");
       }
-
+      const sessionData = req.session;
+      const passportData = req.session.passport;
+    
       const signedToken = jsonWebToken.sign(
         { data: user.id },
         "secret_encoding_passphrase",
         { expiresIn: "1d" }
       );
-
+    
       req.session.token = signedToken;
-      console.log("Token set in session:", req.session.token); // Verify token in session
-
       req.flash("success", "Logged in!");
-      res.redirect("/home");
+      return res.redirect("/home");
     });
+    
   })(req, res, next);
 };
 
@@ -218,8 +184,7 @@ const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
     req.flash("success", "You have been logged out!");
-    res.locals.redirect = "/";
-    next();
+    res.redirect("/");
   });
 };
 
@@ -235,9 +200,7 @@ const verifyJWT = async (req, res, next) => {
 
   try {
     const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); // Verify the token
-    const result = await client.query(userQueries.fetchUserById, [
-      payload.data,
-    ]);
+    const result = await client.query(userQueries.getUserById, [payload.data]);
     const user = result.rows[0];
 
     if (!user) {
@@ -260,16 +223,11 @@ const verifyJWT = async (req, res, next) => {
 module.exports = {
   getUserParams,
   register,
-  redirectView,
   fetchUser,
   updateUser,
   deleteUser,
-  login,
   authenticate,
   logout,
   renderEditUser,
-  renderRegister,
-  renderProfile,
   verifyJWT,
-  renderHome,
 };

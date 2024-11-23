@@ -41,22 +41,37 @@ const createJobPosting = async (req, res, next) => {
 // Fetch all users
 const fetchTalents = async (req, res, next) => {
   try {
-    const result = await client.query(userQueries.fetchAllUsers);
-    res.locals.users = result.rows;
-    next();
+    const result = await client.query(userQueries.getAllTalents);
+    res.render("hr/listTalents", { talents: result.rows });
   } catch (error) {
-    console.log(`Error fetching users: ${error.message}`);
+    console.log(`Error fetching talents: ${error.message}`);
     next(error);
   }
 };
 
-// Render the talent list
-const renderTalentList = (req, res) => {
-  res.render("listTalents");
+const fetchJobPostingsByHrId = async (req, res, next) => {
+  try {
+    const result = await client.query(jobPostingQueries.getJobPostingsByHrId, [req.user.id]);
+    res.render("hr/jobsByHrId", { jobPostings: result.rows });
+  } catch (error) {
+    console.log(`Error fetching job postings by HR ID: ${error.message}`);
+    next(error);
+  }
+};
+
+const fetchJobPostingById = async (req, res, next) => {
+  try {
+    const result = await client.query(jobPostingQueries.getJobPostingById, [req.params.id]);
+    res.render("hr/jobPosting", { jobPosting: result.rows });
+  } catch (error) {
+    console.log(`Error fetching job posting by ID: ${error.message}`);
+    next(error);
+  }
 };
 
 module.exports = {
   createJobPosting,
   fetchTalents,
-  renderTalentList,
+  fetchJobPostingsByHrId,
+  fetchJobPostingById
 };

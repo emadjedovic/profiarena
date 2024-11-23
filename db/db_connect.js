@@ -61,6 +61,6 @@ async function syncDatabase() {
   }
 }
 
-syncDatabase();
+// syncDatabase();
 
 module.exports = { client };

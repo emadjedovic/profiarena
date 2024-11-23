@@ -1,0 +1,17 @@
+<h2>My Job Postings</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Deadline</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% jobPostings.forEach(jobPosting => { %>
+    <tr>
+      <td><a href="<%= `/${jobPosting.id}` %>"><%= jobPosting.title %></a></td>
+      <td><%= jobPosting.application_deadline %></td>
+    </tr>
+    <% }); %>
+  </tbody>
+</table>

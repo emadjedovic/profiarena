@@ -30,11 +30,9 @@ app.use(cookieParser("secret_passcode"));
 app.use(
   expressSession({
     secret: "secret_passcode",
-    cookie: {
-      maxAge: 600000,
-    },
     resave: false,
     saveUninitialized: false,
+    cookie: { maxAge: 600000 },
   })
 );
 app.use(passport.initialize());
@@ -54,16 +52,17 @@ const checkLoginStatus = (req, res, next) => {
     // User is logged in, redirect to /home if they try to visit /login or /register
     if (req.originalUrl === '/' || req.originalUrl === '/login' || req.originalUrl === '/register') {
       return res.redirect('/home');
+      return res.redirect("/home");
     }
     return next();
   } else {
-    // User is not logged in, redirect to /login if they try to visit any other page
-    if (req.originalUrl !== '/login' && req.originalUrl !== '/register') {
-      return res.redirect('/login');
+    if (req.originalUrl !== "/login" && req.originalUrl !== "/register") {
+      return res.redirect("/login");
     }
     return next();
   }
 };
+
 
 app.use(checkLoginStatus); // Apply this middleware to all routes
 
@@ -71,28 +70,24 @@ app.use(checkLoginStatus); // Apply this middleware to all routes
 passport.use(
   new LocalStrategy(
     {
-      usernameField: "email", // Match email field in login form
-      passwordField: "password", // Match password field in login form
+      usernameField: "email",
+      passwordField: "password",
     },
     async (email, password, done) => {
       try {
-        // Replace Sequelize with raw SQL query to get the user by email
-        const result = await client.query(
-          'SELECT * FROM "User" WHERE "email" = $1', [email]
-        );
-        
+        const result = await client.query('SELECT * FROM "User" WHERE "email" = $1', [email]);
         const user = result.rows[0];
         if (!user) {
           return done(null, false, { message: "User not found" });
         }
 
-        // Check if the password is correct
         const isValidPassword = await bcrypt.compare(password, user.password);
+
         if (!isValidPassword) {
           return done(null, false, { message: "Invalid password" });
         }
 
-        return done(null, user);
+        return done(null, user); // Success
       } catch (error) {
         return done(error);
       }
@@ -100,21 +95,27 @@ passport.use(
   )
 );
 
+
+
 // SERIALIZE AND DESERIALIZE USER
 passport.serializeUser((user, done) => {
-  done(null, user.id); // Store only the user ID in the session
+  done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
     const result = await client.query('SELECT * FROM "User" WHERE "id" = $1', [id]);
     const user = result.rows[0];
-    console.log('Deserialized user:', user);  // Add logging for debugging
-    done(null, user);
+    if (user) {
+      done(null, user);
+    } else {
+      done(new Error('User not found'), null);
+    }
   } catch (error) {
     done(error, null);
   }
 });
+
 
 
 app.set("port", process.env.PORT || 3000);
