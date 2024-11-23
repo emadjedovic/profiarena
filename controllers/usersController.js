@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const jsonWebToken = require("jsonwebtoken");
 const { client } = require("../db/db_connect"); // Import the client from db_connect.js
 const { StatusCodes } = require("http-status-codes");
+const passport = require("passport");
+const userQueries = require("../db/queries"); // Import the query file
 
 // Extract user parameters from request body
 const getUserParams = (body) => {
@@ -10,32 +12,10 @@ const getUserParams = (body) => {
     last_name: body.last_name,
     password: body.password,
     email: body.email,
-    phone: body.phone, 
+    phone: body.phone,
     role_id: parseInt(body.role_id, 10),
     company_name: body.company_name,
   };
-};
-
-// Fetch all users
-const fetchTalents = async (req, res, next) => {
-  try {
-    const result = await client.query('SELECT * FROM "User"');
-    res.locals.users = result.rows;
-    next();
-  } catch (error) {
-    console.log(`Error fetching users: ${error.message}`);
-    next(error);
-  }
-};
-
-// Render the talent list
-const renderTalentList = (req, res) => {
-  res.render("listTalents");
-};
-
-// Render register page
-const renderRegister = (req, res) => {
-  res.render("register");
 };
 
 // Register a new user
@@ -54,7 +34,7 @@ const register = async (req, res, next) => {
 
   try {
     const result = await client.query(
-      'INSERT INTO "User" ("first_name", "last_name", "email", "password", "phone", "role_id", "company_name") VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      userQueries.createUser, // Use the query from queries.js
       [
         userParams.first_name,
         userParams.last_name,
@@ -62,12 +42,15 @@ const register = async (req, res, next) => {
         userParams.password,
         userParams.phone,
         userParams.role_id,
-        userParams.company_name
+        userParams.company_name,
       ]
     );
 
     const user = result.rows[0];
-    req.flash("success", `${user.first_name} ${user.last_name}'s account created successfully!`);
+    req.flash(
+      "success",
+      `${user.first_name} ${user.last_name}'s account created successfully!`
+    );
 
     // Log the user in automatically after registration
     req.login(user, (err) => {
@@ -80,17 +63,13 @@ const register = async (req, res, next) => {
     });
   } catch (error) {
     console.log(`Error creating user: ${error.message}`);
-    req.flash("error", `Failed to create user account because: ${error.message}.`);
+    req.flash(
+      "error",
+      `Failed to create user account because: ${error.message}.`
+    );
     res.locals.redirect = "/register";
     next();
   }
-};
-
-// Redirect view
-const redirectView = (req, res, next) => {
-  const redirectPath = res.locals.redirect;
-  if (redirectPath) res.redirect(redirectPath);
-  else next();
 };
 
 // Fetch a user by ID
@@ -99,33 +78,9 @@ const fetchUser = async (req, res, next) => {
   console.log("fetch user: ", req.params.id);
 
   try {
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query(userQueries.fetchUserById, [userId]); // Use the query from queries.js
     res.locals.user = result.rows[0];
     next();
-  } catch (error) {
-    console.log(`Error fetching user by ID: ${error.message}`);
-    next(error);
-  }
-};
-
-// Render profile page
-const renderProfile = (req, res) => {
-  res.render("profile");
-};
-
-// Render home page
-const renderHome = (req, res) => {
-  res.render("home");
-};
-
-// Render the edit user page
-const renderEditUser = async (req, res, next) => {
-  const userId = req.params.id;
-
-  try {
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
-    const user = result.rows[0];
-    res.render("editUser", { user });
   } catch (error) {
     console.log(`Error fetching user by ID: ${error.message}`);
     next(error);
@@ -145,10 +100,13 @@ const updateUser = async (req, res, next) => {
   }
 
   try {
-    await client.query(
-      'UPDATE "User" SET "first_name" = $1, "last_name" = $2, "email" = $3, "company_name" = $4 WHERE "id" = $5',
-      [first_name, last_name, email, company_name, userId]
-    );
+    await client.query(userQueries.updateUser, [
+      first_name,
+      last_name,
+      email,
+      company_name,
+      userId,
+    ]); // Use the query from queries.js
 
     req.flash("success", "User updated successfully!");
     res.locals.redirect = `/${userId}`;
@@ -165,7 +123,7 @@ const deleteUser = async (req, res, next) => {
   const userId = req.params.id;
 
   try {
-    await client.query('DELETE FROM "User" WHERE id = $1', [userId]);
+    await client.query(userQueries.deleteUser, [userId]); // Use the query from queries.js
 
     req.flash("success", "User deleted successfully!");
     res.locals.redirect = "/";
@@ -173,6 +131,59 @@ const deleteUser = async (req, res, next) => {
   } catch (error) {
     console.log(`Error deleting user: ${error.message}`);
     req.flash("error", `Failed to delete user because: ${error.message}`);
+    next(error);
+  }
+};
+
+// Fetch all users
+const fetchTalents = async (req, res, next) => {
+  try {
+    const result = await client.query(userQueries.fetchAllUsers);
+    res.locals.users = result.rows;
+    next();
+  } catch (error) {
+    console.log(`Error fetching users: ${error.message}`);
+    next(error);
+  }
+};
+
+// Render the talent list
+const renderTalentList = (req, res) => {
+  res.render("listTalents");
+};
+
+// Render register page
+const renderRegister = (req, res) => {
+  res.render("register");
+};
+
+// Redirect view
+const redirectView = (req, res, next) => {
+  const redirectPath = res.locals.redirect;
+  if (redirectPath) res.redirect(redirectPath);
+  else next();
+};
+
+// Render profile page
+const renderProfile = (req, res) => {
+  res.render("profile");
+};
+
+// Render home page
+const renderHome = (req, res) => {
+  res.render("home");
+};
+
+// Render the edit user page
+const renderEditUser = async (req, res, next) => {
+  const userId = req.params.id;
+
+  try {
+    const result = await client.query(userQueries.fetchUserById, [userId]);
+    const user = result.rows[0];
+    res.render("editUser", { user });
+  } catch (error) {
+    console.log(`Error fetching user by ID: ${error.message}`);
     next(error);
   }
 };
@@ -186,17 +197,20 @@ const login = (req, res) => {
 const authenticate = (req, res, next) => {
   passport.authenticate("local", (error, user, info) => {
     if (error) {
+      console.log("Authentication error:", error); // Log the error
       req.flash("error", "Authentication error.");
       return res.redirect("/login");
     }
 
     if (!user) {
+      console.log("Failed to login:", info ? info.message : "No user"); // Log info from Passport
       req.flash("error", "Failed to login.");
       return res.redirect("/login");
     }
 
     req.login(user, (loginError) => {
       if (loginError) {
+        console.log("Login error:", loginError); // Log the login error
         req.flash("error", "Login failed.");
         return res.redirect("/login");
       }
@@ -208,6 +222,7 @@ const authenticate = (req, res, next) => {
       );
 
       req.session.token = signedToken;
+      console.log("Token set in session:", req.session.token); // Verify token in session
 
       req.flash("success", "Logged in!");
       res.redirect("/home");
@@ -237,7 +252,9 @@ const verifyJWT = async (req, res, next) => {
 
   try {
     const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); // Verify the token
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [payload.data]);
+    const result = await client.query(userQueries.fetchUserById, [
+      payload.data,
+    ]);
     const user = result.rows[0];
 
     if (!user) {

@@ -48,14 +48,14 @@ async function insertData() {
   }
 }
 
+connect();  // Connect to DB
+
 async function syncDatabase() {
-  await connect();  // Connect to DB
   await runSchema(); // Run schema creation
   await insertData(); // Insert data after schema is created
   console.log('Sync completed successfully.');
-  client.end();  // Close connection after tasks are done
 }
 
-syncDatabase();
+// syncDatabase();
 
 module.exports = { client };

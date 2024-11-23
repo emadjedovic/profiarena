@@ -31,7 +31,7 @@ app.use(
   expressSession({
     secret: "secret_passcode",
     cookie: {
-      maxAge: 4000000,
+      maxAge: 600000,
     },
     resave: false,
     saveUninitialized: false,
@@ -107,17 +107,15 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    // Replace Sequelize with raw SQL query to get user by ID
-    const result = await client.query(
-      'SELECT * FROM "User" WHERE "id" = $1', [id]
-    );
-    
+    const result = await client.query('SELECT * FROM "User" WHERE "id" = $1', [id]);
     const user = result.rows[0];
-    done(null, user); // If user exists, return the user object
+    console.log('Deserialized user:', user);  // Add logging for debugging
+    done(null, user);
   } catch (error) {
-    done(error, null); // If there's an error, return null
+    done(error, null);
   }
 });
+
 
 app.set("port", process.env.PORT || 3000);
 app.set("view engine", "ejs");
