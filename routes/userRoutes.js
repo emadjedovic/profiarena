@@ -15,11 +15,7 @@ router.get("/login", usersController.login);
 router.post("/login", usersController.authenticate);
 
 router.get("/logout", usersController.logout, usersController.redirectView);
-router.get(
-  "/talents",
-  usersController.fetchTalents,
-  usersController.renderTalentList
-);
+
 router.get("/:id", usersController.fetchUser, usersController.renderProfile);
 router.get("/:id/edit", usersController.renderEditUser);
 // Process data from the edit form, and display the user show page.

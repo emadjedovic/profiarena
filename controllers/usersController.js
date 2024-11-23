@@ -3,7 +3,7 @@ const jsonWebToken = require("jsonwebtoken");
 const { client } = require("../db/db_connect"); // Import the client from db_connect.js
 const { StatusCodes } = require("http-status-codes");
 const passport = require("passport");
-const userQueries = require("../db/queries"); // Import the query file
+const { userQueries } = require("../db/queries"); // Import the query file
 
 // Extract user parameters from request body
 const getUserParams = (body) => {
@@ -133,23 +133,6 @@ const deleteUser = async (req, res, next) => {
     req.flash("error", `Failed to delete user because: ${error.message}`);
     next(error);
   }
-};
-
-// Fetch all users
-const fetchTalents = async (req, res, next) => {
-  try {
-    const result = await client.query(userQueries.fetchAllUsers);
-    res.locals.users = result.rows;
-    next();
-  } catch (error) {
-    console.log(`Error fetching users: ${error.message}`);
-    next(error);
-  }
-};
-
-// Render the talent list
-const renderTalentList = (req, res) => {
-  res.render("listTalents");
 };
 
 // Render register page
@@ -284,11 +267,9 @@ module.exports = {
   login,
   authenticate,
   logout,
-  fetchTalents,
   renderEditUser,
   renderRegister,
   renderProfile,
-  renderTalentList,
   verifyJWT,
   renderHome,
 };

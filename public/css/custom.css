@@ -4,6 +4,10 @@ html, body {
     background-color: gainsboro;
 }
 
+h2 {
+    margin-bottom: 2rem;
+}
+
 .main-container {
     display: flex;
     flex-direction: column;

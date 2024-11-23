@@ -21,6 +21,11 @@ const userQueries = {
     `,
     
   };
+
+  const jobPostingQueries = {
+    createJobPosting: `INSERT INTO "Job_Posting" ("title", "description", "city", "application_deadline", "company", "cv_field", "cover_letter_field", "projects_field", "certificates_field", "hr_id") 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+  }
   
-  module.exports = userQueries;
+  module.exports = { userQueries, jobPostingQueries };
   

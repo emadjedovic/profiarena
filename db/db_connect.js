@@ -51,11 +51,16 @@ async function insertData() {
 connect();  // Connect to DB
 
 async function syncDatabase() {
-  await runSchema(); // Run schema creation
-  await insertData(); // Insert data after schema is created
-  console.log('Sync completed successfully.');
+  try {
+    await runSchema();  // Create tables
+    console.log('Schema executed successfully.');
+    await insertData(); // Insert initial data
+    console.log('Data inserted successfully.');
+  } catch (error) {
+    console.error('Error syncing database:', error);
+  }
 }
 
-// syncDatabase();
+syncDatabase();
 
 module.exports = { client };

@@ -1,0 +1,65 @@
+<!-- HR: Only show the button to users with role_id 1 -->
+<% if (loggedIn && currentUser.role_id === 1) { %>
+    <!-- Button to trigger modal -->
+    <button
+      id="createJobBtn"
+      type="button"
+      data-bs-toggle="modal"
+      data-bs-target="#jobModal"
+      class="btn btn-outline-dark"
+    >
+      Create Job Posting
+    </button>
+  
+    <!-- Modal Structure -->
+    <div id="jobModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Create Job Posting</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="jobPostingForm" method="POST" action="/create-job-posting">
+              <label for="title">Job Title:</label>
+              <input type="text" id="title" name="title" required class="form-control">
+  
+              <label for="description">Job Description:</label>
+              <textarea id="description" name="description" required class="form-control"></textarea>
+  
+              <label for="city">City:</label>
+              <input type="text" id="city" name="city" required class="form-control">
+  
+              <label for="application_deadline">Application Deadline:</label>
+              <input type="date" id="application_deadline" name="application_deadline" required class="form-control">
+  
+              <label for="company">Company:</label>
+              <input type="text" id="company" name="company" required class="form-control">
+  
+              <!-- Checkboxes for field options -->
+              <div>
+                <label>
+                  <input type="checkbox" name="cv_field" value="1"> CV
+                </label><br>
+                <label>
+                  <input type="checkbox" name="cover_letter_field" value="1"> Cover Letter
+                </label><br>
+                <label>
+                  <input type="checkbox" name="projects_field" value="1"> Projects
+                </label><br>
+                <label>
+                  <input type="checkbox" name="certificates_field" value="1"> Certificates
+                </label><br>
+              </div>
+  
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
+            <button type="submit" form="jobPostingForm" class="btn btn-outline-dark">Create Posting</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  
