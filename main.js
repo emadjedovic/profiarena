@@ -49,9 +49,7 @@ app.use((req, res, next) => {
 
 const checkLoginStatus = (req, res, next) => {
   if (req.user) {
-    // User is logged in, redirect to /home if they try to visit /login or /register
-    if (req.originalUrl === '/' || req.originalUrl === '/login' || req.originalUrl === '/register') {
-      return res.redirect('/home');
+    if (req.originalUrl === "/" || req.originalUrl === "/login" || req.originalUrl === "/register") {
       return res.redirect("/home");
     }
     return next();
