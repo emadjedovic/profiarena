@@ -1,62 +1,61 @@
-const { Sequelize } = require("sequelize");
-const dotenv = require("dotenv");
+const { Client } = require('pg');  // Import the PostgreSQL client
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
 
 // Load environment variables
 dotenv.config();
 
-// Create a new Sequelize instance with your PostgreSQL connection details
-const sequelize = new Sequelize(
-  process.env.DB_DATABASE,    // Database name
-  process.env.DB_USER,        // Database username
-  process.env.DB_PASSWORD,    // Database password
-  {
-    host: process.env.DB_HOST, // Database host
-    port: process.env.DB_PORT, // Database port (optional, defaults to 5432)
-    dialect: "postgres",       // Specify the database dialect
-    logging: false,            // Disable logging for cleaner output
-  }
-);
+// Create a new PostgreSQL client
+const client = new Client({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT || 5432,  // Default port if not specified
+});
 
-// Test the connection
-(async () => {
+// Connect to the database
+async function connect() {
   try {
-    await sequelize.authenticate();
-    console.log("Connection to the database has been established successfully.");
+    await client.connect();
+    console.log('Connected to the database successfully.');
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
-  }
-})();
-
-async function populateRoles() {
-  const Role = require('../models/role'); // Adjust path as needed
-  try {
-    await Role.findOrCreate({ where: { id: 0, name: 'hr' } });
-    await Role.findOrCreate({ where: { id: 1, name: 'candidate' } });
-    console.log('Default roles have been populated.');
-  } catch (error) {
-    console.error('Error populating default roles:', error);
+    console.error('Unable to connect to the database:', error.stack);
+    process.exit(1);  // Exit the process on connection failure
   }
 }
 
-// Define a function to sync the database
+// Run schema creation (schema.sql)
+async function runSchema() {
+  try {
+    const schema = fs.readFileSync(path.join(__dirname, 'sql', 'schema.sql'), 'utf8');
+    await client.query(schema);  // Run the schema to create the tables
+    console.log('Schema executed successfully.');
+  } catch (error) {
+    console.error('Error executing schema:', error);
+  }
+}
+
+// Run data insertion (insert_data.sql)
+async function insertData() {
+  try {
+    const insertDataSQL = fs.readFileSync(path.join(__dirname, 'sql', 'insert_data.sql'), 'utf8');
+    await client.query(insertDataSQL);  // Run the insert data queries
+    console.log('Data inserted successfully.');
+  } catch (error) {
+    console.error('Error inserting data:', error);
+  }
+}
+
+connect();  // Connect to DB
+
 async function syncDatabase() {
-  try {
-    // Drop all tables (optional, be careful with this in production)
-    await sequelize.drop();
-
-    // Sync the models (create tables if they don't exist)
-    await sequelize.sync();
-    await populateRoles();  // Populate roles
-    console.log("All tables dropped and recreated.");
-  } catch (error) {
-    console.error("Error while creating tables:", error);
-  } finally {
-    await sequelize.close(); // Close connection
-  }
+  await runSchema(); // Run schema creation
+  await insertData(); // Insert data after schema is created
+  console.log('Sync completed successfully.');
 }
 
-// Call the syncDatabase function
 // syncDatabase();
 
-// Export the function for use in other files
-module.exports = { sequelize };
+module.exports = { client };

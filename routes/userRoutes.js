@@ -1,14 +1,13 @@
 const router = require("express").Router();
 const usersController = require("../controllers/usersController");
 
-//router.get("/", usersController.loginOrHomePage); // implement this
 router.get("/home", usersController.renderHome);
-router.get("/profile", usersController.fetchUser, usersController.renderProfile);
+router.get("/profile", usersController.renderProfile);
 router.get("/register", usersController.renderRegister);
 // determine whether data meets the requirements to continue to the create action
 router.post(
   "/register",
-  usersController.validate,
+  // add usersController.validate,
   usersController.register,
   usersController.redirectView
 );

@@ -1,1 +1,8 @@
 <h2>Welcome, <%= currentUser.first_name %> <%= currentUser.last_name %>.</h2>
+
+<!-- HR -->
+<% if (loggedIn && currentUser.role_id === 1) { %>
+
+    Create job posting.
+ 
+<% } %>
