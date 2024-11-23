@@ -1,0 +1,39 @@
+/* General Page Styling */
+body {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    background-color: #f8f9fa;
+    
+    background-image: url('/images/roth.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+  
+  .container {
+    max-width: 900px;
+  }
+  
+  /* Form Styling */
+  form label {
+    font-weight: bold;
+  }
+  
+  form input {
+    border-radius: 5px;
+  }
+  
+  form button {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+  
+  /* Social Media Icons */
+  .list-inline-item a:hover {
+    color: #007bff;
+  }
+  
+  .list-inline-item i {
+    transition: color 0.3s ease;
+  }
+  

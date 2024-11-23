@@ -1,24 +1,84 @@
-<% if(loggedIn) { %>
-  <h2>Welcome, <%= currentUser.first_name %> <%= currentUser.last_name %>.</h2>
-  <table class="table">
-      <tr>
-        <th>Email</th>
-        <td><%= currentUser.email %></td>
-      </tr>
-    </table>
-    <a href="<%=`/${user.id}/edit`%>" class="btn btn-outline-dark mt-1"> Edit Your Info </a>
+<h2>
+  <div>
+    <%= currentUser.first_name %>
+    <%= currentUser.last_name %>
+  </div>
+</h2>
+
+<table class = "table mt-4 mb-5">
+
+  <tr>
+    <th>Email</th>
+    <td><%= currentUser.email %></td>
+  </tr>
+  <tr>
+    <th>Phone</th>
+    <td><%= currentUser.phone %></td>
+  </tr>
+
+  
+  <% if (currentUser.role_id === 0) { %>
+    <!-- HR -->
+  <tr>
+    <th>Company Name</th>
+    <td><%= currentUser.company_name || "N/A" %></td>
+  </tr>
+  <% } %> <% if (currentUser.role_id === 1) { %>
+  <!-- Talent -->
+  <tr>
+    <th>Address</th>
+    <td><%= currentUser.address || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Date of Birth</th>
+    <td><%= currentUser.date_of_birth || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>About</th>
+    <td><%= currentUser.about || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Education</th>
+    <td><%= currentUser.education || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Skills</th>
+    <td><%= currentUser.skills || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Languages</th>
+    <td><%= currentUser.languages || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Socials</th>
+    <td><%= currentUser.socials || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>CV</th>
+    <td><%= currentUser.cv || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Projects</th>
+    <td><%= currentUser.projects || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Certificates</th>
+    <td><%= currentUser.certificates || "N/A" %></td>
+  </tr>
+  <% } %>
+</table>
+
+<a href="<%= `/${currentUser.id}/edit` %>" class="btn btn-light mt-1"
+  >Edit Your Info</a
+>
+
 <div class="mt-4">
   <div>
-      <a
-        href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
-        onclick="return confirm('Are you sure you want to delete your account?')"
-        class="btn btn-danger mt-1"
-        >Delete Account</a
-      >
-    </div>
+    <a
+      href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
+      onclick="return confirm('Are you sure you want to delete your account?')"
+      class="btn btn-danger mt-1"
+      >Delete Account</a
+    >
   </div>
 </div>
-
-<% } else { %>
-  <h3> Please log in or register first.<h3>
-  <% } %>

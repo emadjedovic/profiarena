@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const usersController = require("../controllers/usersController");
 
-
-router.get("/", usersController.fetchUser, usersController.renderUser);
+//router.get("/", usersController.loginOrHomePage); // implement this
+router.get("/home", usersController.renderHome);
+router.get("/profile", usersController.fetchUser, usersController.renderProfile);
 router.get("/register", usersController.renderRegister);
 // determine whether data meets the requirements to continue to the create action
 router.post(
@@ -15,7 +16,12 @@ router.get("/login", usersController.login);
 router.post("/login", usersController.authenticate);
 
 router.get("/logout", usersController.logout, usersController.redirectView);
-router.get("/:id", usersController.fetchUser, usersController.renderUser);
+router.get(
+  "/talents",
+  usersController.fetchTalents,
+  usersController.renderTalentList
+);
+router.get("/:id", usersController.fetchUser, usersController.renderProfile);
 router.get("/:id/edit", usersController.renderEditUser);
 // Process data from the edit form, and display the user show page.
 router.put(

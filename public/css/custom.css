@@ -1,7 +1,7 @@
 html, body {
     height: 100%;
     margin: 0;
-    background-color: rgb(124, 152, 234, 0.2);
+    background-color: gainsboro;
 }
 
 .main-container {

@@ -15,7 +15,7 @@ const User = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Role,  // Reference to the Role model
+        model: Role,
         key: 'id',
       },
     },
@@ -43,36 +43,47 @@ const User = sequelize.define(
       type: DataTypes.STRING(15),
       allowNull: false,
     },
+    // hr only
     company_name: {
       type: DataTypes.STRING(255),
     },
+    // talent only
     address: {
       type: DataTypes.TEXT,
     },
+    // talent only
     date_of_birth: {
       type: DataTypes.DATE,
     },
+    // talent only
     about: {
       type: DataTypes.TEXT,
     },
+    // talent only
     education: {
       type: DataTypes.TEXT,
     },
+     // talent only
     skills: {
       type: DataTypes.TEXT,
     },
+     // talent only
     languages: {
       type: DataTypes.TEXT,
     },
+     // talent only
     socials: {
       type: DataTypes.TEXT,
     },
+     // talent only
     cv: {
       type: DataTypes.STRING(255),
     },
+     // talent only
     projects: {
       type: DataTypes.STRING(255),
     },
+     // talent only
     certificates: {
       type: DataTypes.STRING(255),
     },

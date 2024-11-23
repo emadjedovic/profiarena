@@ -5,13 +5,16 @@ const { Op } = require("sequelize");
 const { StatusCodes } = require("http-status-codes");
 
 // Extract user parameters from request body
-const getUserParams = (body) => ({
-  first_name: body.first_name,
-  last_name: body.last_name,
-  email: body.email,
-  password: body.password,
-  role_id: body.role_id,
-});
+const getUserParams = (body) => {
+  return {
+    first_name: body.first_name,
+    last_name: body.last_name,
+    password: body.password,
+    email: body.email,
+    phone: body.phone, // Ensure this exists
+    role_id: parseInt(body.role_id, 10), // Ensure role is mapped to role_id
+  };
+};
 
 const fetchTalents = (req, res, next) => {
   User.findAll()
@@ -35,6 +38,7 @@ const renderRegister = (req, res) => {
 
 const register = (req, res, next) => {
   if (req.skip) next();
+  console.log("req.body: ", req.body);
 
   // Get the user data and create the user
   User.create(getUserParams(req.body))
@@ -43,8 +47,16 @@ const register = (req, res, next) => {
         "success",
         `${user.first_name} ${user.last_name}'s account created successfully!`
       );
-      res.locals.redirect = "/";
-      next();
+
+      // Log the user in automatically after registration
+      req.login(user, (err) => {
+        if (err) {
+          console.log('Error logging in after registration:', err);
+          return next(err);
+        }
+        res.locals.redirect = "/home";
+        next();
+      });
     })
     .catch((error) => {
       console.log(`Error creating user: ${error.message}`);
@@ -57,6 +69,7 @@ const register = (req, res, next) => {
     });
 };
 
+
 const redirectView = (req, res, next) => {
   const redirectPath = res.locals.redirect;
   if (redirectPath) res.redirect(redirectPath);
@@ -65,6 +78,7 @@ const redirectView = (req, res, next) => {
 
 const fetchUser = (req, res, next) => {
   const userId = req.params.id;
+  console.log("fetch user: ", req.params.id);
 
   User.findByPk(userId)
     .then((user) => {
@@ -77,13 +91,12 @@ const fetchUser = (req, res, next) => {
     });
 };
 
-const renderUser = (req, res) => {
-  if (res.locals.currentUser) {
-    res.render("showTalent");
-  } else {
-    const userName = "Guest";
-    res.render("profile", { name: userName });
-  }
+const renderProfile = (req, res) => {
+    res.render("profile");
+};
+
+const renderHome = (req, res) => {
+  res.render("home");
 };
 
 const renderEditUser = (req, res, next) => {
@@ -162,7 +175,7 @@ const authenticate = (req, res, next) => {
       req.session.token = signedToken;
 
       req.flash("success", "Logged in!");
-      res.redirect("/");
+      res.redirect("/home");
     });
   })(req, res, next);
 };
@@ -226,6 +239,19 @@ const verifyJWT = async (req, res, next) => {
   }
 };
 
+/*
+const loginOrHomePage = (req, res) => {
+  if (req.user) {
+    // User is logged in, redirect to /home
+    res.redirect("/home");
+  } else {
+    // User is not logged in, redirect to /login
+    res.redirect("/login");
+  }
+};
+*/
+
+
 module.exports = {
   getUserParams,
   register,
@@ -240,7 +266,8 @@ module.exports = {
   fetchTalents,
   renderEditUser,
   renderRegister,
-  renderUser,
+  renderProfile,
   renderTalentList,
   verifyJWT,
+  renderHome
 };

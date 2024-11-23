@@ -15,12 +15,25 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mx-5">
+        <!-- Home Link -->
         <li class="nav-item">
-          <a class="nav-link" href="/">Profile</a>
+          <a class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>" href="/">Home</a>
         </li>
+
+        <% if (loggedIn) { %>
+        <!-- Profile Link -->
         <li class="nav-item">
-          <a class="nav-link" href="/hr/talents">Talents</a>
+          <a class="nav-link <%= currentPath === '/profile' ? 'active text-decoration-underline' : '' %>" href="/profile">Profile</a>
         </li>
+        <% } %>
+
+        <% if (loggedIn && currentUser.role_id == 0) { %>
+        <!-- Talents Link (for HR role) -->
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/talents' ? 'active text-decoration-underline' : '' %>" href="/talents">Talents</a>
+        </li>
+        <% } %>
+
       </ul>
 
       <!-- Login/Logout section -->
@@ -28,15 +41,14 @@
         <ul class="navbar-nav">
           <% if (loggedIn) { %>
           <li class="nav-item">
-            <a class="nav-link" href="/logout">LOG OUT </a>
+            <a class="btn btn-light m-1" href="/logout">LOG OUT </a>
           </li>
           <% } else { %>
-
           <li class="nav-item">
-            <a class="nav-link" href="/register">REGISTER </a>
+            <a class="btn btn-light m-1" href="/register">REGISTER </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/login">LOGIN </a>
+            <a class="btn btn-light m-1" href="/login">LOGIN </a>
           </li>
         </ul>
         <% } %>

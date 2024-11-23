@@ -45,8 +45,27 @@ app.use((req, res, next) => {
   res.locals.loggedIn = req.isAuthenticated();
   res.locals.currentUser = req.user;
   res.locals.token = req.session.token;
+  res.locals.currentPath = req.path;
   next();
 });
+
+const checkLoginStatus = (req, res, next) => {
+  if (req.user) {
+    // User is logged in, redirect to /home if they try to visit /login or /register
+    if (req.originalUrl === '/' || req.originalUrl === '/login' || req.originalUrl === '/register') {
+      return res.redirect('/home');
+    }
+    return next();
+  } else {
+    // User is not logged in, redirect to /login if they try to visit any other page
+    if (req.originalUrl !== '/login' && req.originalUrl !== '/register') {
+      return res.redirect('/login');
+    }
+    return next();
+  }
+};
+
+app.use(checkLoginStatus); // Apply this middleware to all routes
 
 // PASSPORT STRATEGY SETUP
 passport.use(

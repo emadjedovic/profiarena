@@ -10,7 +10,11 @@
   </head>
   <body>
     <div class="main-container">
-      <%- include('partials/navigation') %>
+      
+      <% if (loggedIn) { %>
+        <!-- Include navigation bar if logged in -->
+        <%- include('partials/navigation') %>
+      <% } %>
     
       <div class="flashes">
         <% if (flashMessages) { %>
@@ -24,7 +28,10 @@
 
       <div class="container"><%- body %></div>
       
-      <%- include('partials/footer') %>
+      <% if (loggedIn) { %>
+        <!-- Include navigation bar if logged in -->
+        <%- include('partials/footer') %>
+      <% } %>
       
     </div>
     <!-- Scripts -->
