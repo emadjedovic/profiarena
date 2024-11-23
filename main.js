@@ -1,15 +1,15 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts");
 const methodOverride = require("method-override");
-const User = require("./models/user");
+const bcrypt = require("bcrypt");
 const expressSession = require("express-session");
 const cookieParser = require("cookie-parser");
 const connectFlash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const { syncDatabase } = require("./db/db_connect")
 const favicon = require('serve-favicon');
-const path = require('path')
+const path = require('path');
+const { client } = require("./db/db_connect"); // Import the client from db_connect.js
 
 const app = express();
 
@@ -71,19 +71,27 @@ app.use(checkLoginStatus); // Apply this middleware to all routes
 passport.use(
   new LocalStrategy(
     {
-      usernameField: "email", // Match Sequelize model's email field
-      passwordField: "password",
+      usernameField: "email", // Match email field in login form
+      passwordField: "password", // Match password field in login form
     },
     async (email, password, done) => {
       try {
-        const user = await User.findOne({ where: { email } });
+        // Replace Sequelize with raw SQL query to get the user by email
+        const result = await client.query(
+          'SELECT * FROM "User" WHERE "email" = $1', [email]
+        );
+        
+        const user = result.rows[0];
         if (!user) {
           return done(null, false, { message: "User not found" });
         }
-        const isValidPassword = await user.validPassword(password); // Replace with your password check logic
+
+        // Check if the password is correct
+        const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
           return done(null, false, { message: "Invalid password" });
         }
+
         return done(null, user);
       } catch (error) {
         return done(error);
@@ -99,10 +107,15 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findByPk(id); // Fetch user by ID
-    done(null, user);
+    // Replace Sequelize with raw SQL query to get user by ID
+    const result = await client.query(
+      'SELECT * FROM "User" WHERE "id" = $1', [id]
+    );
+    
+    const user = result.rows[0];
+    done(null, user); // If user exists, return the user object
   } catch (error) {
-    done(error, null);
+    done(error, null); // If there's an error, return null
   }
 });
 

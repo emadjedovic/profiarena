@@ -17,23 +17,44 @@
       <ul class="navbar-nav mx-5">
         <!-- Home Link -->
         <li class="nav-item">
-          <a class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>" href="/">Home</a>
+          <a
+            class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>"
+            href="/"
+            >Home</a
+          >
         </li>
 
         <% if (loggedIn) { %>
         <!-- Profile Link -->
         <li class="nav-item">
-          <a class="nav-link <%= currentPath === '/profile' ? 'active text-decoration-underline' : '' %>" href="/profile">Profile</a>
+          <a
+            class="nav-link <%= currentPath === '/profile' ? 'active text-decoration-underline' : '' %>"
+            href="/profile"
+            >Profile</a
+          >
         </li>
         <% } %>
 
-        <% if (loggedIn && currentUser.role_id == 0) { %>
-        <!-- Talents Link (for HR role) -->
+        <!-- HR ONLY -->
+        <% if (loggedIn && currentUser.role_id === 1) { %>
         <li class="nav-item">
-          <a class="nav-link <%= currentPath === '/talents' ? 'active text-decoration-underline' : '' %>" href="/talents">Talents</a>
+          <a
+            class="nav-link <%= currentPath === '/my-job-postings' ? 'active text-decoration-underline' : '' %>"
+            href="/my-job-postings"
+            >My Job Postings</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= currentPath === '/talents' ? 'active text-decoration-underline' : '' %>"
+            href="/talents"
+            >Talents</a
+          >
         </li>
         <% } %>
 
+        <!-- TALENTS ONLY -->
+        <% if (loggedIn && currentUser.role_id === 1) { %> <% } %>
       </ul>
 
       <!-- Login/Logout section -->
@@ -50,8 +71,9 @@
           <li class="nav-item">
             <a class="btn btn-light m-1" href="/login">LOGIN </a>
           </li>
+
+          <% } %>
         </ul>
-        <% } %>
       </div>
     </div>
   </div>

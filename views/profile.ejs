@@ -17,13 +17,13 @@
   </tr>
 
   
-  <% if (currentUser.role_id === 0) { %>
+  <% if (currentUser.role_id === 1) { %>
     <!-- HR -->
   <tr>
     <th>Company Name</th>
     <td><%= currentUser.company_name || "N/A" %></td>
   </tr>
-  <% } %> <% if (currentUser.role_id === 1) { %>
+  <% } %> <% if (currentUser.role_id === 2) { %>
   <!-- Talent -->
   <tr>
     <th>Address</th>
