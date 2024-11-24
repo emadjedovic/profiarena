@@ -49,15 +49,84 @@ const fetchTalents = async (req, res, next) => {
   }
 };
 
+// filters and search bar included
 const fetchJobPostingsByHrId = async (req, res, next) => {
   try {
-    const result = await client.query(jobPostingQueries.getJobPostingsByHrId, [req.user.id]);
-    res.render("hr/jobsByHrId", { jobPostings: result.rows });
+    const { search, archive, cv_field, projects_field, certificates_field, cover_letter_field } = req.query;
+
+    // Base query to fetch job postings
+    let query = `
+      SELECT * FROM "Job_Posting"
+      WHERE "hr_id" = $1
+    `;
+    let params = [req.user.id];
+
+    // Add search condition (search in title, company, city, description, street address)
+    if (search) {
+      query += `
+        AND (
+          "title" ILIKE $2 OR
+          "company" ILIKE $2 OR
+          "city" ILIKE $2 OR
+          "description" ILIKE $2 OR
+          "street_address" ILIKE $2
+        )
+      `;
+      params.push(`%${search}%`);
+    }
+
+    // Add archive condition
+    if (archive !== undefined && archive !== '') {
+      if (archive === 'true' || archive === 'false') {
+        query += `
+          AND "is_archived" = $${params.length + 1}
+        `;
+        params.push(archive === 'true');
+      }
+    }
+
+    // Add filters for each document field if checked
+    if (cv_field) {
+      query += `
+        AND "cv_field" = TRUE
+      `;
+    }
+    if (projects_field) {
+      query += `
+        AND "projects_field" = TRUE
+      `;
+    }
+    if (certificates_field) {
+      query += `
+        AND "certificates_field" = TRUE
+      `;
+    }
+    if (cover_letter_field) {
+      query += `
+        AND "cover_letter_field" = TRUE
+      `;
+    }
+
+    // Execute the query
+    const result = await client.query(query, params);
+
+    // Render the job postings page with the results
+    res.render("hr/jobsByHrId", {
+      jobPostings: result.rows,
+      searchQuery: search || '',
+      archiveFilter: archive || '',
+      cvFieldChecked: cv_field === 'on',
+      projectsFieldChecked: projects_field === 'on',
+      certificatesFieldChecked: certificates_field === 'on',
+      coverLetterFieldChecked: cover_letter_field === 'on',
+    });
   } catch (error) {
     console.log(`Error fetching job postings by HR ID: ${error.message}`);
     next(error);
   }
 };
+
+
 
 const fetchJobPostingById = async (req, res, next) => {
   try {

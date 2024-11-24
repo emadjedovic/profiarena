@@ -58,7 +58,7 @@ const register = async (req, res, next) => {
         return next(err);
       }
       res.locals.user = user;
-      res.redirect("/home");
+      return res.redirect("/home");
     });
   } catch (error) {
     console.log(`Error creating user: ${error.message}`);
@@ -66,7 +66,7 @@ const register = async (req, res, next) => {
       "error",
       `Failed to create user account because: ${error.message}.`
     );
-    res.redirect("/register");
+    return res.redirect("/register");
   }
 };
 
@@ -78,10 +78,9 @@ const fetchUser = async (req, res, next) => {
     const result = await client.query(userQueries.getUserById, [userId]); // Use the query from queries.js
     res.locals.user = result.rows[0];
     res.render("profile");
-    next();
   } catch (error) {
     console.log(`Error fetching user by ID: ${error.message}`);
-    next(error);
+    return next(error); 
   }
 };
 
@@ -106,11 +105,11 @@ const updateUser = async (req, res, next) => {
     ]); // Use the query from queries.js
 
     req.flash("success", "User updated successfully!");
-    res.redirect(`/${userId}`);
+    res.redirect(`/profile`);
   } catch (error) {
     console.log(`Error updating user by ID: ${error.message}`);
     req.flash("error", `Failed to update user because: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -126,7 +125,7 @@ const deleteUser = async (req, res, next) => {
   } catch (error) {
     console.log(`Error deleting user: ${error.message}`);
     req.flash("error", `Failed to delete user because: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -140,7 +139,7 @@ const renderEditUser = async (req, res, next) => {
     res.render("editUser", { user });
   } catch (error) {
     console.log(`Error fetching user by ID: ${error.message}`);
-    next(error);
+    return next(error);
   }
 };
 
@@ -184,7 +183,7 @@ const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
     req.flash("success", "You have been logged out!");
-    res.redirect("/");
+    return res.redirect("/");
   });
 };
 
