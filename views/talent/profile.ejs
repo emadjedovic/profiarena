@@ -1,74 +1,180 @@
-<h2>
+<h2 class="mb-4">
   <div>
     <%= currentUser.first_name %>
-    <%= currentUser.last_name %>
+      <%= currentUser.last_name %>
   </div>
 </h2>
 
-<table class = "table mt-4 mb-5">
+<div class="row">
 
-  <tr>
-    <th>Email</th>
-    <td><%= currentUser.email %></td>
-  </tr>
-  <tr>
-    <th>Phone</th>
-    <td><%= currentUser.phone %></td>
-  </tr>
+  <div class="col-md-6">
 
-  <tr>
-    <th>Address</th>
-    <td><%= currentUser.address || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Date of Birth</th>
-    <td><%= currentUser.date_of_birth || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>About</th>
-    <td><%= currentUser.about || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Education</th>
-    <td><%= currentUser.education || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Skills</th>
-    <td><%= currentUser.skills || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Languages</th>
-    <td><%= currentUser.languages || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Socials</th>
-    <td><%= currentUser.socials || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>CV</th>
-    <td><%= currentUser.cv || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Projects</th>
-    <td><%= currentUser.projects || "N/A" %></td>
-  </tr>
-  <tr>
-    <th>Certificates</th>
-    <td><%= currentUser.certificates || "N/A" %></td>
-  </tr>
-</table>
+    <!-- Personal Info Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Personal Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <strong>Email:</strong>
+            <%= currentUser.email %>
+          </div>
+          <div class="col-md-6">
+            <strong>Phone:</strong>
+            <%= currentUser.phone || "N/A" %>
+          </div>
+          <div class="col-md-6">
+            <strong>Address:</strong>
+            <%= currentUser.address || "N/A" %>
+          </div>
+          <div class="col-md-6">
+            <strong>Date of Birth:</strong>
+            <%= formatDate(currentUser.date_of_birth) %>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<a href="<%= `/talent/${currentUser.id}/edit` %>" class="btn btn-light mt-1"
-  >Edit Your Info</a
->
+    <!-- About Me Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>About Me</h5>
+      </div>
+      <div class="card-body">
+        <%= currentUser.about || "N/A" %>
+      </div>
+    </div>
 
-<div class="mt-4">
-  <div>
-    <a
-      href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
-      onclick="return confirm('Are you sure you want to delete your account?')"
-      class="btn btn-danger mt-1"
-      >Delete Account</a
-    >
+    <!-- Education Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Education</h5>
+      </div>
+      <div class="card-body">
+        <%= currentUser.education || "N/A" %>
+      </div>
+    </div>
+
+    <!-- Skills Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Skills</h5>
+      </div>
+      <div class="card-body">
+        <%= currentUser.skills || "N/A" %>
+      </div>
+    </div>
+
+    <!-- Languages Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Languages</h5>
+      </div>
+      <div class="card-body">
+        <%= currentUser.languages || "N/A" %>
+      </div>
+    </div>
+
   </div>
+
+  <div class="col-md-6">
+
+    <!-- Social Links Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Social Links</h5>
+      </div>
+      <div class="card-body">
+        <% if (currentUser.socials && currentUser.socials.length> 0) { %>
+          <% currentUser.socials.forEach((link, index)=> { %>
+            <% const absoluteLink=link.startsWith('http://') || link.startsWith('https://') ? link : `https://${link}`;
+              %>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <a href="<%= absoluteLink %>" target="_blank" rel="noopener noreferrer">Social Link <%= index + 1 %></a>
+                <form method="POST" action="<%= `/talent/${currentUser.id}/delete-social?_method=DELETE` %>"
+                  class="d-inline">
+                  <input type="hidden" name="socialLink" value="<%= link %>" />
+                  <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('Are you sure you want to delete this social link?')">Delete</button>
+                </form>
+              </div>
+              <% }); %>
+                <% } else { %>
+                  <span>N/A</span>
+                  <% } %>
+      </div>
+    </div>
+
+    <!-- CV Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>CV</h5>
+      </div>
+      <div class="card-body">
+        <% if (currentUser.cv) { %>
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="<%= `/${currentUser.cv}` %>" target="_blank" class="btn btn-primary">View CV</a>
+            <form method="POST" action="<%= `/talent/${currentUser.id}/delete-cv?_method=DELETE` %>" class="d-inline">
+              <button type="submit" class="btn btn-danger btn-sm"
+                onclick="return confirm('Are you sure you want to delete this CV?')">Delete</button>
+            </form>
+          </div>
+          <% } else { %>
+            <span>N/A</span>
+            <% } %>
+      </div>
+    </div>
+
+    <!-- Certificates Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Certificates</h5>
+      </div>
+      <div class="card-body">
+        <% if (currentUser.certificates && currentUser.certificates.length> 0) { %>
+          <% currentUser.certificates.forEach((certificate, index)=> { %>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <a href="<%= `/${certificate}` %>" target="_blank">Certificate <%= index + 1 %></a>
+              <form method="POST" action="<%= `/talent/${currentUser.id}/delete-certificate?_method=DELETE` %>"
+                class="d-inline">
+                <input type="hidden" name="certificatePath" value="<%= certificate %>" />
+                <button type="submit" class="btn btn-danger btn-sm"
+                  onclick="return confirm('Are you sure you want to delete this certificate?')">Delete</button>
+              </form>
+            </div>
+            <% }); %>
+              <% } else { %>
+                <span>N/A</span>
+                <% } %>
+      </div>
+    </div>
+
+    <!-- Projects Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5>Projects</h5>
+      </div>
+      <div class="card-body">
+        <%= currentUser.projects || "N/A" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mb-3">
+  <p><em>Account Created on
+    <%= currentUser.created_at ? formatDate(currentUser.created_at) : "N/A" %>
+  </em></p>
+</div>
+
+<a href="<%= `/talent/${currentUser.id}/edit` %>" class="btn btn-light mt-1">Edit Your Info</a>
+
+<div class="mt-2">
+  <a href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
+    onclick="return confirm('Are you sure you want to delete your account?')" class="btn btn-danger mt-1">
+    Delete Account
+  </a>
+</div>
+
 </div>

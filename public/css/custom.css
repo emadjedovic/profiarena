@@ -40,3 +40,8 @@ h2 {
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+.table td a {
+    margin-right: 10px; /* Space between the link and the delete button */
+  }
+  

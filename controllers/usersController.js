@@ -3,7 +3,7 @@ const jsonWebToken = require("jsonwebtoken");
 const { client } = require("../db/connect"); // Import the client from connect.js
 const { StatusCodes } = require("http-status-codes");
 const passport = require("passport");
-const { userQueries } = require("../db/queries"); // Import the query file
+const queries = require("../db/queries"); // Import the query file
 
 // Extract user parameters from request body
 const getUserParams = (body) => {
@@ -32,7 +32,7 @@ const register = async (req, res, next) => {
 
   try {
     const result = await client.query(
-      userQueries.createUser, // Use the query from queries.js
+      queries.createUserSQL, // Use the query from queries.js
       [
         userParams.first_name,
         userParams.last_name,
@@ -73,7 +73,7 @@ const deleteUser = async (req, res, next) => {
   const userId = req.params.id;
 
   try {
-    await client.query(userQueries.deleteUser, [userId]); // Use the query from queries.js
+    await client.query(queries.deleteUserSQL, [userId]); // Use the query from queries.js
 
     req.logout((err) => {
       if (err) {
@@ -146,7 +146,7 @@ const verifyJWT = async (req, res, next) => {
 
   try {
     const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); // Verify the token
-    const result = await client.query(userQueries.getUserById, [payload.data]);
+    const result = await client.query(queries.getUserByIdSQL, [payload.data]);
     const user = result.rows[0];
 
     if (!user) {

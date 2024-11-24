@@ -16,7 +16,7 @@ CREATE TABLE "User" (
     "skills" TEXT[],           
     "languages" TEXT[],        
     "socials" TEXT[],         
-    "projects" TEXT[],        
+    "projects" TEXT,        
     "cv" VARCHAR(255),        
     "certificates" VARCHAR(255)[],
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

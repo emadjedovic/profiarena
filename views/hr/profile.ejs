@@ -17,12 +17,7 @@
   </tr>
   <tr>
     <th>Created At</th>
-    <td>
-      <% if (currentUser.created_at) { %>
-          <%= formatDate(currentUser.created_at) %>
-      <% } else { %>
-          N/A
-      <% } %>
+    <td><%= formatDate(currentUser.created_at) %>
   </td>
   </tr>
 </table>

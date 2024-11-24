@@ -39,6 +39,9 @@ app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
 
 // MIDDLEWARE
 app.use(express.static("public"));
+// Serve static files (uploads) from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(layouts);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
