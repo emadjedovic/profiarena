@@ -1,5 +1,3 @@
-<!-- HR: Only show the button to users with role_id 1 -->
-<% if (loggedIn && currentUser.role_id === 1) { %>
     <!-- Button to trigger modal -->
     <button
       id="createJobBtn"
@@ -20,7 +18,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form id="jobPostingForm" method="POST" action="/create-job-posting">
+            <form id="jobPostingForm" method="POST" action="/hr/create-job-posting">
               <label for="title">Job Title:</label>
               <input type="text" id="title" name="title" required class="form-control">
   
@@ -61,5 +59,4 @@
         </div>
       </div>
     </div>
-  <% } %>
   

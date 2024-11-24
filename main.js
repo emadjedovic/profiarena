@@ -7,22 +7,23 @@ const cookieParser = require("cookie-parser");
 const connectFlash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
-const favicon = require('serve-favicon');
-const path = require('path');
+const favicon = require("serve-favicon");
+const path = require("path");
 
-const { connect, client } = require('./db/connect');
-const schema = require('./db/schema');
+const { connect, client } = require("./db/connect");
+const schema = require("./db/schema");
 
 const setupDatabase = async () => {
   await connect();
-  /*
-  await schema.createSessionTable();
-  await schema.createLookupTables();
-  await schema.createUserTable();
-  */
+  
+  // await schema.createSessionTable();
+  // await schema.createLookupTables();
+  // await schema.createUserTable();
+  
   // await schema.createJobPostingTable();
   // await schema.createApplicationTable();
   // await schema.createApplicationScoreTable();
+  
 };
 
 setupDatabase();
@@ -33,7 +34,7 @@ const pgSession = require("connect-pg-simple")(expressSession);
 const app = express();
 
 // Serve the favicon
-app.use(favicon(path.join(__dirname, 'public', 'favicon2.ico')));
+app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
 
 // MIDDLEWARE
 app.use(express.static("public"));
@@ -75,7 +76,11 @@ app.use((req, res, next) => {
 
 const checkLoginStatus = (req, res, next) => {
   if (req.user) {
-    if (req.originalUrl === "/" || req.originalUrl === "/login" || req.originalUrl === "/register") {
+    if (
+      req.originalUrl === "/" ||
+      req.originalUrl === "/login" ||
+      req.originalUrl === "/register"
+    ) {
       return res.redirect("/home");
     }
     return next();
@@ -98,7 +103,10 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const result = await client.query('SELECT * FROM "User" WHERE "email" = $1', [email]);
+        const result = await client.query(
+          'SELECT * FROM "User" WHERE "email" = $1',
+          [email]
+        );
         const user = result.rows[0];
         if (!user) {
           return done(null, false, { message: "User not found" });
@@ -118,8 +126,6 @@ passport.use(
   )
 );
 
-
-
 // SERIALIZE AND DESERIALIZE USER
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -127,19 +133,19 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const result = await client.query('SELECT * FROM "User" WHERE "id" = $1', [id]);
+    const result = await client.query('SELECT * FROM "User" WHERE "id" = $1', [
+      id,
+    ]);
     const user = result.rows[0];
     if (user) {
       done(null, user);
     } else {
-      done(new Error('User not found'), null);
+      done(new Error("User not found"), null);
     }
   } catch (error) {
     done(error, null);
   }
 });
-
-
 
 app.set("port", process.env.PORT || 3000);
 app.set("view engine", "ejs");

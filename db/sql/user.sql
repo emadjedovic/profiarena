@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS "User" CASCADE;
+
 CREATE TABLE "User" (
     "id" SERIAL PRIMARY KEY,
     "role_id" INTEGER NOT NULL REFERENCES "Role"("id") ON DELETE CASCADE,
@@ -11,11 +12,13 @@ CREATE TABLE "User" (
     "address" TEXT,
     "date_of_birth" DATE,
     "about" TEXT,
-    "education" TEXT,
-    "skills" TEXT,
-    "languages" TEXT,
-    "socials" TEXT,
-    "cv" VARCHAR(255),
-    "projects" VARCHAR(255),
-    "certificates" VARCHAR(255)
+    "education" TEXT[],       
+    "skills" TEXT[],           
+    "languages" TEXT[],        
+    "socials" TEXT[],         
+    "projects" TEXT[],        
+    "cv" VARCHAR(255),        
+    "certificates" VARCHAR(255)[],
+    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );

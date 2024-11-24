@@ -24,37 +24,33 @@
           >
         </li>
 
-        <% if (loggedIn) { %>
-        <!-- Profile Link -->
-        <li class="nav-item">
-          <a
-            class="nav-link <%= currentPath === '/profile' ? 'active text-decoration-underline' : '' %>"
-            href="/profile"
-            >Profile</a
-          >
-        </li>
-        <% } %>
-
         <!-- HR ONLY -->
         <% if (loggedIn && currentUser.role_id === 1) { %>
+          <li class="nav-item">
+            <a
+              class="nav-link <%= currentPath === '/hr/profile' ? 'active text-decoration-underline' : '' %>"
+              href="/hr/profile"
+              >Profile</a
+            >
+          </li>
         <li class="nav-item">
           <a
-            class="nav-link <%= currentPath === '/my-job-postings' ? 'active text-decoration-underline' : '' %>"
-            href="/my-job-postings"
+            class="nav-link <%= currentPath === '/hr/my-job-postings' ? 'active text-decoration-underline' : '' %>"
+            href="/hr/my-job-postings"
             >My Job Postings</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link <%= currentPath === '/talents' ? 'active text-decoration-underline' : '' %>"
-            href="/talents"
-            >Talents</a
           >
         </li>
         <% } %>
 
         <!-- TALENTS ONLY -->
-        <% if (loggedIn && currentUser.role_id === 1) { %> <% } %>
+        <% if (loggedIn && currentUser.role_id === 2) { %>
+          <li class="nav-item">
+            <a
+              class="nav-link <%= currentPath === '/talent/profile' ? 'active text-decoration-underline' : '' %>"
+              href="/talent/profile"
+              >Profile</a
+            >
+          </li> <% } %>
       </ul>
 
       <!-- Login/Logout section -->

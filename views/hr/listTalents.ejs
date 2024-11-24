@@ -9,7 +9,7 @@
   <tbody>
     <% talents.forEach(talent => { %>
     <tr>
-      <td><a href="<%= `/${talent.id}` %>"><%= talent.first_name %> <%= talent.last_name %></a></td>
+      <td><a href="<%= `/hr/talents/${talent.id}` %>"><%= talent.first_name %> <%= talent.last_name %></a></td>
       <td><%= talent.email %></td>
     </tr>
     <% }); %>

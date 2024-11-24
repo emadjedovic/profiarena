@@ -9,6 +9,6 @@ CREATE TABLE "Application" (
     "rejected_at" TIMESTAMP,
     "cv" VARCHAR(255),
     "cover_letter" VARCHAR(255),
-    "projects" VARCHAR(255),
-    "certificates" VARCHAR(255)
+    "projects" TEXT[],
+    "certificates" VARCHAR(255)[]
 );

@@ -16,15 +16,6 @@
     <td><%= currentUser.phone %></td>
   </tr>
 
-  
-  <% if (currentUser.role_id === 1) { %>
-    <!-- HR -->
-  <tr>
-    <th>Company Name</th>
-    <td><%= currentUser.company_name || "N/A" %></td>
-  </tr>
-  <% } %> <% if (currentUser.role_id === 2) { %>
-  <!-- Talent -->
   <tr>
     <th>Address</th>
     <td><%= currentUser.address || "N/A" %></td>
@@ -65,10 +56,9 @@
     <th>Certificates</th>
     <td><%= currentUser.certificates || "N/A" %></td>
   </tr>
-  <% } %>
 </table>
 
-<a href="<%= `/${currentUser.id}/edit` %>" class="btn btn-light mt-1"
+<a href="<%= `/talent/${currentUser.id}/edit` %>" class="btn btn-light mt-1"
   >Edit Your Info</a
 >
 

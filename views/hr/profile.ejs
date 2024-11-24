@@ -1,0 +1,33 @@
+<h2>
+  <div><%= currentUser.first_name %> <%= currentUser.last_name %></div>
+</h2>
+
+<table class="table mt-4 mb-5">
+  <tr>
+    <th>Email</th>
+    <td><%= currentUser.email %></td>
+  </tr>
+  <tr>
+    <th>Phone</th>
+    <td><%= currentUser.phone %></td>
+  </tr>
+  <tr>
+    <th>Company Name</th>
+    <td><%= currentUser.company_name || "N/A" %></td>
+  </tr>
+</table>
+
+<a href="<%= `/hr/${currentUser.id}/edit` %>" class="btn btn-light mt-1"
+  >Edit Your Info</a
+>
+
+<div class="mt-4">
+  <div>
+    <a
+      href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
+      onclick="return confirm('Are you sure you want to delete your account?')"
+      class="btn btn-danger mt-1"
+      >Delete Account</a
+    >
+  </div>
+</div>

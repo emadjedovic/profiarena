@@ -34,7 +34,7 @@
         </ul>
       </div>
       <div class="card-footer text-muted text-center">
-        <form method="POST" action="/toggle-archive-job/<%= jobPosting.id %>" class="d-inline">
+        <form method="POST" action="/hr/toggle-archive-job/<%= jobPosting.id %>" class="d-inline">
           <% if (jobPosting.is_archived) { %>
             <button type="submit" class="btn btn-success" name="archived" value="false">Activate</button>
           <% } else { %>

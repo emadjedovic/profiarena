@@ -1,12 +1,18 @@
 const router = require("express").Router()
 
 const errorRoutes = require("./errorRoutes")
-const userRoutes = require("./userRoutes")
+const talentRoutes = require("./talentRoutes")
 const hrRoutes = require("./hrRoutes")
+const userRoutes = require("./userRoutes")
 
 // order matters
-router.use("/", hrRoutes);
+router.use("/hr", hrRoutes);
+router.use("/talent", talentRoutes);
 router.use("/", userRoutes);
 router.use("/", errorRoutes);
+
+router.get("/thanks", (req, res) => {
+    res.render("thanks");
+  });
 
 module.exports = router;

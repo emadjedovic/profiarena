@@ -1,8 +1,11 @@
 <h2 class="mb-4">My Job Postings</h2>
 
+<!-- Include the create job posting modal -->
+<%- include('../partials/createJobModal') %>
+
 <!-- Search and Filter Form -->
 <div class="mb-3">
-  <form action="/my-job-postings" method="GET" class="form-inline">
+  <form action="/hr/my-job-postings" method="GET" class="form-inline">
     <!-- Search Bar -->
     <input 
       type="text" 

@@ -14,7 +14,6 @@ const getUserParams = (body) => {
     email: body.email,
     phone: body.phone,
     role_id: parseInt(body.role_id, 10),
-    company_name: body.company_name,
   };
 };
 
@@ -41,7 +40,6 @@ const register = async (req, res, next) => {
         userParams.password,
         userParams.phone,
         userParams.role_id,
-        userParams.company_name,
       ]
     );
 
@@ -70,49 +68,6 @@ const register = async (req, res, next) => {
   }
 };
 
-// Fetch a user by ID
-const fetchUser = async (req, res, next) => {
-  const userId = req.params.id;
-
-  try {
-    const result = await client.query(userQueries.getUserById, [userId]); // Use the query from queries.js
-    res.locals.user = result.rows[0];
-    res.render("profile");
-  } catch (error) {
-    console.log(`Error fetching user by ID: ${error.message}`);
-    return next(error); 
-  }
-};
-
-// Update a user
-const updateUser = async (req, res, next) => {
-  const userId = req.params.id;
-
-  const { first_name, last_name, email, company_name } = req.body;
-
-  if (!first_name || !last_name || !email) {
-    req.flash("error", "First name, last name, and email are required!");
-    return res.redirect(`/users/${userId}/edit`);
-  }
-
-  try {
-    await client.query(userQueries.updateUser, [
-      first_name,
-      last_name,
-      email,
-      company_name,
-      userId,
-    ]); // Use the query from queries.js
-
-    req.flash("success", "User updated successfully!");
-    res.redirect(`/profile`);
-  } catch (error) {
-    console.log(`Error updating user by ID: ${error.message}`);
-    req.flash("error", `Failed to update user because: ${error.message}`);
-    return next(error);
-  }
-};
-
 // Delete a user
 const deleteUser = async (req, res, next) => {
   const userId = req.params.id;
@@ -120,25 +75,18 @@ const deleteUser = async (req, res, next) => {
   try {
     await client.query(userQueries.deleteUser, [userId]); // Use the query from queries.js
 
-    req.flash("success", "User deleted successfully!");
-    res.redirect("/");
+    req.logout((err) => {
+      if (err) {
+        console.log(`Error logging out user after deletion: ${err.message}`);
+        return next(err);
+      }
+
+      req.flash("success", "User deleted successfully!");
+      res.redirect("/login");
+    });
   } catch (error) {
     console.log(`Error deleting user: ${error.message}`);
     req.flash("error", `Failed to delete user because: ${error.message}`);
-    return next(error);
-  }
-};
-
-// Render the edit user page
-const renderEditUser = async (req, res, next) => {
-  const userId = req.params.id;
-
-  try {
-    const result = await client.query(userQueries.getUserById, [userId]);
-    const user = result.rows[0];
-    res.render("editUser", { user });
-  } catch (error) {
-    console.log(`Error fetching user by ID: ${error.message}`);
     return next(error);
   }
 };
@@ -163,18 +111,17 @@ const authenticate = (req, res, next) => {
       }
       const sessionData = req.session;
       const passportData = req.session.passport;
-    
+
       const signedToken = jsonWebToken.sign(
         { data: user.id },
         "secret_encoding_passphrase",
         { expiresIn: "1d" }
       );
-    
+
       req.session.token = signedToken;
       req.flash("success", "Logged in!");
       return res.redirect("/home");
     });
-    
   })(req, res, next);
 };
 
@@ -222,11 +169,8 @@ const verifyJWT = async (req, res, next) => {
 module.exports = {
   getUserParams,
   register,
-  fetchUser,
-  updateUser,
   deleteUser,
   authenticate,
   logout,
-  renderEditUser,
   verifyJWT,
 };

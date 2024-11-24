@@ -1,5 +1,10 @@
 const { client } = require("../db/connect"); // Make sure to import client
-const { userQueries, jobPostingQueries } = require("../db/queries"); // Import the query file
+const {
+  userQueries,
+  jobPostingQueries,
+  talentQueries,
+  hrQueries,
+} = require("../db/queries"); // Import the query file
 
 // Create Job Posting
 const createJobPosting = async (req, res, next) => {
@@ -41,7 +46,7 @@ const createJobPosting = async (req, res, next) => {
 // Fetch all users
 const fetchTalents = async (req, res, next) => {
   try {
-    const result = await client.query(userQueries.getAllTalents);
+    const result = await client.query(talentQueries.getAllTalents);
     res.render("hr/listTalents", { talents: result.rows });
   } catch (error) {
     console.log(`Error fetching talents: ${error.message}`);
@@ -52,7 +57,14 @@ const fetchTalents = async (req, res, next) => {
 // filters and search bar included
 const fetchJobPostingsByHrId = async (req, res, next) => {
   try {
-    const { search, archive, cv_field, projects_field, certificates_field, cover_letter_field } = req.query;
+    const {
+      search,
+      archive,
+      cv_field,
+      projects_field,
+      certificates_field,
+      cover_letter_field,
+    } = req.query;
 
     // Base query to fetch job postings
     let query = `
@@ -76,12 +88,12 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
     }
 
     // Add archive condition
-    if (archive !== undefined && archive !== '') {
-      if (archive === 'true' || archive === 'false') {
+    if (archive !== undefined && archive !== "") {
+      if (archive === "true" || archive === "false") {
         query += `
           AND "is_archived" = $${params.length + 1}
         `;
-        params.push(archive === 'true');
+        params.push(archive === "true");
       }
     }
 
@@ -113,12 +125,12 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
     // Render the job postings page with the results
     res.render("hr/jobsByHrId", {
       jobPostings: result.rows,
-      searchQuery: search || '',
-      archiveFilter: archive || '',
-      cvFieldChecked: cv_field === 'on',
-      projectsFieldChecked: projects_field === 'on',
-      certificatesFieldChecked: certificates_field === 'on',
-      coverLetterFieldChecked: cover_letter_field === 'on',
+      searchQuery: search || "",
+      archiveFilter: archive || "",
+      cvFieldChecked: cv_field === "on",
+      projectsFieldChecked: projects_field === "on",
+      certificatesFieldChecked: certificates_field === "on",
+      coverLetterFieldChecked: cover_letter_field === "on",
     });
   } catch (error) {
     console.log(`Error fetching job postings by HR ID: ${error.message}`);
@@ -126,11 +138,11 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
   }
 };
 
-
-
 const fetchJobPostingById = async (req, res, next) => {
   try {
-    const result = await client.query(jobPostingQueries.getJobPostingById, [req.params.id]);
+    const result = await client.query(jobPostingQueries.getJobPostingById, [
+      req.params.id,
+    ]);
     res.render("hr/jobPosting", { jobPosting: result.rows[0] });
   } catch (error) {
     console.log(`Error fetching job posting by ID: ${error.message}`);
@@ -150,19 +162,59 @@ const toggleArchiveJob = async (req, res, next) => {
       `UPDATE "Job_Posting" SET "is_archived" = $1 WHERE "id" = $2`,
       [!isArchived, jobId]
     );
-    res.redirect('back');
+    res.redirect("back");
   } catch (error) {
     console.error(`Error toggling archive status: ${error.message}`);
     next(error);
   }
 };
 
+// Update a user
+const updateHR = async (req, res, next) => {
+  const userId = req.params.id;
 
+  const { first_name, last_name, email, company_name } = req.body;
+  console.log("req.body: ", req.body);
+
+  if (!first_name || !last_name || !email) {
+    req.flash("error", "First name, last name, and email are required!");
+    return res.redirect(`/hr/${userId}/edit`);
+  }
+
+  try {
+    await client.query(hrQueries.updateHR, [
+      first_name,
+      last_name,
+      email,
+      company_name,
+      userId,
+    ]); // Use the query from queries.js
+
+    req.flash("success", "User updated successfully!");
+    res.redirect(`/hr/profile`);
+  } catch (error) {
+    console.log(`Error updating user by ID: ${error.message}`);
+    req.flash("error", `Failed to update user because: ${error.message}`);
+    return next(error);
+  }
+};
+
+const fetchTalentById = async (req, res, next) => {
+  try {
+    const result = await client.query(talentQueries.getTalentById);
+    res.render("hr/talent", { talent: result.rows[0] });
+  } catch (error) {
+    console.log(`Error fetching talent: ${error.message}`);
+    next(error);
+  }
+}
 
 module.exports = {
   createJobPosting,
   fetchTalents,
   fetchJobPostingsByHrId,
   fetchJobPostingById,
-  toggleArchiveJob
+  toggleArchiveJob,
+  updateHR,
+  fetchTalentById
 };

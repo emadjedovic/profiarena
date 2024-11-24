@@ -1,0 +1,121 @@
+<div class="container" style="width: 400px">
+  <form method="POST" class="form text-center" action="<%= `/talent/${currentUser.id}/update?_method=PUT` %>" enctype="multipart/form-data">
+    <h2>Edit Your Info</h2>
+    
+    <input
+      type="text"
+      class="form-control m-3"
+      name="first_name"
+      id="inputfirst_name"
+      value="<%= user.first_name %>"
+      placeholder="First"
+      autofocus
+    />
+    <input
+      type="text"
+      class="form-control m-3"
+      name="last_name"
+      id="inputlast_name"
+      value="<%= user.last_name %>"
+      placeholder="Last"
+    />
+    
+    <input
+      type="email"
+      class="form-control m-3"
+      name="email"
+      id="inputemail"
+      value="<%= user.email %>"
+      placeholder="Email"
+      required
+    />
+
+    <input
+      type="text"
+      class="form-control m-3"
+      name="phone"
+      id="inputphone"
+      value="<%= user.phone || '' %>"
+      placeholder="Phone Number"
+    />
+  
+    <input
+      type="text"
+      class="form-control m-3"
+      name="address"
+      id="inputaddress"
+      value="<%= user.address || '' %>"
+      placeholder="Address"
+    />
+
+    <input
+      type="date"
+      class="form-control m-3"
+      name="date_of_birth"
+      id="inputdate_of_birth"
+      value="<%= user.date_of_birth || '' %>"
+      placeholder="Date of Birth"
+    />
+
+    <textarea
+      class="form-control m-3"
+      name="about"
+      id="inputabout"
+      placeholder="About"
+    ><%= user.about || '' %></textarea>
+
+    <textarea
+      class="form-control m-3"
+      name="education"
+      id="inputeducation"
+      placeholder="Education (comma separated)"
+    ><%= user.education ? user.education.join(', ') : '' %></textarea>
+
+    <textarea
+      class="form-control m-3"
+      name="skills"
+      id="inputskills"
+      placeholder="Skills (comma separated)"
+    ><%= user.skills ? user.skills.join(', ') : '' %></textarea>
+
+    <textarea
+      class="form-control m-3"
+      name="languages"
+      id="inputlanguages"
+      placeholder="Languages (comma separated)"
+    ><%= user.languages ? user.languages.join(', ') : '' %></textarea>
+
+    <textarea
+      class="form-control m-3"
+      name="socials"
+      id="inputsocials"
+      placeholder="Social Links (comma separated)"
+    ><%= user.socials ? user.socials.join(', ') : '' %></textarea>
+
+    <input
+      type="file"
+      class="form-control m-3"
+      name="cv"
+      id="inputcv"
+      placeholder="Upload CV"
+    />
+
+    <textarea
+      class="form-control m-3"
+      name="projects"
+      id="inputprojects"
+      placeholder="Projects"
+    ><%= user.projects || '' %></textarea>
+
+    <input
+      type="file"
+      class="form-control m-3"
+      name="certificates"
+      id="inputcertificates"
+      placeholder="Upload Certificates"
+      multiple
+    />
+    
+    <button type="submit" class="btn btn-outline-dark m-2">UPDATE</button>
+  </form>
+</div>
