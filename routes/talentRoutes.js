@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { updateTalent } = require("../controllers/talentsController");
+const { updateTalent, deleteCV, deleteCertificate, deleteSocial } = require("../controllers/talentsController");
 const multer = require("multer");
 
 // Set the storage engine and destination for uploaded files
@@ -13,6 +13,8 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+
 
 router.get("/profile", (req, res) => {
   res.render("talent/profile");
@@ -31,5 +33,9 @@ router.put(
   ]),
   updateTalent
 );
+
+router.delete('/:id/delete-cv', deleteCV);
+router.delete('/:id/delete-certificate', deleteCertificate);
+router.delete('/:id/delete-social', deleteSocial);
 
 module.exports = router;

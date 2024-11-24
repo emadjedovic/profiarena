@@ -146,6 +146,9 @@
           id="inputcv"
           placeholder="Upload CV"
         />
+        <% if (currentUser.cv) { %>
+          <small class="text-muted">Current CV: <a href="/<%= currentUser.cv %>" target="_blank">View CV</a></small>
+        <% } %>
       </div>
     </div>
 
