@@ -37,7 +37,7 @@ Table Job_Posting {
     city                    varchar(50) [not null]
     street_address          varchar(100)
     application_deadline    date [not null]
-    is_active               boolean // default 1 - active
+    is_archived              boolean // default 0 - not archived
     cv_field                boolean // default 0 - don't include
     cover_letter_field      boolean // default 0 - don't include
     projects_field          boolean // default 0 - don't include

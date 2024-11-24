@@ -9,7 +9,26 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const favicon = require('serve-favicon');
 const path = require('path');
-const { client } = require("./db/db_connect"); // Import the client from db_connect.js
+
+const { connect, client } = require('./db/connect');
+const schema = require('./db/schema');
+
+const setupDatabase = async () => {
+  await connect();
+  /*
+  await schema.createSessionTable();
+  await schema.createLookupTables();
+  await schema.createUserTable();
+  */
+  // await schema.createJobPostingTable();
+  // await schema.createApplicationTable();
+  // await schema.createApplicationScoreTable();
+};
+
+setupDatabase();
+
+// Import connect-pg-simple
+const pgSession = require("connect-pg-simple")(expressSession);
 
 const app = express();
 
@@ -27,14 +46,21 @@ app.use(
   })
 );
 app.use(cookieParser("secret_passcode"));
+
+// Configure session with connect-pg-simple
 app.use(
   expressSession({
+    store: new pgSession({
+      pool: client, // Use your PostgreSQL client
+      tableName: "session", // Optional: default is "session"
+    }),
     secret: "secret_passcode",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 600000 },
+    cookie: { maxAge: 600000 }, // Adjust session expiration time as needed
   })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(connectFlash());
@@ -61,8 +87,7 @@ const checkLoginStatus = (req, res, next) => {
   }
 };
 
-
-app.use(checkLoginStatus); // Apply this middleware to all routes
+app.use(checkLoginStatus);
 
 // PASSPORT STRATEGY SETUP
 passport.use(

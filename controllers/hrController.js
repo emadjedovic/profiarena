@@ -1,4 +1,4 @@
-const { client } = require("../db/db_connect"); // Make sure to import client
+const { client } = require("../db/connect"); // Make sure to import client
 const { userQueries, jobPostingQueries } = require("../db/queries"); // Import the query file
 
 // Create Job Posting
@@ -62,16 +62,38 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
 const fetchJobPostingById = async (req, res, next) => {
   try {
     const result = await client.query(jobPostingQueries.getJobPostingById, [req.params.id]);
-    res.render("hr/jobPosting", { jobPosting: result.rows });
+    res.render("hr/jobPosting", { jobPosting: result.rows[0] });
   } catch (error) {
     console.log(`Error fetching job posting by ID: ${error.message}`);
     next(error);
   }
 };
 
+const toggleArchiveJob = async (req, res, next) => {
+  try {
+    const jobId = req.params.id;
+    const result = await client.query(
+      `SELECT "is_archived" FROM "Job_Posting" WHERE "id" = $1`,
+      [jobId]
+    );
+    const isArchived = result.rows[0].is_archived;
+    await client.query(
+      `UPDATE "Job_Posting" SET "is_archived" = $1 WHERE "id" = $2`,
+      [!isArchived, jobId]
+    );
+    res.redirect('back');
+  } catch (error) {
+    console.error(`Error toggling archive status: ${error.message}`);
+    next(error);
+  }
+};
+
+
+
 module.exports = {
   createJobPosting,
   fetchTalents,
   fetchJobPostingsByHrId,
-  fetchJobPostingById
+  fetchJobPostingById,
+  toggleArchiveJob
 };

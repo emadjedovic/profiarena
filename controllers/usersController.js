@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jsonWebToken = require("jsonwebtoken");
-const { client } = require("../db/db_connect"); // Import the client from db_connect.js
+const { client } = require("../db/connect"); // Import the client from connect.js
 const { StatusCodes } = require("http-status-codes");
 const passport = require("passport");
 const { userQueries } = require("../db/queries"); // Import the query file
