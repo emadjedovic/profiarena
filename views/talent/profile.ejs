@@ -22,7 +22,8 @@
   </tr>
   <tr>
     <th>Date of Birth</th>
-    <td><%= currentUser.date_of_birth || "N/A" %></td>
+    <td><%= formatDate(currentUser.date_of_birth) %>
+  </td>
   </tr>
   <tr>
     <th>About</th>
@@ -55,6 +56,16 @@
   <tr>
     <th>Certificates</th>
     <td><%= currentUser.certificates || "N/A" %></td>
+  </tr>
+  <tr>
+    <th>Created At</th>
+    <td>
+      <% if (currentUser.created_at) { %>
+          <%= formatDate(currentUser.created_at) %>
+      <% } else { %>
+          N/A
+      <% } %>
+  </td>
   </tr>
 </table>
 

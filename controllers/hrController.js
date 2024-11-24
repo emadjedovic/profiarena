@@ -1,10 +1,5 @@
 const { client } = require("../db/connect"); // Make sure to import client
-const {
-  userQueries,
-  jobPostingQueries,
-  talentQueries,
-  hrQueries,
-} = require("../db/queries"); // Import the query file
+const queries = require("../db/queries"); // Import the query file
 
 // Create Job Posting
 const createJobPosting = async (req, res, next) => {
@@ -22,7 +17,7 @@ const createJobPosting = async (req, res, next) => {
 
   // Insert job posting into the database
   try {
-    await client.query(jobPostingQueries.createJobPosting, [
+    await client.query(queries.createJobPostingSQL, [
       title,
       description,
       city,
@@ -46,7 +41,7 @@ const createJobPosting = async (req, res, next) => {
 // Fetch all users
 const fetchTalents = async (req, res, next) => {
   try {
-    const result = await client.query(talentQueries.getAllTalents);
+    const result = await client.query(queries.getAllTalentsSQL);
     res.render("hr/listTalents", { talents: result.rows });
   } catch (error) {
     console.log(`Error fetching talents: ${error.message}`);
@@ -140,7 +135,7 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
 
 const fetchJobPostingById = async (req, res, next) => {
   try {
-    const result = await client.query(jobPostingQueries.getJobPostingById, [
+    const result = await client.query(queries.getJobPostingByIdSQL, [
       req.params.id,
     ]);
     res.render("hr/jobPosting", { jobPosting: result.rows[0] });
@@ -182,7 +177,7 @@ const updateHR = async (req, res, next) => {
   }
 
   try {
-    await client.query(hrQueries.updateHR, [
+    await client.query(queries.updateHRSQL, [
       first_name,
       last_name,
       email,
@@ -201,7 +196,7 @@ const updateHR = async (req, res, next) => {
 
 const fetchTalentById = async (req, res, next) => {
   try {
-    const result = await client.query(talentQueries.getTalentById);
+    const result = await client.query(queries.getTalentByIdSQL);
     res.render("hr/talent", { talent: result.rows[0] });
   } catch (error) {
     console.log(`Error fetching talent: ${error.message}`);
