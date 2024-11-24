@@ -15,6 +15,16 @@
     <th>Company Name</th>
     <td><%= currentUser.company_name || "N/A" %></td>
   </tr>
+  <tr>
+    <th>Created At</th>
+    <td>
+      <% if (currentUser.created_at) { %>
+          <%= formatDate(currentUser.created_at) %>
+      <% } else { %>
+          N/A
+      <% } %>
+  </td>
+  </tr>
 </table>
 
 <a href="<%= `/hr/${currentUser.id}/edit` %>" class="btn btn-light mt-1"

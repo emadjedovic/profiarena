@@ -9,6 +9,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const favicon = require("serve-favicon");
 const path = require("path");
+const { formatDate } = require('./utils/dateFormating');
 
 const { connect, client } = require("./db/connect");
 const schema = require("./db/schema");
@@ -71,6 +72,7 @@ app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.token = req.session.token;
   res.locals.currentPath = req.path;
+  res.locals.formatDate = formatDate;
   next();
 });
 

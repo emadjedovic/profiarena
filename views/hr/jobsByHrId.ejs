@@ -1,79 +1,67 @@
-<h2 class="mb-4">My Job Postings</h2>
-
 <!-- Include the create job posting modal -->
 <%- include('../partials/createJobModal') %>
+<hr>
 
-<!-- Search and Filter Form -->
-<div class="mb-3">
-  <form action="/hr/my-job-postings" method="GET" class="form-inline">
-    <!-- Search Bar -->
-    <input 
-      type="text" 
-      class="form-control mr-2" 
-      name="search" 
-      placeholder="Search by title, company, city, description, or address"
-      value="<%= searchQuery || '' %>"
-    >
-
-   <!-- Archive Filter as Radio Buttons -->
-   <div class="form-check form-check-inline">
-    <input 
-      class="form-check-input" 
-      type="radio" 
-      name="archive" 
-      id="archiveAll" 
-      value="" 
-      <%= archiveFilter === '' ? 'checked' : '' %>
-    >
-    <label class="form-check-label" for="archiveAll">All</label>
-  </div>
-  <div class="form-check form-check-inline">
-    <input 
-      class="form-check-input" 
-      type="radio" 
-      name="archive" 
-      id="archiveArchived" 
-      value="true" 
-      <%= archiveFilter === 'true' ? 'checked' : '' %>
-    >
-    <label class="form-check-label" for="archiveArchived">Archived</label>
-  </div>
-  <div class="form-check form-check-inline">
-    <input 
-      class="form-check-input" 
-      type="radio" 
-      name="archive" 
-      id="archiveActive" 
-      value="false" 
-      <%= archiveFilter === 'false' ? 'checked' : '' %>
-    >
-    <label class="form-check-label" for="archiveActive">Active</label>
+<!-- Search Bar and Filter -->
+<div class="row mb-4">
+  <div class="col">
+    <form action="/hr/my-job-postings" method="GET" class="form-inline">
+      <!-- Search Bar -->
+      <input type="text" class="form-control mr-2 w-75" name="search"
+        placeholder="Search by title, company, city, description, or address" value="<%= searchQuery || '' %>" />
   </div>
 
-    <!-- Additional Filters -->
-    <div class="form-check">
+  <div class="col">
+    <!-- Filter Button (Submit) -->
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </div>
+</div>
+
+<!-- Filters Section -->
+<div class="row">
+  <div class="col-md-4">
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="archive" id="archiveAll" value="" <%= archiveFilter === '' ? 'checked' : '' %>>
+      <label class="form-check-label" for="archiveAll">All</label>
+    </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="archive" id="archiveArchived" value="true" <%= archiveFilter === 'true' ? 'checked' : '' %>>
+      <label class="form-check-label" for="archiveArchived">Archived</label>
+    </div>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="radio" name="archive" id="archiveActive" value="false" <%= archiveFilter === 'false' ? 'checked' : '' %>>
+      <label class="form-check-label" for="archiveActive">Active</label>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="form-check mb-2">
       <input class="form-check-input" type="checkbox" name="cv_field" <%= cvFieldChecked ? 'checked' : '' %>>
       <label class="form-check-label" for="cv_field">Includes CV</label>
     </div>
-    <div class="form-check">
+    <div class="form-check mb-2">
       <input class="form-check-input" type="checkbox" name="projects_field" <%= projectsFieldChecked ? 'checked' : '' %>>
       <label class="form-check-label" for="projects_field">Includes Projects</label>
     </div>
-    <div class="form-check">
+  </div>
+
+  <div class="col-md-4">
+    <div class="form-check mb-2">
       <input class="form-check-input" type="checkbox" name="certificates_field" <%= certificatesFieldChecked ? 'checked' : '' %>>
       <label class="form-check-label" for="certificates_field">Includes Certificates</label>
     </div>
-    <div class="form-check">
+    <div class="form-check mb-2">
       <input class="form-check-input" type="checkbox" name="cover_letter_field" <%= coverLetterFieldChecked ? 'checked' : '' %>>
       <label class="form-check-label" for="cover_letter_field">Includes Cover Letter</label>
     </div>
-
-    <button type="submit" class="btn btn-primary">Filter</button>
-  </form>
+  </div>
 </div>
 
+<!-- Close the form here -->
+</form>
+
 <!-- Job Postings Table -->
-<table class="table table-hover table-bordered">
+<table class="table table-striped table-hover table-bordered">
   <thead class="thead-dark">
     <tr>
       <th scope="col">Title</th>
@@ -87,25 +75,20 @@
     <% if (jobPostings.length > 0) { %>
       <% jobPostings.forEach(jobPosting => { %>
         <tr>
-          <!-- Job Title with clickable link -->
           <td>
-            <a href="/job-posting/<%= jobPosting.id %>" class="text-primary font-weight-bold">
+            <a href="/hr/job-posting/<%= jobPosting.id %>" class="text-primary font-weight-bold">
               <%= jobPosting.title %>
             </a>
           </td>
-          <!-- Company Name -->
           <td><%= jobPosting.company %></td>
-          <!-- City -->
           <td><%= jobPosting.city %></td>
-          <!-- Application Deadline -->
           <td><%= new Date(jobPosting.application_deadline).toLocaleDateString() %></td>
-          <!-- Archive Checkbox -->
           <td class="text-center">
-            <form method="POST" action="/toggle-archive-job/<%= jobPosting.id %>">
+            <form method="POST" action="/hr/toggle-archive-job/<%= jobPosting.id %>">
               <input 
                 type="checkbox" 
                 name="archived" 
-                onchange="this.form.submit()"
+                onchange="this.form.submit()" 
                 <%= jobPosting.is_archived ? 'checked' : '' %>
               >
             </form>

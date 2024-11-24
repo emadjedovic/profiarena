@@ -35,11 +35,11 @@ const createJobPosting = async (req, res, next) => {
       req.user.id,
     ]);
     req.flash("success", "Job posting created successfully!");
-    res.redirect("/home"); // Redirect to a success page or the home page
+    res.redirect("back"); // Redirect to a success page or the home page
   } catch (error) {
     console.log(`Error creating job posting: ${error.message}`);
     req.flash("error", "Failed to create job posting.");
-    res.redirect("/home"); // Redirect back to home or another page on failure
+    res.redirect("back"); // Redirect back to home or another page on failure
   }
 };
 
