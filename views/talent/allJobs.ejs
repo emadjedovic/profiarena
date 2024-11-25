@@ -51,14 +51,16 @@
           <td><%= job.company %></td>
           <td><%= job.city %></td>
           <td><%= new Date(job.application_deadline).toLocaleDateString() %></td>
+
           <td>
-            <!-- Apply Button triggers Modal -->
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job-id="<%= job.id %>">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job='<%= JSON.stringify(job) %>'>
               Apply for Job
             </button>
-
           </td>
+
+
         </tr>
+
         <!-- Include the Apply Modal Partial for each job -->
         <%- include('../partials/applyJobModal', {job: job}) %>
         <% }); %>
