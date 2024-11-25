@@ -1,6 +1,7 @@
 const { client } = require("../db/connect"); // Make sure to import client
 const queries = require("../db/queries"); // Import the query file
 const multer = require("multer"); // If you haven't imported multer yet
+const { getDateRange } = require('../utils/deadline'); // Import helper function
 
 const updateTalent = async (req, res, next) => {
   const userId = req.params.id;
@@ -193,36 +194,59 @@ const deleteSocial = async (req, res, next) => {
 // include search (filter)
 const fetchAllJobs = async (req, res, next) => {
   try {
-    const { search } = req.query;
+    const { search, deadlineRange } = req.query;
 
     let query = `SELECT * FROM "Job_Posting"`;
-    // Add search condition (search in title, company, city, description, deadline)
-    // add deadline search
-    let params = [];
+    const params = [];
+    let whereAdded = false; // Track if WHERE clause is already added
+
+    // Handle search
     if (search) {
       query += `
         WHERE (
-          "title" ILIKE $1 OR
-          "company" ILIKE $1 OR
-          "city" ILIKE $1 OR
-          "description" ILIKE $1
+          "title" ILIKE $${params.length + 1} OR
+          "company" ILIKE $${params.length + 1} OR
+          "city" ILIKE $${params.length + 1} OR
+          "description" ILIKE $${params.length + 1}
         )
       `;
       params.push(`%${search}%`);
+      whereAdded = true; // Mark that WHERE has been added
+    }
+
+    // Handle predefined date range filtering
+    if (deadlineRange) {
+      const { startDate, endDate } = getDateRange(deadlineRange);
+
+      if (startDate && endDate) {
+        query += whereAdded
+          ? ` AND "application_deadline" BETWEEN $${params.length + 1} AND $${params.length + 2}`
+          : ` WHERE "application_deadline" BETWEEN $${params.length + 1} AND $${params.length + 2}`;
+        params.push(startDate, endDate);
+      } else if (!startDate && endDate) {
+        // Handle "past" case where only endDate exists
+        query += whereAdded
+          ? ` AND "application_deadline" < $${params.length + 1}`
+          : ` WHERE "application_deadline" < $${params.length + 1}`;
+        params.push(endDate);
+      }
     }
 
     // Execute the query
     const result = await client.query(query, params);
 
-    res.render("talent/allJobs", {
+    // Render the response
+    res.render('talent/allJobs', {
       allJobs: result.rows,
-      searchQuery: search || "",
+      searchQuery: search || '',
+      deadlineRange: deadlineRange || '',
     });
   } catch (error) {
-    console.log(`Error fetching all jobs: ${error.message}`);
+    console.error(`Error fetching all jobs: ${error.message}`);
     next(error);
   }
 };
+
 
 const fetchApplicationsByTalentId = async (req, res, next) => {
   try {
