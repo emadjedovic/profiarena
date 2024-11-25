@@ -62,10 +62,7 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
     } = req.query;
 
     // Base query to fetch job postings
-    let query = `
-      SELECT * FROM "Job_Posting"
-      WHERE "hr_id" = $1
-    `;
+    let query = queries.getJobPostingsByHrIdSQL;
     let params = [req.user.id];
 
     // Add search condition (search in title, company, city, description, street address)
@@ -153,10 +150,7 @@ const toggleArchiveJob = async (req, res, next) => {
       [jobId]
     );
     const isArchived = result.rows[0].is_archived;
-    await client.query(
-      `UPDATE "Job_Posting" SET "is_archived" = $1 WHERE "id" = $2`,
-      [!isArchived, jobId]
-    );
+    await client.query(queries.toggleArchiveJobSQL, [!isArchived, jobId]);
     res.redirect("back");
   } catch (error) {
     console.error(`Error toggling archive status: ${error.message}`);
@@ -188,7 +182,7 @@ const updateHR = async (req, res, next) => {
     req.flash("success", "User updated successfully!");
     res.redirect(`/hr/profile`);
   } catch (error) {
-    console.log(`Error updating user by ID: ${error.message}`);
+    console.log(`Error updating HR: ${error.message}`);
     req.flash("error", `Failed to update user because: ${error.message}`);
     return next(error);
   }
@@ -202,7 +196,7 @@ const fetchTalentById = async (req, res, next) => {
     console.log(`Error fetching talent: ${error.message}`);
     next(error);
   }
-}
+};
 
 module.exports = {
   createJobPosting,
@@ -211,5 +205,5 @@ module.exports = {
   fetchJobPostingById,
   toggleArchiveJob,
   updateHR,
-  fetchTalentById
+  fetchTalentById,
 };

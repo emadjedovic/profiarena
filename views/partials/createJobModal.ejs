@@ -1,14 +1,8 @@
     <!-- Button to trigger modal -->
-    <button
-      id="createJobBtn"
-      type="button"
-      data-bs-toggle="modal"
-      data-bs-target="#jobModal"
-      class="btn btn-success mb-2"
-    >
+    <button id="createJobBtn" type="button" data-bs-toggle="modal" data-bs-target="#jobModal" class="btn btn-success mb-2">
       Create New Job Posting
     </button>
-  
+
     <!-- Modal Structure -->
     <div id="jobModal" class="modal fade" role="dialog">
       <div class="modal-dialog">
@@ -21,19 +15,19 @@
             <form id="jobPostingForm" method="POST" action="/hr/create-job-posting">
               <label for="title">Job Title:</label>
               <input type="text" id="title" name="title" required class="form-control">
-  
+
               <label for="description">Job Description:</label>
               <textarea id="description" name="description" required class="form-control"></textarea>
-  
+
               <label for="city">City:</label>
               <input type="text" id="city" name="city" required class="form-control">
-  
+
               <label for="application_deadline">Application Deadline:</label>
               <input type="date" id="application_deadline" name="application_deadline" required class="form-control">
-  
+
               <label for="company">Company:</label>
               <input type="text" id="company" name="company" required class="form-control">
-  
+
               <!-- Checkboxes for field options -->
               <div>
                 <label>
@@ -49,7 +43,7 @@
                   <input type="checkbox" name="certificates_field" value="1"> Certificates
                 </label><br>
               </div>
-  
+
             </form>
           </div>
           <div class="modal-footer">
@@ -59,4 +53,3 @@
         </div>
       </div>
     </div>
-  

@@ -18,21 +18,14 @@
   <tr>
     <th>Created At</th>
     <td><%= formatDate(currentUser.created_at) %>
-  </td>
+    </td>
   </tr>
 </table>
 
-<a href="<%= `/hr/${currentUser.id}/edit` %>" class="btn btn-light mt-1"
-  >Edit Your Info</a
->
+<a href="<%= `/hr/${currentUser.id}/edit` %>" class="btn btn-light mt-1">Edit Your Info</a>
 
 <div class="mt-4">
   <div>
-    <a
-      href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
-      onclick="return confirm('Are you sure you want to delete your account?')"
-      class="btn btn-danger mt-1"
-      >Delete Account</a
-    >
+    <a href="<%= `/${currentUser.id}/delete?_method=DELETE` %>" onclick="return confirm('Are you sure you want to delete your account?')" class="btn btn-danger mt-1">Delete Account</a>
   </div>
 </div>

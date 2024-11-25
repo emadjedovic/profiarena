@@ -1,44 +1,44 @@
   <div class="container">
     <div class="card shadow">
       <div class="card-header bg-primary text-white">
-        <h1 class="card-title"><%= jobPosting.title %></h1>
+        <h1 class="card-title">Position: <%= jobPosting.title %></h1>
       </div>
       <div class="card-body">
-        <p class="lead"><strong>Company:</strong> <%= jobPosting.company %></p>
+        <p><strong>Company:</strong> <%= jobPosting.company %></p>
         <p><strong>Location:</strong> <%= jobPosting.city %>, <%= jobPosting.street_address || "N/A" %></p>
         <p><strong>Application Deadline:</strong> <%= new Date(jobPosting.application_deadline).toLocaleDateString() %></p>
-        <p><strong>Status:</strong> 
+        <p><strong>Status:</strong>
           <%= jobPosting.is_archived ? "Archived" : "Active" %>
         </p>
         <hr>
         <h4>Job Description</h4>
         <p><%= jobPosting.description %></p>
         <hr>
-        <h5>Additional Requirements</h5>
+        <h4>Requirements</h4>
         <ul>
           <% if (jobPosting.cv_field) { %>
-            <li>Curriculum Vitae (CV)</li>
+          <li>Curriculum Vitae (CV)</li>
           <% } %>
           <% if (jobPosting.cover_letter_field) { %>
-            <li>Cover Letter</li>
+          <li>Cover Letter</li>
           <% } %>
           <% if (jobPosting.projects_field) { %>
-            <li>Portfolio or Projects</li>
+          <li>Portfolio or Projects</li>
           <% } %>
           <% if (jobPosting.certificates_field) { %>
-            <li>Relevant Certificates</li>
+          <li>Relevant Certificates</li>
           <% } %>
           <% if (!jobPosting.cv_field && !jobPosting.cover_letter_field && !jobPosting.projects_field && !jobPosting.certificates_field) { %>
-            <li>No additional documents required.</li>
+          <li>No additional documents required.</li>
           <% } %>
         </ul>
       </div>
       <div class="card-footer text-muted text-center">
         <form method="POST" action="/hr/toggle-archive-job/<%= jobPosting.id %>" class="d-inline">
           <% if (jobPosting.is_archived) { %>
-            <button type="submit" class="btn btn-success" name="archived" value="false">Activate</button>
+          <button type="submit" class="btn btn-success" name="archived" value="false">Activate</button>
           <% } else { %>
-            <button type="submit" class="btn btn-danger" name="archived" value="true">Archive</button>
+          <button type="submit" class="btn btn-danger" name="archived" value="true">Archive</button>
           <% } %>
         </form>
       </div>

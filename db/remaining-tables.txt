@@ -2,7 +2,7 @@ Table Interview_Schedule {
     id                  int [primary key]
     application_id      int [not null, ref: > Applications.id]
     hr_id               int [not null, ref: > User.id]
-    candidate_id        int [not null, ref: > User.id]
+    talent_id        int [not null, ref: > User.id]
     time                timestamp [not null]
 city	varchar(50) [not null]
     street_address             varchar(100) [not null]

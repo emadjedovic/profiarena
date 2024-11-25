@@ -1,9 +1,9 @@
 const { client } = require("../db/connect"); // Make sure to import client
 const queries = require("../db/queries"); // Import the query file
 const multer = require("multer"); // If you haven't imported multer yet
+const { getDateRange } = require("../utils/deadline"); // Import helper function
 
 const updateTalent = async (req, res, next) => {
-  
   const userId = req.params.id;
 
   // Access regular form data
@@ -38,13 +38,13 @@ const updateTalent = async (req, res, next) => {
   const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; // Keep the existing CV if no new file is uploaded
 
   // keep the existing certificates and add the new ones
-  const certificatesPaths = certificatesFiles.length > 0
-  ? [
-      ...(res.locals.currentUser.certificates || []), // Existing certificates
-      ...certificatesFiles.map((file) => file.path),  // New certificates
-    ]
-  : res.locals.currentUser.certificates || [];
-
+  const certificatesPaths =
+    certificatesFiles.length > 0
+      ? [
+          ...(res.locals.currentUser.certificates || []), // Existing certificates
+          ...certificatesFiles.map((file) => file.path), // New certificates
+        ]
+      : res.locals.currentUser.certificates || [];
 
   // Convert string fields to arrays (split by commas and remove extra spaces)
   const parseArray = (field) => {
@@ -79,13 +79,13 @@ const updateTalent = async (req, res, next) => {
     req.flash("success", "User updated successfully!");
     res.redirect(`/talent/profile`);
   } catch (error) {
-    console.log(`Error updating user by ID: ${error.message}`);
+    console.log(`Error updating talent: ${error.message}`);
     req.flash("error", `Failed to update user because: ${error.message}`);
     return next(error);
   }
 };
 
-const fs = require('fs'); // File system module
+const fs = require("fs"); // File system module
 
 // DELETE CV
 const deleteCV = async (req, res, next) => {
@@ -93,7 +93,7 @@ const deleteCV = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query(queries.getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.cv) {
@@ -106,7 +106,7 @@ const deleteCV = async (req, res, next) => {
     if (fs.existsSync(cvPath)) fs.unlinkSync(cvPath);
 
     // Update the database to remove the CV reference
-    await client.query('UPDATE "User" SET cv = NULL WHERE id = $1', [userId]);
+    await client.query(queries.deleteCVSQL, [userId]);
 
     req.flash("success", "CV deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -124,7 +124,7 @@ const deleteCertificate = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query(queries.getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.certificates || !user.certificates.includes(certificatePath)) {
@@ -137,8 +137,13 @@ const deleteCertificate = async (req, res, next) => {
     if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 
     // Update the database to remove the specific certificate
-    const updatedCertificates = user.certificates.filter(cert => cert !== certificatePath);
-    await client.query('UPDATE "User" SET certificates = $1 WHERE id = $2', [updatedCertificates, userId]);
+    const updatedCertificates = user.certificates.filter(
+      (cert) => cert !== certificatePath
+    );
+    await client.query(queries.setCertificatesSQL, [
+      updatedCertificates,
+      userId,
+    ]);
 
     req.flash("success", "Certificate deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -156,7 +161,7 @@ const deleteSocial = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query(queries.getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.socials || !user.socials.includes(socialLink)) {
@@ -165,8 +170,8 @@ const deleteSocial = async (req, res, next) => {
     }
 
     // Update database to remove the specific social link
-    const updatedSocials = user.socials.filter(link => link !== socialLink);
-    await client.query('UPDATE "User" SET socials = $1 WHERE id = $2', [updatedSocials, userId]);
+    const updatedSocials = user.socials.filter((link) => link !== socialLink);
+    await client.query(queries.setSocialsSQL, [updatedSocials, userId]);
 
     req.flash("success", "Social link deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -177,10 +182,180 @@ const deleteSocial = async (req, res, next) => {
   }
 };
 
+// include search (filter)
+const fetchAllJobs = async (req, res, next) => {
+  try {
+    const { search, deadlineRange } = req.query;
+
+    let query = queries.getAllActiveJobs;
+    const params = [];
+    let whereAdded = false; // Track if WHERE clause is already added
+
+    // Handle search
+    if (search) {
+      query += `
+        WHERE (
+          "title" ILIKE $${params.length + 1} OR
+          "company" ILIKE $${params.length + 1} OR
+          "city" ILIKE $${params.length + 1} OR
+          "description" ILIKE $${params.length + 1}
+        )
+      `;
+      params.push(`%${search}%`);
+      whereAdded = true; // Mark that WHERE has been added
+    }
+
+    // Handle predefined date range filtering
+    if (deadlineRange) {
+      const { startDate, endDate } = getDateRange(deadlineRange);
+
+      if (startDate && endDate) {
+        query += whereAdded
+          ? ` AND "application_deadline" BETWEEN $${params.length + 1} AND $${
+              params.length + 2
+            }`
+          : ` WHERE "application_deadline" BETWEEN $${params.length + 1} AND $${
+              params.length + 2
+            }`;
+        params.push(startDate, endDate);
+      } else if (!startDate && endDate) {
+        // Handle "past" case where only endDate exists
+        query += whereAdded
+          ? ` AND "application_deadline" < $${params.length + 1}`
+          : ` WHERE "application_deadline" < $${params.length + 1}`;
+        params.push(endDate);
+      }
+    }
+
+    // Execute the query
+    const result = await client.query(query, params);
+
+    // Render the response
+    res.render("talent/allJobs", {
+      allJobs: result.rows,
+      searchQuery: search || "",
+      deadlineRange: deadlineRange || "",
+    });
+  } catch (error) {
+    console.error(`Error fetching all jobs: ${error.message}`);
+    next(error);
+  }
+};
+
+const fetchMyApplications = async (req, res, next) => {
+  try {
+    // Query to fetch applications with job titles and statuses
+    const result = await client.query(queries.getUserApplications, [
+      res.locals.currentUser.id,
+    ]);
+
+    res.render("talent/myApplications", { myApplications: result.rows });
+  } catch (error) {
+    console.error(`Error fetching applications: ${error.message}`);
+    next(error);
+  }
+};
+
+const fetchJob = async (req, res, next) => {
+  try {
+    const result = await client.query(queries.getJobPostingByIdSQL, [
+      req.params.id,
+    ]);
+    const status = await client.query(queries.getApplicationStatusSQL, [
+      req.params.id,
+      req.user.id,
+    ]);
+    const statusDesc =
+      status.rows.length > 0
+        ? status.rows[0].status_desc
+        : "No status available";
+
+    res.render("talent/job", { job: result.rows[0], status: statusDesc });
+  } catch (error) {
+    console.log(`Error fetching job: ${error.message}`);
+    next(error);
+  }
+};
+
+const applyForJob = async (req, res, next) => {
+  const userId = req.user.id; // Assuming the user is authenticated
+  const jobId = req.params.jobId; // ID of the job the user is applying for
+
+  try {
+    // Fetch the job posting to get the required fields
+    const jobPostingResult = await client.query(queries.getJobPostingByIdSQL, [
+      jobId,
+    ]);
+    const jobPosting = jobPostingResult.rows[0];
+
+    // If job posting not found or archived
+    if (!jobPosting || jobPosting.is_archived) {
+      req.flash("error", "Job posting not found or archived.");
+      return res.redirect("/talent/browse-all-jobs");
+    }
+
+    // Insert the application into the database with the default application status of 1
+    const applicationResult = await client.query(queries.createApplicationSQL, [
+      userId,
+      jobId,
+      1,
+    ]);
+    const applicationId = applicationResult.rows[0].id;
+
+    // Save the uploaded documents for the job application (CV, Cover Letter, Certificates)
+    let cvPath = null;
+    let coverLetterPath = null;
+    let certificatesPaths = [];
+    let projectsText = req.body.projects || null; // Capture the Projects text
+
+    // Handle CV upload
+    if (req.files.cv) {
+      cvPath = req.files.cv[0].path;
+    }
+
+    // Handle Cover Letter upload
+    if (req.files.cover_letter) {
+      coverLetterPath = req.files.cover_letter[0].path;
+    }
+
+    // Handle Certificates upload
+    if (req.files.certificates) {
+      certificatesPaths = req.files.certificates.map((file) => file.path);
+    }
+
+    await client.query(queries.setApplicationCV, [cvPath, applicationId]);
+
+    await client.query(queries.setApplicationCoverLetter, [
+      coverLetterPath,
+      applicationId,
+    ]);
+
+    await client.query(queries.setApplicationCertificates, [
+      certificatesPaths,
+      applicationId,
+    ]);
+
+    await client.query(queries.setApplicationProjects, [
+      projectsText,
+      applicationId,
+    ]);
+
+    req.flash("success", "Application submitted successfully!");
+    res.redirect(`/talent/job/${jobId}`);
+  } catch (error) {
+    console.log(`Error applying for job: ${error.message}`);
+    req.flash("error", `Failed to apply for the job: ${error.message}`);
+    next(error);
+  }
+};
 
 module.exports = {
   updateTalent,
   deleteCV,
   deleteCertificate,
-  deleteSocial
+  deleteSocial,
+  fetchAllJobs,
+  fetchMyApplications,
+  fetchJob,
+  applyForJob,
 };

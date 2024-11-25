@@ -13,7 +13,8 @@ const runSQLFile = async (filePath) => {
 };
 
 const createLookupTables = async () => {
-  await runSQLFile(path.join(__dirname, './sql/lookup.sql'));
+  await runSQLFile(path.join(__dirname, './sql/role.sql'));
+  await runSQLFile(path.join(__dirname, './sql/application_status.sql'));
 };
 
 const createUserTable = async () => {

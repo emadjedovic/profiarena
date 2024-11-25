@@ -1,0 +1,32 @@
+<div class="container">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h1 class="card-title">Position: <%= job.title %></h1>
+      <p>status: <%= status %></p>
+    </div>
+    <div class="card-body">
+      <p><strong>Company:</strong> <%= job.company %></p>
+      <p><strong>Location:</strong> <%= job.city %>, <%= job.street_address || "N/A" %></p>
+      <p><strong>Application Deadline:</strong> <%= new Date(job.application_deadline).toLocaleDateString() %></p>
+      <hr>
+      <h4>Job Description</h4>
+      <p><%= job.description %></p>
+      <hr>
+      <h4>Requirements</h4>
+      <ul>
+        <% if (job.cv_field) { %>
+        <li>CV</li>
+        <% } %>
+        <% if (job.cover_letter_field) { %>
+        <li>Cover Letter</li>
+        <% } %>
+        <% if (job.projects_field) { %>
+        <li>Portfolio or Projects</li>
+        <% } %>
+        <% if (job.certificates_field) { %>
+        <li>Certificates</li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</div>

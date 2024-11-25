@@ -7,8 +7,7 @@
   <div class="col">
     <form action="/hr/my-job-postings" method="GET" class="form-inline">
       <!-- Search Bar -->
-      <input type="text" class="form-control mr-2 w-75" name="search"
-        placeholder="Search by title, company, city, description, or address" value="<%= searchQuery || '' %>" />
+      <input type="text" class="form-control mr-2 w-75" name="search" placeholder="Search by title, company, city, description, or address" value="<%= searchQuery || '' %>" />
   </div>
 
   <div class="col">
@@ -73,34 +72,29 @@
   </thead>
   <tbody>
     <% if (jobPostings.length > 0) { %>
-      <% jobPostings.forEach(jobPosting => { %>
-        <tr>
-          <td>
-            <a href="/hr/job-posting/<%= jobPosting.id %>" class="text-primary font-weight-bold">
-              <%= jobPosting.title %>
-            </a>
-          </td>
-          <td><%= jobPosting.company %></td>
-          <td><%= jobPosting.city %></td>
-          <td><%= new Date(jobPosting.application_deadline).toLocaleDateString() %></td>
-          <td class="text-center">
-            <form method="POST" action="/hr/toggle-archive-job/<%= jobPosting.id %>">
-              <input 
-                type="checkbox" 
-                name="archived" 
-                onchange="this.form.submit()" 
-                <%= jobPosting.is_archived ? 'checked' : '' %>
-              >
-            </form>
-          </td>
-        </tr>
-      <% }); %>
+    <% jobPostings.forEach(jobPosting => { %>
+    <tr>
+      <td>
+        <a href="/hr/job-posting/<%= jobPosting.id %>" class="text-primary font-weight-bold">
+          <%= jobPosting.title %>
+        </a>
+      </td>
+      <td><%= jobPosting.company %></td>
+      <td><%= jobPosting.city %></td>
+      <td><%= new Date(jobPosting.application_deadline).toLocaleDateString() %></td>
+      <td class="text-center">
+        <form method="POST" action="/hr/toggle-archive-job/<%= jobPosting.id %>">
+          <input type="checkbox" name="archived" onchange="this.form.submit()" <%= jobPosting.is_archived ? 'checked' : '' %>>
+        </form>
+      </td>
+    </tr>
+    <% }); %>
     <% } else { %>
-      <tr>
-        <td colspan="5" class="text-center text-muted">
-          No job postings available.
-        </td>
-      </tr>
+    <tr>
+      <td colspan="5" class="text-center text-muted">
+        No job postings available.
+      </td>
+    </tr>
     <% } %>
   </tbody>
 </table>
