@@ -7,7 +7,9 @@ const {
   toggleArchiveJob,
   updateHR,
   fetchTalentById,
-  fetchApplicationById
+  fetchApplicationById,
+  createAppScore,
+  showAppScoreForm
 } = require("../controllers/hrController");
 
 router.post("/create-job-posting", createJobPosting);
@@ -26,5 +28,9 @@ router.put("/:id/update", updateHR);
 router.get("/:id/edit", (req, res) => {
   res.render("hr/edit");
 });
+
+router.get('/app-score-form/:applicationId', showAppScoreForm);
+router.post('/create-app-score/:applicationId', createAppScore);
+
 
 module.exports = router;

@@ -1,0 +1,68 @@
+<!-- applicationScoreForm.ejs -->
+
+<div class="container">
+  <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+    <div class="card-header bg-primary text-white text-center">
+      <h3>SCORE APPLICATION</h3>
+      <h4><%= application.job_title %> (<%= application.job_company %>)</h4>
+<hr>
+      <h4><%= application.first_name %> <%= application.last_name %></h4>
+    </div>
+    <div class="card-body">
+      <form action="/hr/create-app-score/<%= application.id %>" method="POST">
+<div class="row">
+        <div class="col-6">
+        <div class="form-group mb-3">
+          <label for="education_score" class="form-label">Education Score (1-5):</label>
+          <input type="number" name="education_score" id="education_score" 
+                 class="form-control form-control-sm d-inline-block" 
+                 min="1" max="5" style="width: 70px;" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="skills_score" class="form-label">Skills Score (1-5):</label>
+          <input type="number" name="skills_score" id="skills_score" 
+                 class="form-control form-control-sm d-inline-block" 
+                 min="1" max="5" style="width: 70px;" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="experience_score" class="form-label">Experience Score (1-5):</label>
+          <input type="number" name="experience_score" id="experience_score" 
+                 class="form-control form-control-sm d-inline-block" 
+                 min="1" max="5" style="width: 70px;" required>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="form-group mb-3">
+          <label for="languages_score" class="form-label">Languages Score (1-5):</label>
+          <input type="number" name="languages_score" id="languages_score" 
+                 class="form-control form-control-sm d-inline-block" 
+                 min="1" max="5" style="width: 70px;" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="certificate_score" class="form-label">Certificate Score (1-5):</label>
+          <input type="number" name="certificate_score" id="certificate_score" 
+                 class="form-control form-control-sm d-inline-block" 
+                 min="1" max="5" style="width: 70px;" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="projects_score" class="form-label">Projects Score (1-5):</label>
+          <input type="number" name="projects_score" id="projects_score" 
+                 class="form-control form-control-sm d-inline-block" 
+                 min="1" max="5" style="width: 70px;" required>
+        </div>
+      </div>
+
+        <div class="form-group mb-3">
+          <label for="comments" class="form-label">Comments:</label>
+          <textarea name="comments" id="comments" class="form-control" 
+                    rows="3" placeholder="Add any relevant comments..."></textarea>
+        </div>
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary">Submit Score</button>
+        </div>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
