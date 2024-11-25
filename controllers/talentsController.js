@@ -79,7 +79,7 @@ const updateTalent = async (req, res, next) => {
     req.flash("success", "User updated successfully!");
     res.redirect(`/talent/profile`);
   } catch (error) {
-    console.log(`Error updating user by ID: ${error.message}`);
+    console.log(`Error updating talent: ${error.message}`);
     req.flash("error", `Failed to update user because: ${error.message}`);
     return next(error);
   }
@@ -93,9 +93,7 @@ const deleteCV = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [
-      userId,
-    ]);
+    const result = await client.query(queries.getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.cv) {
@@ -108,7 +106,7 @@ const deleteCV = async (req, res, next) => {
     if (fs.existsSync(cvPath)) fs.unlinkSync(cvPath);
 
     // Update the database to remove the CV reference
-    await client.query('UPDATE "User" SET cv = NULL WHERE id = $1', [userId]);
+    await client.query(queries.deleteCVSQL, [userId]);
 
     req.flash("success", "CV deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -126,9 +124,7 @@ const deleteCertificate = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [
-      userId,
-    ]);
+    const result = await client.query(queries.getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.certificates || !user.certificates.includes(certificatePath)) {
@@ -144,7 +140,7 @@ const deleteCertificate = async (req, res, next) => {
     const updatedCertificates = user.certificates.filter(
       (cert) => cert !== certificatePath
     );
-    await client.query('UPDATE "User" SET certificates = $1 WHERE id = $2', [
+    await client.query(queries.setCertificatesSQL, [
       updatedCertificates,
       userId,
     ]);
@@ -165,9 +161,7 @@ const deleteSocial = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [
-      userId,
-    ]);
+    const result = await client.query(queries.getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.socials || !user.socials.includes(socialLink)) {
@@ -177,10 +171,7 @@ const deleteSocial = async (req, res, next) => {
 
     // Update database to remove the specific social link
     const updatedSocials = user.socials.filter((link) => link !== socialLink);
-    await client.query('UPDATE "User" SET socials = $1 WHERE id = $2', [
-      updatedSocials,
-      userId,
-    ]);
+    await client.query(queries.setSocialsSQL, [updatedSocials, userId]);
 
     req.flash("success", "Social link deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -196,7 +187,7 @@ const fetchAllJobs = async (req, res, next) => {
   try {
     const { search, deadlineRange } = req.query;
 
-    let query = `SELECT * FROM "Job_Posting"`;
+    let query = queries.getAllActiveJobs;
     const params = [];
     let whereAdded = false; // Track if WHERE clause is already added
 
@@ -254,22 +245,9 @@ const fetchAllJobs = async (req, res, next) => {
 const fetchMyApplications = async (req, res, next) => {
   try {
     // Query to fetch applications with job titles and statuses
-    const result = await client.query(
-      `SELECT a.id AS application_id,
-              a.job_posting_id,
-              a.cv,
-              a.cover_letter,
-              a.projects,
-              a.certificates, 
-              jp.title AS job_title, 
-              as_table.status_desc AS application_status, 
-              a.submitted_at
-       FROM "Application" AS a
-       JOIN "Job_Posting" AS jp ON a.job_posting_id = jp.id
-       JOIN "Application_Status" AS as_table ON a.application_status_id = as_table.id
-       WHERE a.talent_id = $1`,
-      [res.locals.currentUser.id]
-    );
+    const result = await client.query(queries.getUserApplications, [
+      res.locals.currentUser.id,
+    ]);
 
     res.render("talent/myApplications", { myApplications: result.rows });
   } catch (error) {
@@ -280,14 +258,13 @@ const fetchMyApplications = async (req, res, next) => {
 
 const fetchJob = async (req, res, next) => {
   try {
-    const result = await client.query(
-      'SELECT * FROM "Job_Posting" WHERE id = $1',
-      [req.params.id]
-    );
-    const status = await client.query(
-      'SELECT status_table.status_desc FROM "Application_Status" as status_table JOIN "Application" as a ON status_table.id=a.application_status_id WHERE a.job_posting_id=$1 AND a.talent_id = $2',
-      [req.params.id, req.user.id]
-    );
+    const result = await client.query(queries.getJobPostingByIdSQL, [
+      req.params.id,
+    ]);
+    const status = await client.query(queries.getApplicationStatusSQL, [
+      req.params.id,
+      req.user.id,
+    ]);
     const statusDesc =
       status.rows.length > 0
         ? status.rows[0].status_desc
@@ -306,10 +283,9 @@ const applyForJob = async (req, res, next) => {
 
   try {
     // Fetch the job posting to get the required fields
-    const jobPostingResult = await client.query(
-      'SELECT * FROM "Job_Posting" WHERE id = $1',
-      [jobId]
-    );
+    const jobPostingResult = await client.query(queries.getJobPostingByIdSQL, [
+      jobId,
+    ]);
     const jobPosting = jobPostingResult.rows[0];
 
     // If job posting not found or archived
@@ -319,16 +295,18 @@ const applyForJob = async (req, res, next) => {
     }
 
     // Insert the application into the database with the default application status of 1
-    const applicationResult = await client.query(
-      'INSERT INTO "Application" (talent_id, job_posting_id, application_status_id) VALUES ($1, $2, $3) RETURNING id',
-      [userId, jobId, 1]
-    );
+    const applicationResult = await client.query(queries.createApplicationSQL, [
+      userId,
+      jobId,
+      1,
+    ]);
     const applicationId = applicationResult.rows[0].id;
 
     // Save the uploaded documents for the job application (CV, Cover Letter, Certificates)
     let cvPath = null;
     let coverLetterPath = null;
     let certificatesPaths = [];
+    let projectsText = req.body.projects || null; // Capture the Projects text
 
     // Handle CV upload
     if (req.files.cv) {
@@ -345,13 +323,22 @@ const applyForJob = async (req, res, next) => {
       certificatesPaths = req.files.certificates.map((file) => file.path);
     }
 
-    // Update the application with the document paths
-    await client.query(
-      `UPDATE "Application"
-       SET "cv" = $1, "cover_letter" = $2, "certificates" = $3
-       WHERE "id" = $4`,
-      [cvPath, coverLetterPath, certificatesPaths, applicationId]
-    );
+    await client.query(queries.setApplicationCV, [cvPath, applicationId]);
+
+    await client.query(queries.setApplicationCoverLetter, [
+      coverLetterPath,
+      applicationId,
+    ]);
+
+    await client.query(queries.setApplicationCertificates, [
+      certificatesPaths,
+      applicationId,
+    ]);
+
+    await client.query(queries.setApplicationProjects, [
+      projectsText,
+      applicationId,
+    ]);
 
     req.flash("success", "Application submitted successfully!");
     res.redirect(`/talent/job/${jobId}`);

@@ -109,7 +109,7 @@ passport.use(
     async (email, password, done) => {
       try {
         const result = await client.query(
-          'SELECT * FROM "User" WHERE "email" = $1',
+          queries.getUserByEmail,
           [email]
         );
         const user = result.rows[0];
@@ -138,7 +138,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const result = await client.query('SELECT * FROM "User" WHERE "id" = $1', [
+    const result = await client.query(queries.getUserByIdSQL, [
       id,
     ]);
     const user = result.rows[0];
@@ -156,6 +156,7 @@ app.set("port", process.env.PORT || 3000);
 app.set("view engine", "ejs");
 
 const router = require("./routes/index");
+const queries = require("./db/queries");
 app.use("/", router);
 
 app.listen(app.get("port"), () => {
