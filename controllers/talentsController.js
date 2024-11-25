@@ -1,7 +1,7 @@
 const { client } = require("../db/connect"); // Make sure to import client
 const queries = require("../db/queries"); // Import the query file
 const multer = require("multer"); // If you haven't imported multer yet
-const { getDateRange } = require('../utils/deadline'); // Import helper function
+const { getDateRange } = require("../utils/deadline"); // Import helper function
 
 const updateTalent = async (req, res, next) => {
   const userId = req.params.id;
@@ -220,8 +220,12 @@ const fetchAllJobs = async (req, res, next) => {
 
       if (startDate && endDate) {
         query += whereAdded
-          ? ` AND "application_deadline" BETWEEN $${params.length + 1} AND $${params.length + 2}`
-          : ` WHERE "application_deadline" BETWEEN $${params.length + 1} AND $${params.length + 2}`;
+          ? ` AND "application_deadline" BETWEEN $${params.length + 1} AND $${
+              params.length + 2
+            }`
+          : ` WHERE "application_deadline" BETWEEN $${params.length + 1} AND $${
+              params.length + 2
+            }`;
         params.push(startDate, endDate);
       } else if (!startDate && endDate) {
         // Handle "past" case where only endDate exists
@@ -236,10 +240,10 @@ const fetchAllJobs = async (req, res, next) => {
     const result = await client.query(query, params);
 
     // Render the response
-    res.render('talent/allJobs', {
+    res.render("talent/allJobs", {
       allJobs: result.rows,
-      searchQuery: search || '',
-      deadlineRange: deadlineRange || '',
+      searchQuery: search || "",
+      deadlineRange: deadlineRange || "",
     });
   } catch (error) {
     console.error(`Error fetching all jobs: ${error.message}`);
@@ -247,16 +251,29 @@ const fetchAllJobs = async (req, res, next) => {
   }
 };
 
-
-const fetchApplicationsByTalentId = async (req, res, next) => {
+const fetchMyApplications = async (req, res, next) => {
   try {
+    // Query to fetch applications with job titles and statuses
     const result = await client.query(
-      "SELECT * FROM 'Application' WHERE talent_id = $1",
-      [req.params.id]
+      `SELECT a.id AS application_id,
+              a.job_posting_id,
+              a.cv,
+              a.cover_letter,
+              a.projects,
+              a.certificates, 
+              jp.title AS job_title, 
+              as_table.status_desc AS application_status, 
+              a.submitted_at
+       FROM "Application" AS a
+       JOIN "Job_Posting" AS jp ON a.job_posting_id = jp.id
+       JOIN "Application_Status" AS as_table ON a.application_status_id = as_table.id
+       WHERE a.talent_id = $1`,
+      [res.locals.currentUser.id]
     );
+
     res.render("talent/myApplications", { myApplications: result.rows });
   } catch (error) {
-    console.log(`Error fetching applications by talent ID: ${error.message}`);
+    console.error(`Error fetching applications: ${error.message}`);
     next(error);
   }
 };
@@ -264,13 +281,19 @@ const fetchApplicationsByTalentId = async (req, res, next) => {
 const fetchJob = async (req, res, next) => {
   try {
     const result = await client.query(
-      "SELECT * FROM 'Job_Posting' WHERE id = $1",
+      'SELECT * FROM "Job_Posting" WHERE id = $1',
       [req.params.id]
     );
     const status = await client.query(
-      "SELECT status_desc FROM 'Application_Status' as as JOIN 'Application' as a WHERE as.id=a.application_status_id"
+      'SELECT status_table.status_desc FROM "Application_Status" as status_table JOIN "Application" as a ON status_table.id=a.application_status_id WHERE a.job_posting_id=$1 AND a.talent_id = $2',
+      [req.params.id, req.user.id]
     );
-    res.render("talent/job", { job: result.rows[0], status: status[0] });
+    const statusDesc =
+      status.rows.length > 0
+        ? status.rows[0].status_desc
+        : "No status available";
+
+    res.render("talent/job", { job: result.rows[0], status: statusDesc });
   } catch (error) {
     console.log(`Error fetching job: ${error.message}`);
     next(error);
@@ -283,7 +306,10 @@ const applyForJob = async (req, res, next) => {
 
   try {
     // Fetch the job posting to get the required fields
-    const jobPostingResult = await client.query('SELECT * FROM "Job_Posting" WHERE id = $1', [jobId]);
+    const jobPostingResult = await client.query(
+      'SELECT * FROM "Job_Posting" WHERE id = $1',
+      [jobId]
+    );
     const jobPosting = jobPostingResult.rows[0];
 
     // If job posting not found or archived
@@ -316,7 +342,7 @@ const applyForJob = async (req, res, next) => {
 
     // Handle Certificates upload
     if (req.files.certificates) {
-      certificatesPaths = req.files.certificates.map(file => file.path);
+      certificatesPaths = req.files.certificates.map((file) => file.path);
     }
 
     // Update the application with the document paths
@@ -328,8 +354,7 @@ const applyForJob = async (req, res, next) => {
     );
 
     req.flash("success", "Application submitted successfully!");
-    res.redirect(`/job/${jobId}`);
-    
+    res.redirect(`/talent/job/${jobId}`);
   } catch (error) {
     console.log(`Error applying for job: ${error.message}`);
     req.flash("error", `Failed to apply for the job: ${error.message}`);
@@ -337,14 +362,13 @@ const applyForJob = async (req, res, next) => {
   }
 };
 
-
 module.exports = {
   updateTalent,
   deleteCV,
   deleteCertificate,
   deleteSocial,
   fetchAllJobs,
-  fetchApplicationsByTalentId,
+  fetchMyApplications,
   fetchJob,
-  applyForJob
+  applyForJob,
 };

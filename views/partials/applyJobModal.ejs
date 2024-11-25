@@ -3,14 +3,17 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="applyJobModalLabel">Apply for Job</h5>
+        <h5 class="modal-title" id="applyJobModalLabel">APPLY FOR JOB: <%= job.title %></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <!--
             Fields marked as true in the Job_Posting table are required or optional based on your logic (i.e., CV and cover letter are required if specified, and certificates are optional with multiple allowed).
             -->
-
+            <p><strong>Company:</strong> <%= job.company %></p>
+            <p><strong>Location:</strong> <%= job.city %> </p>
+            <p><strong>Deadline:</strong> <%= new Date(job.application_deadline).toLocaleDateString() %></p>
+            <p><strong>Description:</strong> <%= job.description %></p>
         <form id="applyForm" action="/talent/jobs/:jobId/apply" method="POST" enctype="multipart/form-data">
           <input type="hidden" name="job_posting_id" id="jobPostingId" value="<%= job.id %>" />
 

@@ -4,35 +4,47 @@
       <th>Title</th>
       <th>Status</th>
       <th>Submitted At</th>
-      <td>Sent</td>
+      <th>Sent</th>
     </tr>
   </thead>
   <tbody>
+    <% if (myApplications.length > 0) { %>
     <% myApplications.forEach(app => { %>
-    <tr>
-      <td><a href="<%= `/talent/job/${app.job_posting_id}` %>"></a><%= app.title %></a></td>
-      <td>
-        <% status %>
-      </td>
-      <td>
-        <%= formatDate(app.sumbitted_at) : "N/A" %>
-      </td>
-      <td>
-        <% if(app.cv) {
-          "CV "
-        } 
-        if(app.cover_letter) {
-          "Cover Letter "
-        } 
-        if(app.projects) {
-          "Projects "
-        } 
-        if(app.certificates) {
-          "Certificates "
-        } 
-        %>
-      </td>
-    </tr>
+      <tr>
+        <!-- Job Title -->
+        <td>
+          <a href="<%= `/talent/job/${app.job_posting_id}` %>">
+            <%= app.job_title %>
+          </a>
+        </td>
+
+        <!-- Status -->
+        <td>
+          <%= app.application_status %>
+        </td>
+
+        <!-- Submitted At -->
+        <td>
+          <%= app.submitted_at ? formatDate(app.submitted_at) : "N/A" %>
+        </td>
+
+        <!-- Sent Materials -->
+        <td>
+          <% const sentMaterials = []; %>
+          <% if (app.cv) sentMaterials.push("CV"); %>
+          <% if (app.cover_letter) sentMaterials.push("Cover Letter"); %>
+          <% if (app.projects) sentMaterials.push("Projects"); %>
+          <% if (app.certificates) sentMaterials.push("Certificates"); %>
+          <%= sentMaterials.join(", ") %>
+        </td>
+      </tr>
     <% }); %>
+    <% } else { %>
+      <tr>
+        <td colspan="5" class="text-center text-muted">
+          You haven't applied for any jobs yet.
+        </td>
+      </tr>
+      <% } %>
   </tbody>
 </table>

@@ -1,28 +1,29 @@
 <div class="container">
   <div class="card shadow">
     <div class="card-header bg-primary text-white">
-      <h1 class="card-title"><%= jobPosting.title %></h1>
+      <h1 class="card-title">Position: <%= job.title %></h1>
+      <p>status: <%= status %></p>
     </div>
     <div class="card-body">
-      <p class="lead"><strong>Company:</strong> <%= jobPosting.company %></p>
-      <p><strong>Location:</strong> <%= jobPosting.city %>, <%= jobPosting.street_address || "N/A" %></p>
-      <p><strong>Application Deadline:</strong> <%= new Date(jobPosting.application_deadline).toLocaleDateString() %></p>
+      <p><strong>Company:</strong> <%= job.company %></p>
+      <p><strong>Location:</strong> <%= job.city %>, <%= job.street_address || "N/A" %></p>
+      <p><strong>Application Deadline:</strong> <%= new Date(job.application_deadline).toLocaleDateString() %></p>
       <hr>
       <h4>Job Description</h4>
-      <p><%= jobPosting.description %></p>
+      <p><%= job.description %></p>
       <hr>
       <h5>Requirements</h5>
       <ul>
-        <% if (jobPosting.cv_field) { %>
+        <% if (job.cv_field) { %>
         <li>CV</li>
         <% } %>
-        <% if (jobPosting.cover_letter_field) { %>
+        <% if (job.cover_letter_field) { %>
         <li>Cover Letter</li>
         <% } %>
-        <% if (jobPosting.projects_field) { %>
+        <% if (job.projects_field) { %>
         <li>Portfolio or Projects</li>
         <% } %>
-        <% if (jobPosting.certificates_field) { %>
+        <% if (job.certificates_field) { %>
         <li>Certificates</li>
         <% } %>
       </ul>

@@ -5,7 +5,7 @@ const {
   deleteCertificate,
   deleteSocial,
   fetchAllJobs,
-  fetchApplicationsByTalentId,
+  fetchMyApplications,
   fetchJob,
   applyForJob
 } = require("../controllers/talentsController");
@@ -26,7 +26,7 @@ const upload = multer({ storage: storage });
 router.get("/profile", (req, res) => {
   res.render("talent/profile");
 });
-router.get("/my-applications", fetchApplicationsByTalentId);
+router.get("/my-applications", fetchMyApplications);
 router.get("/browse-all-jobs", fetchAllJobs);
 
 /*
