@@ -17,45 +17,45 @@
   </div>
 </div>
 
-<!-- Filters Section -->
-<div class="row">
-  <div class="col-md-4">
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="radio" name="archive" id="archiveAll" value="" <%= archiveFilter === '' ? 'checked' : '' %>>
-      <label class="form-check-label" for="archiveAll">All</label>
-    </div>
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="radio" name="archive" id="archiveArchived" value="true" <%= archiveFilter === 'true' ? 'checked' : '' %>>
-      <label class="form-check-label" for="archiveArchived">Archived</label>
-    </div>
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="radio" name="archive" id="archiveActive" value="false" <%= archiveFilter === 'false' ? 'checked' : '' %>>
-      <label class="form-check-label" for="archiveActive">Active</label>
-    </div>
-  </div>
+    <!-- Filters Section -->
+    <div class="row">
+      <div class="col-md-4">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="archive" id="archiveAll" value="" <%= archiveFilter === '' ? 'checked' : '' %>>
+          <label class="form-check-label" for="archiveAll">All</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="archive" id="archiveArchived" value="true" <%= archiveFilter === 'true' ? 'checked' : '' %>>
+          <label class="form-check-label" for="archiveArchived">Archived</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="archive" id="archiveActive" value="false" <%= archiveFilter === 'false' ? 'checked' : '' %>>
+          <label class="form-check-label" for="archiveActive">Active</label>
+        </div>
+      </div>
 
-  <div class="col-md-4">
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" name="cv_field" <%= cvFieldChecked ? 'checked' : '' %>>
-      <label class="form-check-label" for="cv_field">Includes CV</label>
-    </div>
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" name="projects_field" <%= projectsFieldChecked ? 'checked' : '' %>>
-      <label class="form-check-label" for="projects_field">Includes Projects</label>
-    </div>
-  </div>
+      <div class="col-md-4">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="cv_field" <%= cvFieldChecked ? 'checked' : '' %>>
+          <label class="form-check-label" for="cv_field">Includes CV</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="projects_field" <%= projectsFieldChecked ? 'checked' : '' %>>
+          <label class="form-check-label" for="projects_field">Includes Projects</label>
+        </div>
+      </div>
 
-  <div class="col-md-4">
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" name="certificates_field" <%= certificatesFieldChecked ? 'checked' : '' %>>
-      <label class="form-check-label" for="certificates_field">Includes Certificates</label>
+      <div class="col-md-4">
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="certificates_field" <%= certificatesFieldChecked ? 'checked' : '' %>>
+          <label class="form-check-label" for="certificates_field">Includes Certificates</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="cover_letter_field" <%= coverLetterFieldChecked ? 'checked' : '' %>>
+          <label class="form-check-label" for="cover_letter_field">Includes Cover Letter</label>
+        </div>
+      </div>
     </div>
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" name="cover_letter_field" <%= coverLetterFieldChecked ? 'checked' : '' %>>
-      <label class="form-check-label" for="cover_letter_field">Includes Cover Letter</label>
-    </div>
-  </div>
-</div>
 
 <!-- Close the form here -->
 </form>

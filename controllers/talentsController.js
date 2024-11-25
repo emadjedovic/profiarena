@@ -3,7 +3,6 @@ const queries = require("../db/queries"); // Import the query file
 const multer = require("multer"); // If you haven't imported multer yet
 
 const updateTalent = async (req, res, next) => {
-  
   const userId = req.params.id;
 
   // Access regular form data
@@ -38,13 +37,13 @@ const updateTalent = async (req, res, next) => {
   const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; // Keep the existing CV if no new file is uploaded
 
   // keep the existing certificates and add the new ones
-  const certificatesPaths = certificatesFiles.length > 0
-  ? [
-      ...(res.locals.currentUser.certificates || []), // Existing certificates
-      ...certificatesFiles.map((file) => file.path),  // New certificates
-    ]
-  : res.locals.currentUser.certificates || [];
-
+  const certificatesPaths =
+    certificatesFiles.length > 0
+      ? [
+          ...(res.locals.currentUser.certificates || []), // Existing certificates
+          ...certificatesFiles.map((file) => file.path), // New certificates
+        ]
+      : res.locals.currentUser.certificates || [];
 
   // Convert string fields to arrays (split by commas and remove extra spaces)
   const parseArray = (field) => {
@@ -85,7 +84,7 @@ const updateTalent = async (req, res, next) => {
   }
 };
 
-const fs = require('fs'); // File system module
+const fs = require("fs"); // File system module
 
 // DELETE CV
 const deleteCV = async (req, res, next) => {
@@ -93,7 +92,9 @@ const deleteCV = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [
+      userId,
+    ]);
     const user = result.rows[0];
 
     if (!user.cv) {
@@ -124,7 +125,9 @@ const deleteCertificate = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [
+      userId,
+    ]);
     const user = result.rows[0];
 
     if (!user.certificates || !user.certificates.includes(certificatePath)) {
@@ -137,8 +140,13 @@ const deleteCertificate = async (req, res, next) => {
     if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 
     // Update the database to remove the specific certificate
-    const updatedCertificates = user.certificates.filter(cert => cert !== certificatePath);
-    await client.query('UPDATE "User" SET certificates = $1 WHERE id = $2', [updatedCertificates, userId]);
+    const updatedCertificates = user.certificates.filter(
+      (cert) => cert !== certificatePath
+    );
+    await client.query('UPDATE "User" SET certificates = $1 WHERE id = $2', [
+      updatedCertificates,
+      userId,
+    ]);
 
     req.flash("success", "Certificate deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -156,7 +164,9 @@ const deleteSocial = async (req, res, next) => {
 
   try {
     // Fetch user data
-    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [userId]);
+    const result = await client.query('SELECT * FROM "User" WHERE id = $1', [
+      userId,
+    ]);
     const user = result.rows[0];
 
     if (!user.socials || !user.socials.includes(socialLink)) {
@@ -165,8 +175,11 @@ const deleteSocial = async (req, res, next) => {
     }
 
     // Update database to remove the specific social link
-    const updatedSocials = user.socials.filter(link => link !== socialLink);
-    await client.query('UPDATE "User" SET socials = $1 WHERE id = $2', [updatedSocials, userId]);
+    const updatedSocials = user.socials.filter((link) => link !== socialLink);
+    await client.query('UPDATE "User" SET socials = $1 WHERE id = $2', [
+      updatedSocials,
+      userId,
+    ]);
 
     req.flash("success", "Social link deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -177,10 +190,75 @@ const deleteSocial = async (req, res, next) => {
   }
 };
 
+// include search (filter)
+const fetchAllJobs = async (req, res, next) => {
+  try {
+    const { search } = req.query;
+
+    let query = `SELECT * FROM "Job_Posting"`;
+    // Add search condition (search in title, company, city, description, deadline)
+    // add deadline search
+    let params = [];
+    if (search) {
+      query += `
+        WHERE (
+          "title" ILIKE $1 OR
+          "company" ILIKE $1 OR
+          "city" ILIKE $1 OR
+          "description" ILIKE $1
+        )
+      `;
+      params.push(`%${search}%`);
+    }
+
+    // Execute the query
+    const result = await client.query(query, params);
+
+    res.render("talent/allJobs", {
+      allJobs: result.rows,
+      searchQuery: search || "",
+    });
+  } catch (error) {
+    console.log(`Error fetching all jobs: ${error.message}`);
+    next(error);
+  }
+};
+
+const fetchApplicationsByTalentId = async (req, res, next) => {
+  try {
+    const result = await client.query(
+      "SELECT * FROM 'Application' WHERE talent_id = $1",
+      [req.params.id]
+    );
+    res.render("talent/myApplications", { myApplications: result.rows });
+  } catch (error) {
+    console.log(`Error fetching applications by talent ID: ${error.message}`);
+    next(error);
+  }
+};
+
+const fetchJob = async (req, res, next) => {
+  try {
+    const result = await client.query(
+      "SELECT * FROM 'Job_Posting' WHERE id = $1",
+      [req.params.id]
+    );
+    const status = await client.query(
+      "SELECT status_desc FROM 'Application_Status' as as JOIN 'Application' as a WHERE as.id=a.application_status_id"
+    );
+    res.render("talent/job", { job: result.rows[0], status: status[0] });
+  } catch (error) {
+    console.log(`Error fetching job: ${error.message}`);
+    next(error);
+  }
+};
 
 module.exports = {
   updateTalent,
   deleteCV,
   deleteCertificate,
-  deleteSocial
+  deleteSocial,
+  fetchAllJobs,
+  fetchApplicationsByTalentId,
+  fetchJob,
 };

@@ -50,7 +50,24 @@
               href="/talent/profile"
               >Profile</a
             >
-          </li> <% } %>
+          </li> 
+          <li class="nav-item">
+            <a
+              class="nav-link <%= currentPath === '/talent/browse-all-jobs' ? 'active text-decoration-underline' : '' %>"
+              href="/talent/browse-all-jobs"
+              >Browse All Jobs</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link <%= currentPath === '/talent/my-applications' ? 'active text-decoration-underline' : '' %>"
+              href="/talent/my-applications"
+              >My Applications</a
+            >
+          </li>
+          
+          
+          <% } %>
       </ul>
 
       <!-- Login/Logout section -->

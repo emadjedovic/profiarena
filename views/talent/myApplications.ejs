@@ -1,0 +1,38 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Status</th>
+      <th>Submitted At</th>
+      <td>Sent</td>
+    </tr>
+  </thead>
+  <tbody>
+    <% myApplications.forEach(app => { %>
+    <tr>
+      <td><a href="<%= `/talent/job/${app.job_posting_id}` %>"></a><%= app.title %></a></td>
+      <td>
+        <% status %>
+      </td>
+      <td>
+        <%= formatDate(app.sumbitted_at) : "N/A" %>
+      </td>
+      <td>
+        <% if(app.cv) {
+          "CV "
+        } 
+        if(app.cover_letter) {
+          "Cover Letter "
+        } 
+        if(app.projects) {
+          "Projects "
+        } 
+        if(app.certificates) {
+          "Certificates "
+        } 
+        %>
+      </td>
+    </tr>
+    <% }); %>
+  </tbody>
+</table>
