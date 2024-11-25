@@ -186,23 +186,27 @@ const deleteSocial = async (req, res, next) => {
 const fetchAllJobs = async (req, res, next) => {
   try {
     const { search, deadlineRange } = req.query;
+    const userId = res.locals.currentUser.id; // Assuming the user is logged in
 
-    let query = queries.getAllActiveJobs;
-    const params = [];
+    if (!userId) {
+      throw new Error("User must be logged in to view application statuses.");
+    }
+
+    let query = queries.getAppliedJobsSQL;
+    const params = [userId];
     let whereAdded = false; // Track if WHERE clause is already added
 
     // Handle search
     if (search) {
       query += `
-        WHERE (
-          "title" ILIKE $${params.length + 1} OR
-          "company" ILIKE $${params.length + 1} OR
-          "city" ILIKE $${params.length + 1} OR
-          "description" ILIKE $${params.length + 1}
+        AND (
+          j."title" ILIKE $${params.length + 1} OR
+          j."company" ILIKE $${params.length + 1} OR
+          j."city" ILIKE $${params.length + 1} OR
+          j."description" ILIKE $${params.length + 1}
         )
       `;
       params.push(`%${search}%`);
-      whereAdded = true; // Mark that WHERE has been added
     }
 
     // Handle predefined date range filtering
@@ -210,19 +214,15 @@ const fetchAllJobs = async (req, res, next) => {
       const { startDate, endDate } = getDateRange(deadlineRange);
 
       if (startDate && endDate) {
-        query += whereAdded
-          ? ` AND "application_deadline" BETWEEN $${params.length + 1} AND $${
-              params.length + 2
-            }`
-          : ` WHERE "application_deadline" BETWEEN $${params.length + 1} AND $${
-              params.length + 2
-            }`;
+        query += `
+          AND j."application_deadline" BETWEEN $${params.length + 1} AND $${params.length + 2}
+        `;
         params.push(startDate, endDate);
       } else if (!startDate && endDate) {
         // Handle "past" case where only endDate exists
-        query += whereAdded
-          ? ` AND "application_deadline" < $${params.length + 1}`
-          : ` WHERE "application_deadline" < $${params.length + 1}`;
+        query += `
+          AND j."application_deadline" < $${params.length + 1}
+        `;
         params.push(endDate);
       }
     }
@@ -232,7 +232,7 @@ const fetchAllJobs = async (req, res, next) => {
 
     // Render the response
     res.render("talent/allJobs", {
-      allJobs: result.rows,
+      allJobs: result.rows, // Include `has_applied` field for each job
       searchQuery: search || "",
       deadlineRange: deadlineRange || "",
     });
@@ -245,7 +245,7 @@ const fetchAllJobs = async (req, res, next) => {
 const fetchMyApplications = async (req, res, next) => {
   try {
     // Query to fetch applications with job titles and statuses
-    const result = await client.query(queries.getUserApplications, [
+    const result = await client.query(queries.getUserApplicationsSQL, [
       res.locals.currentUser.id,
     ]);
 
@@ -323,19 +323,19 @@ const applyForJob = async (req, res, next) => {
       certificatesPaths = req.files.certificates.map((file) => file.path);
     }
 
-    await client.query(queries.setApplicationCV, [cvPath, applicationId]);
+    await client.query(queries.setApplicationCVSQL, [cvPath, applicationId]);
 
-    await client.query(queries.setApplicationCoverLetter, [
+    await client.query(queries.setApplicationCoverLetterSQL, [
       coverLetterPath,
       applicationId,
     ]);
 
-    await client.query(queries.setApplicationCertificates, [
+    await client.query(queries.setApplicationCertificatesSQL, [
       certificatesPaths,
       applicationId,
     ]);
 
-    await client.query(queries.setApplicationProjects, [
+    await client.query(queries.setApplicationProjectsSQL, [
       projectsText,
       applicationId,
     ]);
@@ -348,6 +348,18 @@ const applyForJob = async (req, res, next) => {
     next(error);
   }
 };
+
+const getJobsWithApplicationStatus = async (userId) => {
+  const query = `
+    SELECT j.*, 
+           CASE WHEN a.talent_id IS NOT NULL THEN true ELSE false END AS has_applied
+    FROM "Job_Posting" j
+    LEFT JOIN "Applications" a ON j.id = a.job_posting_id AND a.talent_id = $1
+  `;
+  const result = await db.query(query, [userId]);
+  return result.rows; // Returns jobs with `has_applied` field
+};
+
 
 module.exports = {
   updateTalent,

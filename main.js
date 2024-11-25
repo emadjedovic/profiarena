@@ -109,7 +109,7 @@ passport.use(
     async (email, password, done) => {
       try {
         const result = await client.query(
-          queries.getUserByEmail,
+          queries.getUserByEmailSQL,
           [email]
         );
         const user = result.rows[0];

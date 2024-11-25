@@ -13,15 +13,62 @@ const queries = {
   setCertificatesSQL: `UPDATE "User" SET certificates = $1 WHERE id = $2`,
   setSocialsSQL: `UPDATE "User" SET socials = $1 WHERE id = $2`,
 
+  getAllApplicationsForJobSQL: `SELECT * FROM "Application" WHERE job_posting_id=$1`,
+
+  getAppliedJobsSQL: `
+    SELECT DISTINCT j.*, 
+           CASE WHEN a.talent_id IS NOT NULL THEN true ELSE false END AS has_applied
+    FROM "Job_Posting" j
+    LEFT JOIN "Application" a ON j.id = a.job_posting_id AND a.talent_id = $1
+    WHERE j.is_archived = false
+    
+  `,
+
+
+  createAppScoreSQL: `INSERT INTO "Application_Score" ("application_id", "hr_id", "talent_id") VALUES ($1, $2, $3)`,
+  setStatusViewedSQL: `UPDATE "Application" SET application_status_id=2 WHERE id=$1`,
+  setStatusInvitedSQL: `UPDATE "Application" SET application_status_id=3 WHERE id=$1`,
+  setStatusShortlistenSQL: `UPDATE "Application" SET application_status_id=4 WHERE id=$1`,
+  setStatusRejectedSQL: `UPDATE "Application" SET application_status_id=5 WHERE id=$1`,
+
+
+  setEducationScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
+  setSkillsScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
+  setExperienceScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
+  setLanguagesScoreSQL: `UPDATE "Application_Score" SET languages_score=$1 WHERE id = $2`,
+  setCertificateScoreSQL: `UPDATE "Application_Score" SET certificate_score=$1 WHERE id = $2`,
+  setProjectsScoreSQL: `UPDATE "Application_Score" SET projects_score=$1 WHERE id = $2`,
+  setTotalScoreSQL: `UPDATE "Application_Score"
+                  SET total_score = (
+                      (
+                          COALESCE(education_score, 0) +
+                          COALESCE(skills_score, 0) +
+                          COALESCE(experience_score, 0) +
+                          COALESCE(languages_score, 0) +
+                          COALESCE(certificate_score, 0) +
+                          COALESCE(projects_score, 0)
+                      ) /
+                      (
+                          (CASE WHEN education_score IS NOT NULL THEN 1 ELSE 0 END) +
+                          (CASE WHEN skills_score IS NOT NULL THEN 1 ELSE 0 END) +
+                          (CASE WHEN experience_score IS NOT NULL THEN 1 ELSE 0 END) +
+                          (CASE WHEN languages_score IS NOT NULL THEN 1 ELSE 0 END) +
+                          (CASE WHEN certificate_score IS NOT NULL THEN 1 ELSE 0 END) +
+                          (CASE WHEN projects_score IS NOT NULL THEN 1 ELSE 0 END)
+                      )
+                  )
+                  WHERE id = $1;
+                  `,
+
   getAllTalentsSQL: `
     SELECT * FROM "User" WHERE role_id = 2;
   `,
-  getUserByEmail: `SELECT * FROM "User" WHERE "email" = $1`,
+  getUserByEmailSQL: `SELECT * FROM "User" WHERE "email" = $1`,
   getTalentByIdSQL: `
     SELECT * FROM "User" WHERE role_id = 2 AND id = $1;
   `,
   toggleArchiveJobSQL: `UPDATE "Job_Posting" SET "is_archived" = $1 WHERE "id" = $2`,
-  updateTalentSQL: `
+  updateTalentSQLSQL: `
     UPDATE "User"
     SET 
       "first_name" = $1,
@@ -48,12 +95,12 @@ const queries = {
     SET "first_name" = $1, "last_name" = $2, "email" = $3, "company_name" = $4
     WHERE "id" = $5;
   `,
-  getAllActiveJobs: `SELECT * FROM "Job_Posting" WHERE is_archived=false`,
+  getAllActiveJobsSQL: `SELECT * FROM "Job_Posting" WHERE is_archived=false`,
   createJobPostingSQL: `
     INSERT INTO "Job_Posting" ("title", "description", "city", "application_deadline", "company", "cv_field", "cover_letter_field", "projects_field", "certificates_field", "hr_id") 
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
   `,
-  getUserApplications: `SELECT a.id AS application_id,
+  getUserApplicationsSQL: `SELECT a.id AS application_id,
               a.job_posting_id,
               a.cv,
               a.cover_letter,
@@ -74,10 +121,10 @@ const queries = {
   `,
   getApplicationStatusSQL: `SELECT status_table.status_desc FROM "Application_Status" as status_table JOIN "Application" as a ON status_table.id=a.application_status_id WHERE a.job_posting_id=$1 AND a.talent_id = $2`,
   createApplicationSQL: `INSERT INTO "Application" (talent_id, job_posting_id, application_status_id) VALUES ($1, $2, $3) RETURNING id`,
-  setApplicationCV:`UPDATE "Application" SET "cv" = $1 WHERE "id" = $2`,
-  setApplicationCoverLetter:`UPDATE "Application" SET "cover_letter" = $1 WHERE "id" = $2`,
-  setApplicationProjects:`UPDATE "Application" SET "projects" = $1 WHERE "id" = $2`,
-  setApplicationCertificates:`UPDATE "Application" SET "certificates" = $1 WHERE "id" = $2`
+  setApplicationCVSQL: `UPDATE "Application" SET "cv" = $1 WHERE "id" = $2`,
+  setApplicationCoverLetterSQL: `UPDATE "Application" SET "cover_letter" = $1 WHERE "id" = $2`,
+  setApplicationProjectsSQL: `UPDATE "Application" SET "projects" = $1 WHERE "id" = $2`,
+  setApplicationCertificatesSQL: `UPDATE "Application" SET "certificates" = $1 WHERE "id" = $2`,
 };
 
 module.exports = queries;
