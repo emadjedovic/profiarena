@@ -1,18 +1,13 @@
 <div class="container">
   <div class="row align-items-center">
     <form action="/talent/browse-all-jobs" method="GET" class="d-flex align-items-center">
-      
+
       <!-- Search Bar -->
       <div class="col-6 m-3 mt-0">
         <label for="search" class="form-label visually-hidden">Search</label>
-        <input 
-          type="text" 
-          class="form-control" 
-          name="search" 
-          placeholder="Search by title, company, city, description, deadline" 
-          value="<%= searchQuery || '' %>" />
+        <input type="text" class="form-control" name="search" placeholder="Search by title, company, city, description, deadline" value="<%= searchQuery || '' %>" />
       </div>
-      
+
       <!-- Deadline Filter Dropdown -->
       <div class="col-2 m-3 mt-0">
         <select name="deadlineRange" id="deadlineRange" class="form-select">
@@ -23,7 +18,7 @@
           <option value="past" <%= deadlineRange === 'past' ? 'selected' : '' %>>Past Deadlines</option>
         </select>
       </div>
-      
+
       <!-- Filter Button -->
       <div class="col-2 m-3 mt-0">
         <button type="submit" class="btn btn-primary">Filter</button>
@@ -46,23 +41,31 @@
       </thead>
       <tbody>
         <% if (allJobs.length > 0) { %>
-          <% allJobs.forEach(job => { %>
-            <tr>
-              <td>
-                <a href="<%= `/talent/job/${job.id}` %>" class="text-primary font-weight-bold">
-                  <%= job.title %>
-                </a>
-              </td>
-              <td><%= job.company %></td>
-              <td><%= job.city %></td>
-              <td><%= new Date(job.application_deadline).toLocaleDateString() %></td>
-              <td>Button to Apply</td>
-            </tr>
-          <% }); %>
+        <% allJobs.forEach(job => { %>
+        <tr>
+          <td>
+            <a href="<%= `/talent/job/${job.id}` %>" class="text-primary font-weight-bold">
+              <%= job.title %>
+            </a>
+          </td>
+          <td><%= job.company %></td>
+          <td><%= job.city %></td>
+          <td><%= new Date(job.application_deadline).toLocaleDateString() %></td>
+          <td>
+            <!-- Apply Button triggers Modal -->
+            <button type="button" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job-id="<%= job.id %>">
+              Apply for Job
+            </button>
+
+          </td>
+        </tr>
+        <!-- Include the Apply Modal Partial for each job -->
+        <%- include('../partials/applyJobModal', {job: job}) %>
+        <% }); %>
         <% } else { %>
-          <tr>
-            <td colspan="5" class="text-center text-muted">No job postings available.</td>
-          </tr>
+        <tr>
+          <td colspan="5" class="text-center text-muted">No job postings available.</td>
+        </tr>
         <% } %>
       </tbody>
     </table>

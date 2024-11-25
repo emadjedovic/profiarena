@@ -1,54 +1,16 @@
 <div class="container" style="width: 400px">
-    <form method="POST" class="form text-center" action="<%= `/hr/${currentUser.id}/update?_method=PUT` %>">
-      <h2>Edit Your Info</h2>
-      
-      <input
-        type="text"
-        class="form-control m-3"
-        name="first_name"
-        id="inputfirst_name"
-        value="<%=currentUser.first_name %>"
-        placeholder="First"
-        autofocus
-      />
-      <input
-        type="text"
-        class="form-control m-3"
-        name="last_name"
-        id="inputlast_name"
-        value="<%=currentUser.last_name %>"
-        placeholder="Last"
-      />
-      
-      <input
-        type="email"
-        class="form-control m-3"
-        name="email"
-        id="inputemail"
-        value="<%=currentUser.email %>"
-        placeholder="Email"
-        required
-      />
-  
-      <input
-        type="text"
-        class="form-control m-3"
-        name="phone"
-        id="inputphone"
-        value="<%=currentUser.phone || '' %>"
-        placeholder="Phone Number"
-      />
-      
-      <input
-        type="text"
-        class="form-control m-3"
-        name="company_name"
-        id="inputcompany_name"
-        value="<%=currentUser.company_name || '' %>"
-        placeholder="Company Name"
-      />
-  
-      <button type="submit" class="btn btn-outline-dark m-2">UPDATE</button>
-    </form>
-  </div>
-  
+  <form method="POST" class="form text-center" action="<%= `/hr/${currentUser.id}/update?_method=PUT` %>">
+    <h2>Edit Your Info</h2>
+
+    <input type="text" class="form-control m-3" name="first_name" id="inputfirst_name" value="<%=currentUser.first_name %>" placeholder="First" autofocus />
+    <input type="text" class="form-control m-3" name="last_name" id="inputlast_name" value="<%=currentUser.last_name %>" placeholder="Last" />
+
+    <input type="email" class="form-control m-3" name="email" id="inputemail" value="<%=currentUser.email %>" placeholder="Email" required />
+
+    <input type="text" class="form-control m-3" name="phone" id="inputphone" value="<%=currentUser.phone || '' %>" placeholder="Phone Number" />
+
+    <input type="text" class="form-control m-3" name="company_name" id="inputcompany_name" value="<%=currentUser.company_name || '' %>" placeholder="Company Name" />
+
+    <button type="submit" class="btn btn-outline-dark m-2">UPDATE</button>
+  </form>
+</div>

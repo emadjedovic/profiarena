@@ -1,15 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light p-4">
   <div class="container">
     <a class="navbar-brand" href="/"> P R O F I @ R E N A </a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -17,57 +9,33 @@
       <ul class="navbar-nav mx-5">
         <!-- Home Link -->
         <li class="nav-item">
-          <a
-            class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>"
-            href="/"
-            >Home</a
-          >
+          <a class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>" href="/">Home</a>
         </li>
 
         <!-- HR ONLY -->
         <% if (loggedIn && currentUser.role_id === 1) { %>
-          <li class="nav-item">
-            <a
-              class="nav-link <%= currentPath === '/hr/profile' ? 'active text-decoration-underline' : '' %>"
-              href="/hr/profile"
-              >Profile</a
-            >
-          </li>
         <li class="nav-item">
-          <a
-            class="nav-link <%= currentPath === '/hr/my-job-postings' ? 'active text-decoration-underline' : '' %>"
-            href="/hr/my-job-postings"
-            >My Job Postings</a
-          >
+          <a class="nav-link <%= currentPath === '/hr/profile' ? 'active text-decoration-underline' : '' %>" href="/hr/profile">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/hr/my-job-postings' ? 'active text-decoration-underline' : '' %>" href="/hr/my-job-postings">My Job Postings</a>
         </li>
         <% } %>
 
         <!-- TALENTS ONLY -->
         <% if (loggedIn && currentUser.role_id === 2) { %>
-          <li class="nav-item">
-            <a
-              class="nav-link <%= currentPath === '/talent/profile' ? 'active text-decoration-underline' : '' %>"
-              href="/talent/profile"
-              >Profile</a
-            >
-          </li> 
-          <li class="nav-item">
-            <a
-              class="nav-link <%= currentPath === '/talent/browse-all-jobs' ? 'active text-decoration-underline' : '' %>"
-              href="/talent/browse-all-jobs"
-              >Browse All Jobs</a
-            >
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link <%= currentPath === '/talent/my-applications' ? 'active text-decoration-underline' : '' %>"
-              href="/talent/my-applications"
-              >My Applications</a
-            >
-          </li>
-          
-          
-          <% } %>
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/talent/profile' ? 'active text-decoration-underline' : '' %>" href="/talent/profile">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/talent/browse-all-jobs' ? 'active text-decoration-underline' : '' %>" href="/talent/browse-all-jobs">Browse All Jobs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/talent/my-applications' ? 'active text-decoration-underline' : '' %>" href="/talent/my-applications">My Applications</a>
+        </li>
+
+
+        <% } %>
       </ul>
 
       <!-- Login/Logout section -->

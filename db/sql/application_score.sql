@@ -11,5 +11,5 @@ CREATE TABLE "Application_Score" (
     "certificate_score" INT CHECK (certificate_score BETWEEN 1 AND 5),
     "projects_score" INT CHECK (projects_score BETWEEN 1 AND 5),
     "total_score" INT,
-    "comments" TEXT
+    "comments" TEXT DEFAULT 'No added comments.'
 );

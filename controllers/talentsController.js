@@ -277,6 +277,67 @@ const fetchJob = async (req, res, next) => {
   }
 };
 
+const applyForJob = async (req, res, next) => {
+  const userId = req.user.id; // Assuming the user is authenticated
+  const jobId = req.params.jobId; // ID of the job the user is applying for
+
+  try {
+    // Fetch the job posting to get the required fields
+    const jobPostingResult = await client.query('SELECT * FROM "Job_Posting" WHERE id = $1', [jobId]);
+    const jobPosting = jobPostingResult.rows[0];
+
+    // If job posting not found or archived
+    if (!jobPosting || jobPosting.is_archived) {
+      req.flash("error", "Job posting not found or archived.");
+      return res.redirect("/talent/browse-all-jobs");
+    }
+
+    // Insert the application into the database with the default application status of 1
+    const applicationResult = await client.query(
+      'INSERT INTO "Application" (talent_id, job_posting_id, application_status_id) VALUES ($1, $2, $3) RETURNING id',
+      [userId, jobId, 1]
+    );
+    const applicationId = applicationResult.rows[0].id;
+
+    // Save the uploaded documents for the job application (CV, Cover Letter, Certificates)
+    let cvPath = null;
+    let coverLetterPath = null;
+    let certificatesPaths = [];
+
+    // Handle CV upload
+    if (req.files.cv) {
+      cvPath = req.files.cv[0].path;
+    }
+
+    // Handle Cover Letter upload
+    if (req.files.cover_letter) {
+      coverLetterPath = req.files.cover_letter[0].path;
+    }
+
+    // Handle Certificates upload
+    if (req.files.certificates) {
+      certificatesPaths = req.files.certificates.map(file => file.path);
+    }
+
+    // Update the application with the document paths
+    await client.query(
+      `UPDATE "Application"
+       SET "cv" = $1, "cover_letter" = $2, "certificates" = $3
+       WHERE "id" = $4`,
+      [cvPath, coverLetterPath, certificatesPaths, applicationId]
+    );
+
+    req.flash("success", "Application submitted successfully!");
+    res.redirect(`/job/${jobId}`);
+    
+  } catch (error) {
+    console.log(`Error applying for job: ${error.message}`);
+    req.flash("error", `Failed to apply for the job: ${error.message}`);
+    next(error);
+  }
+};
+
+
 module.exports = {
   updateTalent,
   deleteCV,
@@ -285,4 +346,5 @@ module.exports = {
   fetchAllJobs,
   fetchApplicationsByTalentId,
   fetchJob,
+  applyForJob
 };

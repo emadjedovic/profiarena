@@ -1,0 +1,50 @@
+<!-- applyJobModal.ejs -->
+<div class="modal fade" id="applyJobModal" tabindex="-1" aria-labelledby="applyJobModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="applyJobModalLabel">Apply for Job</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!--
+            Fields marked as true in the Job_Posting table are required or optional based on your logic (i.e., CV and cover letter are required if specified, and certificates are optional with multiple allowed).
+            -->
+
+        <form id="applyForm" action="/talent/jobs/:jobId/apply" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="job_posting_id" id="jobPostingId" value="<%= job.id %>" />
+
+          <% if (job.cv_field) { %>
+          <!-- CV Upload Field (Required if cv_field is true) -->
+          <div class="mb-3">
+            <label for="cv" class="form-label">Upload CV</label>
+            <input type="file" class="form-control" id="cv" name="cv" accept=".pdf,.docx,.txt" required />
+          </div>
+          <% } %> <% if (job.cover_letter_field) { %>
+          <!-- Cover Letter Field (Required if cover_letter_field is true) -->
+          <div class="mb-3">
+            <label for="cover_letter" class="form-label">Cover Letter</label>
+            <input type="file" class="form-control" id="cover_letter" name="cover_letter" accept=".pdf,.docx,.txt" required />
+          </div>
+          <% } %> <% if (job.projects_field) { %>
+          <!-- Projects Text Area (Optional if projects_field is true) -->
+          <div class="mb-3">
+            <label for="projects" class="form-label">Projects</label>
+            <textarea class="form-control" id="projects" name="projects" rows="4"></textarea>
+          </div>
+          <% } %> <% if (job.certificates_field) { %>
+          <!-- Certificates Field (Optional if certificates_field is true) -->
+          <div class="mb-3">
+            <label for="certificates" class="form-label">Certificates (Optional)</label>
+            <input type="file" class="form-control" id="certificates" name="certificates" multiple />
+          </div>
+          <% } %>
+
+          <button type="submit" class="btn btn-primary">
+            Submit Application
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

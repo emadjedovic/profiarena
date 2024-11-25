@@ -1,7 +1,7 @@
 <h2 class="mb-4">
   <div>
     <%= currentUser.first_name %>
-      <%= currentUser.last_name %>
+    <%= currentUser.last_name %>
   </div>
 </h2>
 
@@ -87,22 +87,20 @@
       </div>
       <div class="card-body">
         <% if (currentUser.socials && currentUser.socials.length> 0) { %>
-          <% currentUser.socials.forEach((link, index)=> { %>
-            <% const absoluteLink=link.startsWith('http://') || link.startsWith('https://') ? link : `https://${link}`;
+        <% currentUser.socials.forEach((link, index)=> { %>
+        <% const absoluteLink=link.startsWith('http://') || link.startsWith('https://') ? link : `https://${link}`;
               %>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <a href="<%= absoluteLink %>" target="_blank" rel="noopener noreferrer">Social Link <%= index + 1 %></a>
-                <form method="POST" action="<%= `/talent/${currentUser.id}/delete-social?_method=DELETE` %>"
-                  class="d-inline">
-                  <input type="hidden" name="socialLink" value="<%= link %>" />
-                  <button type="submit" class="btn btn-danger btn-sm"
-                    onclick="return confirm('Are you sure you want to delete this social link?')">Delete</button>
-                </form>
-              </div>
-              <% }); %>
-                <% } else { %>
-                  <span>N/A</span>
-                  <% } %>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <a href="<%= absoluteLink %>" target="_blank" rel="noopener noreferrer">Social Link <%= index + 1 %></a>
+          <form method="POST" action="<%= `/talent/${currentUser.id}/delete-social?_method=DELETE` %>" class="d-inline">
+            <input type="hidden" name="socialLink" value="<%= link %>" />
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this social link?')">Delete</button>
+          </form>
+        </div>
+        <% }); %>
+        <% } else { %>
+        <span>N/A</span>
+        <% } %>
       </div>
     </div>
 
@@ -113,16 +111,15 @@
       </div>
       <div class="card-body">
         <% if (currentUser.cv) { %>
-          <div class="d-flex justify-content-between align-items-center">
-            <a href="<%= `/${currentUser.cv}` %>" target="_blank" class="btn btn-primary">View CV</a>
-            <form method="POST" action="<%= `/talent/${currentUser.id}/delete-cv?_method=DELETE` %>" class="d-inline">
-              <button type="submit" class="btn btn-danger btn-sm"
-                onclick="return confirm('Are you sure you want to delete this CV?')">Delete</button>
-            </form>
-          </div>
-          <% } else { %>
-            <span>N/A</span>
-            <% } %>
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="<%= `/${currentUser.cv}` %>" target="_blank" class="btn btn-primary">View CV</a>
+          <form method="POST" action="<%= `/talent/${currentUser.id}/delete-cv?_method=DELETE` %>" class="d-inline">
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this CV?')">Delete</button>
+          </form>
+        </div>
+        <% } else { %>
+        <span>N/A</span>
+        <% } %>
       </div>
     </div>
 
@@ -133,20 +130,18 @@
       </div>
       <div class="card-body">
         <% if (currentUser.certificates && currentUser.certificates.length> 0) { %>
-          <% currentUser.certificates.forEach((certificate, index)=> { %>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <a href="<%= `/${certificate}` %>" target="_blank">Certificate <%= index + 1 %></a>
-              <form method="POST" action="<%= `/talent/${currentUser.id}/delete-certificate?_method=DELETE` %>"
-                class="d-inline">
-                <input type="hidden" name="certificatePath" value="<%= certificate %>" />
-                <button type="submit" class="btn btn-danger btn-sm"
-                  onclick="return confirm('Are you sure you want to delete this certificate?')">Delete</button>
-              </form>
-            </div>
-            <% }); %>
-              <% } else { %>
-                <span>N/A</span>
-                <% } %>
+        <% currentUser.certificates.forEach((certificate, index)=> { %>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <a href="<%= `/${certificate}` %>" target="_blank">Certificate <%= index + 1 %></a>
+          <form method="POST" action="<%= `/talent/${currentUser.id}/delete-certificate?_method=DELETE` %>" class="d-inline">
+            <input type="hidden" name="certificatePath" value="<%= certificate %>" />
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this certificate?')">Delete</button>
+          </form>
+        </div>
+        <% }); %>
+        <% } else { %>
+        <span>N/A</span>
+        <% } %>
       </div>
     </div>
 
@@ -164,15 +159,14 @@
 
 <div class="mb-3">
   <p><em>Account Created on
-    <%= currentUser.created_at ? formatDate(currentUser.created_at) : "N/A" %>
-  </em></p>
+      <%= currentUser.created_at ? formatDate(currentUser.created_at) : "N/A" %>
+    </em></p>
 </div>
 
 <a href="<%= `/talent/${currentUser.id}/edit` %>" class="btn btn-light mt-1">Edit Your Info</a>
 
 <div class="mt-2">
-  <a href="<%= `/${currentUser.id}/delete?_method=DELETE` %>"
-    onclick="return confirm('Are you sure you want to delete your account?')" class="btn btn-danger mt-1">
+  <a href="<%= `/${currentUser.id}/delete?_method=DELETE` %>" onclick="return confirm('Are you sure you want to delete your account?')" class="btn btn-danger mt-1">
     Delete Account
   </a>
 </div>
