@@ -6,7 +6,8 @@ const {
   fetchJobPostingById,
   toggleArchiveJob,
   updateHR,
-  fetchTalentById
+  fetchTalentById,
+  fetchApplicationById
 } = require("../controllers/hrController");
 
 router.post("/create-job-posting", createJobPosting);
@@ -18,7 +19,8 @@ router.get("/my-job-postings", fetchJobPostingsByHrId);
 
 router.get("/job-posting/:id", fetchJobPostingById);
 router.post("/toggle-archive-job/:id", toggleArchiveJob);
-router.get("/talents/:id", fetchTalentById);
+router.get("/talent/:id", fetchTalentById);
+router.get("/application/:id", fetchApplicationById);
 
 router.put("/:id/update", updateHR);
 router.get("/:id/edit", (req, res) => {

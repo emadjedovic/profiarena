@@ -132,10 +132,13 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
 
 const fetchJobPostingById = async (req, res, next) => {
   try {
-    const result = await client.query(queries.getJobPostingByIdSQL, [
-      req.params.id,
-    ]);
-    res.render("hr/jobPosting", { jobPosting: result.rows[0] });
+    const jobPostingId = req.params.id;
+
+    const jobPosting = await client.query(queries.getJobPostingByIdSQL, [
+      jobPostingId]);
+    const applications = await client.query(queries.getAllApplicationsForJobSQL, [jobPostingId])
+
+    res.render("hr/jobPosting", { jobPosting: jobPosting.rows[0], applications: applications.rows });
   } catch (error) {
     console.log(`Error fetching job posting by ID: ${error.message}`);
     next(error);
@@ -190,11 +193,33 @@ const updateHR = async (req, res, next) => {
 
 const fetchTalentById = async (req, res, next) => {
   try {
-    const result = await client.query(queries.getTalentByIdSQL);
+    const userId = req.params.id;
+    console.log("user id: ", userId);
+    const result = await client.query(queries.getTalentByIdSQL, [userId]);
     res.render("hr/talent", { talent: result.rows[0] });
   } catch (error) {
     console.log(`Error fetching talent: ${error.message}`);
     next(error);
+  }
+};
+
+const fetchApplicationById = async (req, res) => {
+  const applicationId = req.params.id;
+
+  try {
+    // Fetch the application details
+    const application = await client.query(queries.getApplicationByIdSQL, [applicationId]);
+
+    if (application.rows.length === 0) {
+      return res.status(404).send('Application not found');
+    }
+
+    res.render('hr/application', {
+      application: application.rows[0],
+    });
+  } catch (err) {
+    console.error('Error fetching application details:', err);
+    res.status(500).send('Server error');
   }
 };
 
@@ -206,4 +231,5 @@ module.exports = {
   toggleArchiveJob,
   updateHR,
   fetchTalentById,
+  fetchApplicationById
 };

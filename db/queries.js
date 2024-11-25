@@ -13,7 +13,41 @@ const queries = {
   setCertificatesSQL: `UPDATE "User" SET certificates = $1 WHERE id = $2`,
   setSocialsSQL: `UPDATE "User" SET socials = $1 WHERE id = $2`,
 
-  getAllApplicationsForJobSQL: `SELECT * FROM "Application" WHERE job_posting_id=$1`,
+  getAllApplicationsForJobSQL: `
+  SELECT 
+    ap.id,
+    u.first_name AS first_name,
+    u.last_name AS last_name, 
+    s.status_desc, 
+    ap.submitted_at, 
+    ap.selected_at, 
+    ap.rejected_at, 
+    ap.cv, 
+    ap.cover_letter, 
+    ap.projects, 
+    ap.certificates
+  FROM "Application" ap
+  INNER JOIN "User" u ON ap.talent_id = u.id
+  INNER JOIN "Application_Status" s ON ap.application_status_id = s.id
+  WHERE ap.job_posting_id = $1
+`,
+getApplicationByIdSQL: `
+  SELECT 
+    ap.*, 
+    u.first_name, 
+    u.last_name, 
+    jp.title AS job_title, 
+    jp.company AS job_company, 
+    s.status_desc -- Add this to select the status description
+  FROM "Application" ap
+  INNER JOIN "User" u ON ap.talent_id = u.id
+  INNER JOIN "Job_Posting" jp ON ap.job_posting_id = jp.id
+  INNER JOIN "Application_Status" s ON ap.application_status_id = s.id -- Join with Application_Status
+  WHERE ap.id = $1
+`,
+
+
+
 
   getAppliedJobsSQL: `
     SELECT DISTINCT j.*, 
