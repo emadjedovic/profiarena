@@ -132,10 +132,20 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
 
 const fetchJobPostingById = async (req, res, next) => {
   try {
-    const result = await client.query(queries.getJobPostingByIdSQL, [
-      req.params.id,
+    const jobPostingId = req.params.id;
+
+    const jobPosting = await client.query(queries.getJobPostingByIdSQL, [
+      jobPostingId,
     ]);
-    res.render("hr/jobPosting", { jobPosting: result.rows[0] });
+    const applications = await client.query(
+      queries.getAllApplicationsForJobSQL,
+      [jobPostingId]
+    );
+
+    res.render("hr/jobPosting", {
+      jobPosting: jobPosting.rows[0],
+      applications: applications.rows,
+    });
   } catch (error) {
     console.log(`Error fetching job posting by ID: ${error.message}`);
     next(error);
@@ -163,7 +173,6 @@ const updateHR = async (req, res, next) => {
   const userId = req.params.id;
 
   const { first_name, last_name, email, company_name } = req.body;
-  console.log("req.body: ", req.body);
 
   if (!first_name || !last_name || !email) {
     req.flash("error", "First name, last name, and email are required!");
@@ -190,11 +199,140 @@ const updateHR = async (req, res, next) => {
 
 const fetchTalentById = async (req, res, next) => {
   try {
-    const result = await client.query(queries.getTalentByIdSQL);
+    const userId = req.params.id;
+    const result = await client.query(queries.getTalentByIdSQL, [userId]);
     res.render("hr/talent", { talent: result.rows[0] });
   } catch (error) {
     console.log(`Error fetching talent: ${error.message}`);
     next(error);
+  }
+};
+
+const fetchApplicationById = async (req, res) => {
+  const applicationId = req.params.id;
+
+  try {
+    // Fetch the application details
+    const application = await client.query(queries.getApplicationByIdSQL, [
+      applicationId,
+    ]);
+
+    if (application.rows.length === 0) {
+      return res.status(404).send("Application not found");
+    }
+
+    res.render("hr/application", {
+      application: application.rows[0],
+    });
+  } catch (err) {
+    console.error("Error fetching application details:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+const createAppScore = async (req, res) => {
+  const applicationId = req.params.applicationId;
+  const {
+    education_score,
+    skills_score,
+    experience_score,
+    languages_score,
+    certificate_score,
+    projects_score,
+    comments,
+  } = req.body;
+
+  // You can also calculate the total score here if you want
+  const totalScore =
+    (education_score +
+      skills_score +
+      experience_score +
+      languages_score +
+      certificate_score +
+      projects_score) /
+    6;
+
+  try {
+    // Step 1: Fetch the talent_id for the given applicationId
+    const applicationResult = await client.query(
+      `SELECT talent_id FROM "Application" WHERE id = $1`,
+      [applicationId]
+    );
+
+    if (applicationResult.rows.length === 0) {
+      return res.status(404).send("Application not found");
+    }
+
+    const talent_id = applicationResult.rows[0].talent_id;
+
+    // Step 2: Insert the score into the Application_Score table
+    const result = await client.query(queries.createAppScoreSQL, [
+      applicationId,
+      req.user.id, // Assuming the HR user is logged in
+      talent_id, // Talent ID fetched from the Application table
+    ]);
+
+    console.log("Rows: ", result.rows); // empty
+    const appScoreId = result.rows[0].id;
+
+    // Update the individual scores in the Application_Score table
+    await client.query(queries.setStatusViewedSQL, [applicationId])
+    await client.query(queries.setEducationScoreSQL, [
+      education_score,
+      appScoreId,
+    ]);
+    await client.query(queries.setSkillsScoreSQL, [skills_score, appScoreId]);
+    await client.query(queries.setExperienceScoreSQL, [
+      experience_score,
+      appScoreId,
+    ]);
+    await client.query(queries.setLanguagesScoreSQL, [
+      languages_score,
+      appScoreId,
+    ]);
+    await client.query(queries.setCertificateScoreSQL, [
+      certificate_score,
+      appScoreId,
+    ]);
+    await client.query(queries.setProjectsScoreSQL, [
+      projects_score,
+      appScoreId,
+    ]);
+
+    // Update the total score
+    await client.query(queries.setTotalScoreSQL, [appScoreId]);
+
+    // Insert the comments
+    await client.query(
+      'UPDATE "Application_Score" SET comments=$1 WHERE id=$2',
+      [comments, appScoreId]
+    );
+
+    // Redirect to the application details page or any other page you prefer
+    res.redirect(`/hr/application/${applicationId}`);
+  } catch (err) {
+    console.error("Error submitting score:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+const showAppScoreForm = async (req, res) => {
+  const applicationId = req.params.applicationId;
+
+  try {
+    // Fetch the application details (optional, for showing title and company in the form)
+    const application = await client.query(queries.getApplicationByIdSQL, [applicationId]);
+
+    if (application.rows.length === 0) {
+      return res.status(404).send("Application not found");
+    }
+
+    res.render("hr/appScoreForm", {
+      application: application.rows[0],
+    });
+  } catch (err) {
+    console.error("Error fetching application:", err);
+    res.status(500).send("Server error");
   }
 };
 
@@ -206,4 +344,7 @@ module.exports = {
   toggleArchiveJob,
   updateHR,
   fetchTalentById,
+  fetchApplicationById,
+  createAppScore,
+  showAppScoreForm,
 };

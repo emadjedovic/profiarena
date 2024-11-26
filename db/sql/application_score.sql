@@ -10,6 +10,7 @@ CREATE TABLE "Application_Score" (
     "languages_score" INT CHECK (languages_score BETWEEN 1 AND 5),
     "certificate_score" INT CHECK (certificate_score BETWEEN 1 AND 5),
     "projects_score" INT CHECK (projects_score BETWEEN 1 AND 5),
-    "total_score" INT,
+    "cover_letter_score" INT CHECK (cover_letter_score BETWEEN 1 AND 5),
+    "total_score" NUMERIC(5, 2),
     "comments" TEXT DEFAULT 'No added comments.'
 );

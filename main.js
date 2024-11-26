@@ -109,7 +109,7 @@ passport.use(
     async (email, password, done) => {
       try {
         const result = await client.query(
-          queries.getUserByEmail,
+          queries.getUserByEmailSQL,
           [email]
         );
         const user = result.rows[0];
@@ -158,6 +158,7 @@ app.set("view engine", "ejs");
 const router = require("./routes/index");
 const queries = require("./db/queries");
 app.use("/", router);
+
 
 app.listen(app.get("port"), () => {
   console.log(`Server running at http://localhost:${app.get("port")}`);

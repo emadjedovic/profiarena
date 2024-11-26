@@ -1,0 +1,44 @@
+  <div class="container">
+    <h3>APPLICANT FOR POSITION</h3>
+    <h1><%= application.job_title %> (<%= application.job_company %>) </h1>
+    <h3>
+      <a href="/hr/talent/<%= application.talent_id %>">
+        <%= application.first_name %> <%= application.last_name %>
+      </a>
+    </h3>
+    <p><em>(visit profile for additional info about applicant)</em></p>
+    <hr>
+
+    <ul>
+      <li><strong>Status:</strong> <%= application.status_desc %></li>
+      <li><strong>Submitted At:</strong> <%= application.submitted_at ? new Date(application.submitted_at).toLocaleString() : "N/A" %></li>
+      <li><strong>Selected At:</strong> <%= application.selected_at ? new Date(application.selected_at).toLocaleString() : "N/A" %></li>
+      <li><strong>Rejected At:</strong> <%= application.rejected_at ? new Date(application.rejected_at).toLocaleString() : "N/A" %></li>
+    </ul>
+
+    <h4>Uploaded Documents</h4>
+    <ul>
+      <% if (application.cv) { %>
+        <li><a href="<%= `/${application.cv}` %>" target="_blank">CV</a></li>
+      <% } %>
+      <% if (application.cover_letter) { %>
+        <li><a href="<%= `/${application.cover_letter}` %>" target="_blank">Cover Letter</a></li>
+      <% } %>
+      <% if (application.projects) { %>
+        <li><strong>Projects:</strong> <%= application.projects %></li>
+      <% } %>
+      <% if (application.certificates && application.certificates.length > 0) { %>
+        <li>Certificates:
+          <ul>
+            <% application.certificates.forEach(certificate => { %>
+              <li><a href="<%= `/${certificate}` %>" target="_blank"><%= certificate %></a></li>
+            <% }); %>
+          </ul>
+        </li>
+      <% } %>
+    </ul>
+
+    <a href="/hr/app-score-form/<%= application.id %>" class="btn btn-primary">Create Application Score</a>
+<hr>
+    <a href="/hr/job-posting/<%= application.job_posting_id %>" class="btn mt-3"> <-- Back to Job Posting</a>
+  </div>

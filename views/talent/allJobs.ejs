@@ -53,9 +53,15 @@
           <td><%= new Date(job.application_deadline).toLocaleDateString() %></td>
 
           <td>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job='<%= JSON.stringify(job) %>'>
-              Apply for Job
-            </button>
+            <% if (job.has_applied) { %>
+              <button type="button" class="btn btn-secondary" disabled>
+                Already Applied
+              </button>
+            <% } else { %>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job='<%= JSON.stringify(job) %>'>
+                Apply for Job
+              </button>
+            <% } %>
           </td>
 
 
