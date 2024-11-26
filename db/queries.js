@@ -1,13 +1,13 @@
 const queries = {
   createUserSQL: `
     INSERT INTO "User" ("first_name", "last_name", "email", "password", "phone", "role_id")
-    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
   `,
   getUserByIdSQL: `
-    SELECT * FROM "User" WHERE id = $1;
+    SELECT * FROM "User" WHERE id = $1
   `,
   deleteUserSQL: `
-    DELETE FROM "User" WHERE id = $1;
+    DELETE FROM "User" WHERE id = $1
   `,
   deleteCVSQL: `UPDATE "User" SET cv = NULL WHERE id = $1`,
   setCertificatesSQL: `UPDATE "User" SET certificates = $1 WHERE id = $2`,
@@ -31,23 +31,24 @@ const queries = {
   INNER JOIN "Application_Status" s ON ap.application_status_id = s.id
   WHERE ap.job_posting_id = $1
 `,
-getApplicationByIdSQL: `
+  getApplicationByIdSQL: `
   SELECT 
     ap.*, 
     u.first_name, 
     u.last_name, 
     jp.title AS job_title, 
     jp.company AS job_company, 
-    s.status_desc -- Add this to select the status description
+    jp.cv_field AS cv_required,
+    jp.cover_letter_field AS cover_letter_required,
+    jp.projects_field AS projects_required,
+    jp.certificates_field AS certificates_required,
+    s.status_desc
   FROM "Application" ap
   INNER JOIN "User" u ON ap.talent_id = u.id
   INNER JOIN "Job_Posting" jp ON ap.job_posting_id = jp.id
   INNER JOIN "Application_Status" s ON ap.application_status_id = s.id -- Join with Application_Status
   WHERE ap.id = $1
 `,
-
-
-
 
   getAppliedJobsSQL: `
     SELECT DISTINCT j.*, 
@@ -58,13 +59,11 @@ getApplicationByIdSQL: `
     
   `,
 
-
-  createAppScoreSQL: `INSERT INTO "Application_Score" ("application_id", "hr_id", "talent_id") VALUES ($1, $2, $3)`,
+  createAppScoreSQL: `INSERT INTO "Application_Score" ("application_id", "hr_id", "talent_id") VALUES ($1, $2, $3) RETURNING id`,
   setStatusViewedSQL: `UPDATE "Application" SET application_status_id=2 WHERE id=$1`,
   setStatusInvitedSQL: `UPDATE "Application" SET application_status_id=3 WHERE id=$1`,
   setStatusShortlistenSQL: `UPDATE "Application" SET application_status_id=4 WHERE id=$1`,
   setStatusRejectedSQL: `UPDATE "Application" SET application_status_id=5 WHERE id=$1`,
-
 
   setEducationScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
   setSkillsScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
@@ -72,37 +71,37 @@ getApplicationByIdSQL: `
   setLanguagesScoreSQL: `UPDATE "Application_Score" SET languages_score=$1 WHERE id = $2`,
   setCertificateScoreSQL: `UPDATE "Application_Score" SET certificate_score=$1 WHERE id = $2`,
   setProjectsScoreSQL: `UPDATE "Application_Score" SET projects_score=$1 WHERE id = $2`,
-  setTotalScoreSQL: `UPDATE "Application_Score"
-                  SET total_score = (
-                      (
-                          COALESCE(education_score, 0) +
-                          COALESCE(skills_score, 0) +
-                          COALESCE(experience_score, 0) +
-                          COALESCE(languages_score, 0) +
-                          COALESCE(certificate_score, 0) +
-                          COALESCE(projects_score, 0)
-                      ) /
-                      (
-                          (CASE WHEN education_score IS NOT NULL THEN 1 ELSE 0 END) +
-                          (CASE WHEN skills_score IS NOT NULL THEN 1 ELSE 0 END) +
-                          (CASE WHEN experience_score IS NOT NULL THEN 1 ELSE 0 END) +
-                          (CASE WHEN languages_score IS NOT NULL THEN 1 ELSE 0 END) +
-                          (CASE WHEN certificate_score IS NOT NULL THEN 1 ELSE 0 END) +
-                          (CASE WHEN projects_score IS NOT NULL THEN 1 ELSE 0 END)
-                      )
-                  )
-                  WHERE id = $1;
-                  `,
-
+  setTotalScoreSQL: `
+  UPDATE "Application_Score"
+  SET total_score = (
+    (
+      COALESCE(education_score, 0) +
+      COALESCE(skills_score, 0) +
+      COALESCE(experience_score, 0) +
+      COALESCE(languages_score, 0) +
+      COALESCE(certificate_score, 0) +
+      COALESCE(projects_score, 0)
+    )::NUMERIC / -- Ensures the result is a NUMERIC type, keeping decimals
+    (
+      (CASE WHEN education_score IS NOT NULL THEN 1 ELSE 0 END) +
+      (CASE WHEN skills_score IS NOT NULL THEN 1 ELSE 0 END) +
+      (CASE WHEN experience_score IS NOT NULL THEN 1 ELSE 0 END) +
+      (CASE WHEN languages_score IS NOT NULL THEN 1 ELSE 0 END) +
+      (CASE WHEN certificate_score IS NOT NULL THEN 1 ELSE 0 END) +
+      (CASE WHEN projects_score IS NOT NULL THEN 1 ELSE 0 END)
+    )
+  )
+  WHERE id = $1
+`,
   getAllTalentsSQL: `
-    SELECT * FROM "User" WHERE role_id = 2;
+    SELECT * FROM "User" WHERE role_id = 2
   `,
   getUserByEmailSQL: `SELECT * FROM "User" WHERE "email" = $1`,
   getTalentByIdSQL: `
-    SELECT * FROM "User" WHERE role_id = 2 AND id = $1;
+    SELECT * FROM "User" WHERE role_id = 2 AND id = $1
   `,
   toggleArchiveJobSQL: `UPDATE "Job_Posting" SET "is_archived" = $1 WHERE "id" = $2`,
-  updateTalentSQLSQL: `
+  updateTalentSQL: `
     UPDATE "User"
     SET 
       "first_name" = $1,
@@ -121,18 +120,18 @@ getApplicationByIdSQL: `
       "certificates" = $14,
       "updated_at" = CURRENT_TIMESTAMP
     WHERE "id" = $15
-    RETURNING *;
+    RETURNING *
   `,
 
   updateHRSQL: `
     UPDATE "User"
     SET "first_name" = $1, "last_name" = $2, "email" = $3, "company_name" = $4
-    WHERE "id" = $5;
+    WHERE "id" = $5
   `,
   getAllActiveJobsSQL: `SELECT * FROM "Job_Posting" WHERE is_archived=false`,
   createJobPostingSQL: `
     INSERT INTO "Job_Posting" ("title", "description", "city", "application_deadline", "company", "cv_field", "cover_letter_field", "projects_field", "certificates_field", "hr_id") 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `,
   getUserApplicationsSQL: `SELECT a.id AS application_id,
               a.job_posting_id,
@@ -148,10 +147,10 @@ getApplicationByIdSQL: `
        JOIN "Application_Status" AS as_table ON a.application_status_id = as_table.id
        WHERE a.talent_id = $1`,
   getJobPostingsByHrIdSQL: `
-    SELECT * FROM "Job_Posting" WHERE hr_id = $1;
+    SELECT * FROM "Job_Posting" WHERE hr_id = $1
   `,
   getJobPostingByIdSQL: `
-    SELECT * FROM "Job_Posting" WHERE id = $1;
+    SELECT * FROM "Job_Posting" WHERE id = $1
   `,
   getApplicationStatusSQL: `SELECT status_table.status_desc FROM "Application_Status" as status_table JOIN "Application" as a ON status_table.id=a.application_status_id WHERE a.job_posting_id=$1 AND a.talent_id = $2`,
   createApplicationSQL: `INSERT INTO "Application" (talent_id, job_posting_id, application_status_id) VALUES ($1, $2, $3) RETURNING id`,

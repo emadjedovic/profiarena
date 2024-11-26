@@ -173,7 +173,6 @@ const updateHR = async (req, res, next) => {
   const userId = req.params.id;
 
   const { first_name, last_name, email, company_name } = req.body;
-  console.log("req.body: ", req.body);
 
   if (!first_name || !last_name || !email) {
     req.flash("error", "First name, last name, and email are required!");
@@ -201,7 +200,6 @@ const updateHR = async (req, res, next) => {
 const fetchTalentById = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    console.log("user id: ", userId);
     const result = await client.query(queries.getTalentByIdSQL, [userId]);
     res.render("hr/talent", { talent: result.rows[0] });
   } catch (error) {
@@ -222,7 +220,6 @@ const fetchApplicationById = async (req, res) => {
     if (application.rows.length === 0) {
       return res.status(404).send("Application not found");
     }
-    console.log("Fetched Application:", application.rows[0]);
 
     res.render("hr/application", {
       application: application.rows[0],
@@ -275,10 +272,11 @@ const createAppScore = async (req, res) => {
       talent_id, // Talent ID fetched from the Application table
     ]);
 
+    console.log("Rows: ", result.rows); // empty
     const appScoreId = result.rows[0].id;
 
     // Update the individual scores in the Application_Score table
-    await client.query(queries.setStatusViewedSQL, [appScoreId])
+    await client.query(queries.setStatusViewedSQL, [applicationId])
     await client.query(queries.setEducationScoreSQL, [
       education_score,
       appScoreId,

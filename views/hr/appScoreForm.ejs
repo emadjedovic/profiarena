@@ -39,18 +39,37 @@
                  class="form-control form-control-sm d-inline-block" 
                  min="1" max="5" style="width: 70px;" required>
         </div>
+
+
+          <% if(application.certificates_required) { %>
+            
         <div class="form-group mb-3">
           <label for="certificate_score" class="form-label">Certificate Score (1-5):</label>
           <input type="number" name="certificate_score" id="certificate_score" 
                  class="form-control form-control-sm d-inline-block" 
                  min="1" max="5" style="width: 70px;" required>
         </div>
+
+        <% } %>
+
+        <% if(application.projects_required) { %>
         <div class="form-group mb-3">
           <label for="projects_score" class="form-label">Projects Score (1-5):</label>
           <input type="number" name="projects_score" id="projects_score" 
                  class="form-control form-control-sm d-inline-block" 
                  min="1" max="5" style="width: 70px;" required>
         </div>
+
+        <% } %>
+
+        <% if(application.cover_letter_required) { %>
+          <div class="form-group mb-3">
+            <label for="cover_letter_score" class="form-label">Cover Letter Score (1-5):</label>
+            <input type="number" name="cover_letter_score" id="cover_letter_score" 
+                   class="form-control form-control-sm d-inline-block" 
+                   min="1" max="5" style="width: 70px;" required>
+          </div>
+          <% } %>
       </div>
 
         <div class="form-group mb-3">
