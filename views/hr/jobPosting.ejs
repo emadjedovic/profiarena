@@ -42,6 +42,8 @@
               <th>Talent Name</th>
               <th>Status</th>
               <th>Submitted At</th>
+              <th>Total Score</th>
+              <th>Rank</th>
             </tr>
           </thead>
           <tbody>
@@ -55,6 +57,13 @@
                 </td>
                 <td><%= application.status_desc %></td>
                 <td><%= application.submitted_at ? new Date(application.submitted_at).toLocaleDateString() : "N/A" %></td>
+                <td><% if(application.total_score) { %>
+                  <%= application.total_score %>
+                <% } else { %>
+                Score not given.
+              <% } %>
+            </td> <!-- Added Total Score -->
+          <td><%= application.rank %></td> <!-- Added Rank -->
                 
               </tr>
             <% }); %>

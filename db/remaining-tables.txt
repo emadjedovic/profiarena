@@ -16,14 +16,17 @@ id                  int [primary key]
 status_desc	varchar(50) [not null] // not_confirmed, confirmed, finished
 }
 
-Table Chat {
-    id                  int [primary key]
-    sender_id           int [not null, ref: > User.id]
-    receiver_id         int [not null, ref: > User.id]
-    message             text [not null]
-    sent_at             timestamp [default: `now()`]
-    is_read             boolean [default: false]
+Table Email_Notifications {
+    id              int [primary key]
+    recipient_id    int [not null, ref: > User.id]
+    subject         varchar(255) [not null]
+    body            text [not null]
+    sent_at         timestamp [default: `now()`]
+    status          varchar(50) [default: 'pending'] // pending, sent, failed
 }
+
+
+
 
 Table Notifications {
     id                  int [primary key]
@@ -34,13 +37,13 @@ Table Notifications {
     is_read             boolean [default: false]
 }
 
-Table Email_Notifications {
-    id              int [primary key]
-    recipient_id    int [not null, ref: > User.id]
-    subject         varchar(255) [not null]
-    body            text [not null]
-    sent_at         timestamp [default: `now()`]
-    status          varchar(50) [default: 'pending'] // pending, sent, failed
+Table Chat {
+    id                  int [primary key]
+    sender_id           int [not null, ref: > User.id]
+    receiver_id         int [not null, ref: > User.id]
+    message             text [not null]
+    sent_at             timestamp [default: `now()`]
+    is_read             boolean [default: false]
 }
 
 Table Report_Generation {

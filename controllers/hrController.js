@@ -134,14 +134,31 @@ const fetchJobPostingById = async (req, res, next) => {
   try {
     const jobPostingId = req.params.id;
 
+    // Fetch the job posting details
     const jobPosting = await client.query(queries.getJobPostingByIdSQL, [
       jobPostingId,
     ]);
+
+    // Fetch applications with their corresponding total scores
     const applications = await client.query(
       queries.getAllApplicationsForJobSQL,
       [jobPostingId]
     );
 
+    // Rank the applications based on total score
+    applications.rows.forEach((application, index) => {
+      application.rank = index + 1; // Start ranking from 1
+    });
+
+    // Sort applications by total_score in descending order to rank
+    applications.rows.sort((a, b) => b.total_score - a.total_score);
+
+    // Assign ranks to the sorted applications
+    applications.rows.forEach((application, index) => {
+      application.rank = index + 1; // Rank starts at 1
+    });
+
+    // Render the job posting page with the applications and ranks
     res.render("hr/jobPosting", {
       jobPosting: jobPosting.rows[0],
       applications: applications.rows,
@@ -213,16 +230,25 @@ const fetchApplicationById = async (req, res) => {
 
   try {
     // Fetch the application details
-    const application = await client.query(queries.getApplicationByIdSQL, [
+    const applicationResult = await client.query(queries.getApplicationByIdSQL, [
       applicationId,
     ]);
 
-    if (application.rows.length === 0) {
+    if (applicationResult.rows.length === 0) {
       return res.status(404).send("Application not found");
     }
 
+    // Fetch the application score if it exists
+    const appScoreResult = await client.query(queries.getApplicationScoreByApplicationIdSQL, [
+      applicationId,
+    ]);
+
+    const application = applicationResult.rows[0];
+    const applicationScore = appScoreResult.rows[0];
+
     res.render("hr/application", {
-      application: application.rows[0],
+      application,
+      applicationScore
     });
   } catch (err) {
     console.error("Error fetching application details:", err);
@@ -276,7 +302,7 @@ const createAppScore = async (req, res) => {
     const appScoreId = result.rows[0].id;
 
     // Update the individual scores in the Application_Score table
-    await client.query(queries.setStatusViewedSQL, [applicationId])
+    await client.query(queries.setStatusViewedSQL, [applicationId]);
     await client.query(queries.setEducationScoreSQL, [
       education_score,
       appScoreId,
@@ -321,7 +347,9 @@ const showAppScoreForm = async (req, res) => {
 
   try {
     // Fetch the application details (optional, for showing title and company in the form)
-    const application = await client.query(queries.getApplicationByIdSQL, [applicationId]);
+    const application = await client.query(queries.getApplicationByIdSQL, [
+      applicationId,
+    ]);
 
     if (application.rows.length === 0) {
       return res.status(404).send("Application not found");
@@ -336,6 +364,23 @@ const showAppScoreForm = async (req, res) => {
   }
 };
 
+const addComment = async (req, res, next) => {
+  const { comment } = req.body;
+  const appScoreId = req.params.appScoreId;
+
+  try {
+    // Update the comment in the Application_Score table
+    await client.query(queries.addCommentSQL, [comment, appScoreId]);
+    req.flash("success", "Comment added successfully!");
+    res.redirect(`back`);
+  } catch (error) {
+    console.log(`Error adding comment: ${error.message}`);
+    req.flash("error", "Failed to add comment.");
+    res.redirect("back");
+  }
+};
+
+
 module.exports = {
   createJobPosting,
   fetchTalents,
@@ -347,4 +392,5 @@ module.exports = {
   fetchApplicationById,
   createAppScore,
   showAppScoreForm,
+  addComment
 };

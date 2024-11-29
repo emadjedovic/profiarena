@@ -9,7 +9,8 @@ const {
   fetchTalentById,
   fetchApplicationById,
   createAppScore,
-  showAppScoreForm
+  showAppScoreForm,
+  addComment
 } = require("../controllers/hrController");
 
 router.post("/create-job-posting", createJobPosting);
@@ -31,6 +32,7 @@ router.get("/:id/edit", (req, res) => {
 
 router.get('/app-score-form/:applicationId', showAppScoreForm);
 router.post('/create-app-score/:applicationId', createAppScore);
+router.post('/add-comment/:appScoreId', addComment)
 
 
 module.exports = router;

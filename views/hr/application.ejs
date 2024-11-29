@@ -38,7 +38,18 @@
       <% } %>
     </ul>
 
-    <a href="/hr/app-score-form/<%= application.id %>" class="btn btn-primary">Create Application Score</a>
+    <a href="/hr/app-score-form/<%= application.id %>" class="btn btn-primary m-2">Create Application Score</a>
+
+ <!-- If application score exists, show the comment input and button -->
+<% if (applicationScore) { %>
+  <form method="POST" action="/hr/add-comment/<%= applicationScore.id %>">
+    <div class="form-group">
+      <textarea id="comment" name="comment" class="form-control m-3" rows="4" placeholder="Enter your comment here..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-secondary m-3">Add Comment</button>
+  </form>
+<% } %>
+
 <hr>
-    <a href="/hr/job-posting/<%= application.job_posting_id %>" class="btn mt-3"> <-- Back to Job Posting</a>
+    <a href="/hr/job-posting/<%= application.job_posting_id %>" class="btn m-2"> <-- Back to Job Posting</a>
   </div>
