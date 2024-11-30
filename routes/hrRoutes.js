@@ -10,14 +10,8 @@ const {
   fetchApplicationById,
   createAppScore,
   showAppScoreForm,
-  addComment
+  addComment,
 } = require("../controllers/hrController");
-
-
-// EMAILS
-
-const { notifyTalent } = require('../controllers/notifyController');
-router.post('/schedule-interview', notifyTalent);
 
 // OTHER
 
@@ -38,10 +32,8 @@ router.get("/:id/edit", (req, res) => {
   res.render("hr/edit");
 });
 
-router.get('/app-score-form/:applicationId', showAppScoreForm);
-router.post('/create-app-score/:applicationId', createAppScore);
-router.post('/add-comment/:appScoreId', addComment)
-
-
+router.get("/app-score-form/:applicationId", showAppScoreForm);
+router.post("/create-app-score/:applicationId", createAppScore);
+router.post("/add-comment/:appScoreId", addComment);
 
 module.exports = router;

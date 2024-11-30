@@ -1,5 +1,5 @@
-const { Client } = require('pg');
-const dotenv = require('dotenv');
+const { Client } = require("pg");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const client = new Client({
@@ -13,9 +13,9 @@ const client = new Client({
 const connect = async () => {
   try {
     await client.connect();
-    console.log('Connected to the database.');
+    console.log("Connected to the database.");
   } catch (err) {
-    console.error('Database connection error:', err.message);
+    console.error("Database connection error:", err.message);
     process.exit(1);
   }
 };
