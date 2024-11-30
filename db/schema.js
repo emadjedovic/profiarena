@@ -15,6 +15,7 @@ const runSQLFile = async (filePath) => {
 const createLookupTables = async () => {
   await runSQLFile(path.join(__dirname, './sql/role.sql'));
   await runSQLFile(path.join(__dirname, './sql/application_status.sql'));
+  await runSQLFile(path.join(__dirname, './sql/interview_status.sql'));
 };
 
 const createUserTable = async () => {
@@ -37,6 +38,15 @@ const createApplicationScoreTable = async () => {
   await runSQLFile(path.join(__dirname, './sql/application_score.sql'));
 };
 
+const createInterviewScheduleTable = async () => {
+  await runSQLFile(path.join(__dirname, './sql/interview_schedule.sql'));
+};
+
+const createEmailCommunicationTable = async () => {
+  await runSQLFile(path.join(__dirname, './sql/email_communication.sql'));
+};
+
+
 module.exports = {
   createUserTable,
   createSessionTable,
@@ -44,4 +54,6 @@ module.exports = {
   createJobPostingTable,
   createApplicationTable,
   createApplicationScoreTable,
+  createInterviewScheduleTable,
+  createEmailCommunicationTable
 };

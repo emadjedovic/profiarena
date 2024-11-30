@@ -14,6 +14,9 @@ const { formatDate } = require('./utils/dateFormating');
 const { connect, client } = require("./db/connect");
 const schema = require("./db/schema");
 
+const { listenForEmailNotifications } = require('./emails/emailListener');
+
+
 const setupDatabase = async () => {
   await connect();
   
@@ -24,7 +27,11 @@ const setupDatabase = async () => {
   // await schema.createJobPostingTable();
   // await schema.createApplicationTable();
   // await schema.createApplicationScoreTable();
-  
+
+  await schema.createInterviewScheduleTable();
+  await schema.createEmailCommunicationTable();
+
+  listenForEmailNotifications();
 };
 
 setupDatabase();

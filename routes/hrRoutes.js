@@ -13,6 +13,14 @@ const {
   addComment
 } = require("../controllers/hrController");
 
+
+// EMAILS
+
+const { notifyTalent } = require('../controllers/notifyController');
+router.post('/schedule-interview', notifyTalent);
+
+// OTHER
+
 router.post("/create-job-posting", createJobPosting);
 router.get("/profile", (req, res) => {
   res.render("hr/profile");
@@ -33,6 +41,7 @@ router.get("/:id/edit", (req, res) => {
 router.get('/app-score-form/:applicationId', showAppScoreForm);
 router.post('/create-app-score/:applicationId', createAppScore);
 router.post('/add-comment/:appScoreId', addComment)
+
 
 
 module.exports = router;
