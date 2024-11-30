@@ -12,48 +12,25 @@ const runSQLFile = async (filePath) => {
   }
 };
 
-const createLookupTables = async () => {
-  await runSQLFile(path.join(__dirname, './sql/role.sql'));
-  await runSQLFile(path.join(__dirname, './sql/application_status.sql'));
-  await runSQLFile(path.join(__dirname, './sql/interview_status.sql'));
-};
+const createTables = async () => {
+  const sqlFiles = [
+    'session.sql',
+    'role.sql',
+    'application_status.sql',
+    'interview_status.sql',
+    'user.sql',
+    'job_posting.sql',
+    'application.sql',
+    'application_score.sql',
+    'interview_schedule.sql',
+    'email_communication.sql',
+  ];
 
-const createUserTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/user.sql'));
+  for (const file of sqlFiles) {
+    await runSQLFile(path.join(__dirname, './sql', file));
+  }
 };
-
-const createSessionTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/session.sql'));
-};
-
-const createJobPostingTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/job_posting.sql'));
-};
-
-const createApplicationTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/application.sql'));
-};
-
-const createApplicationScoreTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/application_score.sql'));
-};
-
-const createInterviewScheduleTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/interview_schedule.sql'));
-};
-
-const createEmailCommunicationTable = async () => {
-  await runSQLFile(path.join(__dirname, './sql/email_communication.sql'));
-};
-
 
 module.exports = {
-  createUserTable,
-  createSessionTable,
-  createLookupTables,
-  createJobPostingTable,
-  createApplicationTable,
-  createApplicationScoreTable,
-  createInterviewScheduleTable,
-  createEmailCommunicationTable
+  createTables
 };

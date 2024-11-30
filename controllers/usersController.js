@@ -4,6 +4,7 @@ const { client } = require("../db/connect"); // Import the client from connect.j
 const { StatusCodes } = require("http-status-codes");
 const passport = require("passport");
 const queries = require("../db/queries"); // Import the query file
+const { sendEmail } = require("../emails/emailService");
 
 // Extract user parameters from request body
 const getUserParams = (body) => {
@@ -49,14 +50,34 @@ const register = async (req, res, next) => {
       `${user.first_name} ${user.last_name}'s account created successfully!`
     );
 
+
     // Log the user in automatically after registration
-    req.login(user, (err) => {
+    req.login(user, async (err) => {
       if (err) {
         console.log("Error logging in after registration:", err);
         return next(err);
       }
       res.locals.user = user;
-      return res.redirect("/home");
+
+      
+      res.redirect("/home");
+
+      // Send the email after redirect
+      setImmediate(async () => {
+        try {
+          // Assume you have a `sendEmail` function defined
+          const templateData = { 
+            userName: `${user.first_name} ${user.last_name}`, // Ensure template receives this variable
+            email: user.email,
+          };
+          await sendEmail(user.email, 'Thank You for Registering', 'welcome-message', templateData, null, user.id, null);
+          console.log('Welcome email sent successfully!');
+        } catch (emailError) {
+          console.error('Error sending welcome email:', emailError.message);
+        }
+      });
+
+      
     });
   } catch (error) {
     console.log(`Error creating user: ${error.message}`);

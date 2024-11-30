@@ -13,8 +13,5 @@ router.use("/api", apiRoutes);
 router.use("/", userRoutes);
 router.use("/", errorRoutes);
 
-router.get("/thanks", (req, res) => {
-    res.render("thanks");
-  });
 
 module.exports = router;

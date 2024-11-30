@@ -2,9 +2,9 @@ DROP TABLE IF EXISTS "Email_Communication" CASCADE;
 
 CREATE TABLE "Email_Communication" (
     "id" SERIAL PRIMARY KEY,
-    "interview_id" INT NOT NULL REFERENCES "Interview_Schedule"("id") ON DELETE CASCADE,
-    "sender_id" INT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-    "receiver_id" INT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+    "interview_id" INT REFERENCES "Interview_Schedule"("id") ON DELETE CASCADE,
+    "sender_id" INT REFERENCES "User"("id") ON DELETE CASCADE,
+    "receiver_id" INT REFERENCES "User"("id") ON DELETE CASCADE,
     "subject" VARCHAR(255) NOT NULL,
     "message" TEXT NOT NULL,
     "attachments" TEXT[],
