@@ -1,5 +1,6 @@
 const { client } = require("../db/connect"); // Make sure to import client
 const queries = require("../db/queries"); // Import the query file
+const { sendEmail } = require('../emails/emailService');
 
 // Create Job Posting
 const createJobPosting = async (req, res, next) => {
@@ -230,28 +231,102 @@ const fetchApplicationById = async (req, res) => {
 
   try {
     // Fetch the application details
-    const applicationResult = await client.query(queries.getApplicationByIdSQL, [
-      applicationId,
-    ]);
+    const applicationResult = await client.query(
+      queries.getApplicationByIdSQL,
+      [applicationId]
+    );
 
     if (applicationResult.rows.length === 0) {
       return res.status(404).send("Application not found");
     }
 
     // Fetch the application score if it exists
-    const appScoreResult = await client.query(queries.getApplicationScoreByApplicationIdSQL, [
-      applicationId,
-    ]);
+    const appScoreResult = await client.query(
+      queries.getApplicationScoreByApplicationIdSQL,
+      [applicationId]
+    );
 
     const application = applicationResult.rows[0];
     const applicationScore = appScoreResult.rows[0];
 
     res.render("hr/application", {
       application,
-      applicationScore
+      applicationScore,
     });
   } catch (err) {
     console.error("Error fetching application details:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+const updateApplicationStatus = async (applicationId, newStatus, talentId) => {
+  try {
+    // Step 1: Update the application status
+    await client.query(queries.setStatusSQL, [newStatus, applicationId]);
+
+    // Step 2: Fetch email and detailed application info
+    const result = await client.query(queries.getApplicationByIdSQL, [applicationId]);
+    const emailResult = await client.query(queries.getUserByIdSQL, [talentId]);
+    const email = emailResult.rows[0].email;
+    
+    console.log("email: ", email);
+
+    if (result.rows.length === 0) {
+      console.error("Application not found or invalid status.");
+      return;
+    }
+
+    const { 
+      first_name,
+      last_name,
+      status_desc,
+      job_title,
+      job_company,
+    } = result.rows[0];
+
+    // Step 3: Send the email notification
+    const subject = `Update: Your Application Status for "${job_title}" at ${job_company}`;
+    const templateData = {
+      applicationId,
+      first_name,
+      last_name,
+      status_desc, // Current status description
+      job_title,   // Title of the job
+      job_company, // Company to which the user applied
+    };
+
+    await sendEmail(email, subject, "application-status", templateData, null, talentId, null);
+    console.log(`Notification email sent for status: ${status_desc}`);
+  } catch (err) {
+    console.error("Error updating application status and sending email:", err);
+    throw err; // Handle the error appropriately in the calling function
+  }
+};
+
+
+
+// Example for rejecting an application
+const rejectApplication = async (req, res) => {
+  const applicationId = req.params.applicationId;
+
+  try {
+    const result = await client.query(
+      `SELECT talent_id FROM "Application" WHERE id = $1`,
+      [applicationId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).send("Application not found");
+    }
+
+    const talent_id = result.rows[0];
+
+    // Update status to "Rejected" and notify talent
+    await updateApplicationStatus(applicationId, 5, talent_id);
+
+    res.redirect(`/hr/applications`);
+  } catch (err) {
+    console.error("Error rejecting application:", err);
     res.status(500).send("Server error");
   }
 };
@@ -268,7 +343,7 @@ const createAppScore = async (req, res) => {
     comments,
   } = req.body;
 
-  // You can also calculate the total score here if you want
+  // Calculate the total score (assuming the formula is correct)
   const totalScore =
     (education_score +
       skills_score +
@@ -291,56 +366,53 @@ const createAppScore = async (req, res) => {
 
     const talent_id = applicationResult.rows[0].talent_id;
 
-    // Step 2: Insert the score into the Application_Score table
-    const result = await client.query(queries.createAppScoreSQL, [
+    // Step 2: Delete any existing scores for this application
+    await client.query(queries.deleteAppScoreSQL, [applicationId]);
+
+    // Step 3: Insert the new score
+    const result = await client.query(queries.insertAppScoreSQL, [
       applicationId,
       req.user.id, // Assuming the HR user is logged in
       talent_id, // Talent ID fetched from the Application table
     ]);
 
-    console.log("Rows: ", result.rows); // empty
     const appScoreId = result.rows[0].id;
 
-    // Update the individual scores in the Application_Score table
-    await client.query(queries.setStatusViewedSQL, [applicationId]);
-    await client.query(queries.setEducationScoreSQL, [
-      education_score,
-      appScoreId,
-    ]);
-    await client.query(queries.setSkillsScoreSQL, [skills_score, appScoreId]);
-    await client.query(queries.setExperienceScoreSQL, [
-      experience_score,
-      appScoreId,
-    ]);
-    await client.query(queries.setLanguagesScoreSQL, [
-      languages_score,
-      appScoreId,
-    ]);
-    await client.query(queries.setCertificateScoreSQL, [
-      certificate_score,
-      appScoreId,
-    ]);
-    await client.query(queries.setProjectsScoreSQL, [
-      projects_score,
-      appScoreId,
-    ]);
+    // Step 4: Use a single UPDATE query to update all score fields
+    await client.query(
+      queries.setScoresSQL,
+      [
+        education_score,
+        skills_score,
+        experience_score,
+        languages_score,
+        certificate_score,
+        projects_score,
+        appScoreId,
+      ]
+    );
 
-    // Update the total score
+    // Step 5: Update the total score for this application score
     await client.query(queries.setTotalScoreSQL, [appScoreId]);
 
-    // Insert the comments
+    // Step 6: Insert comments into the application score
     await client.query(
       'UPDATE "Application_Score" SET comments=$1 WHERE id=$2',
       [comments, appScoreId]
     );
 
-    // Redirect to the application details page or any other page you prefer
+    // Step 7: Change the application status to "viewed" and send notification
+    await updateApplicationStatus(applicationId, 2, talent_id);
+
+    // Step 8: Redirect to the application details page
     res.redirect(`/hr/application/${applicationId}`);
   } catch (err) {
     console.error("Error submitting score:", err);
     res.status(500).send("Server error");
   }
 };
+
+
 
 const showAppScoreForm = async (req, res) => {
   const applicationId = req.params.applicationId;
@@ -380,7 +452,6 @@ const addComment = async (req, res, next) => {
   }
 };
 
-
 module.exports = {
   createJobPosting,
   fetchTalents,
@@ -392,5 +463,5 @@ module.exports = {
   fetchApplicationById,
   createAppScore,
   showAppScoreForm,
-  addComment
+  addComment,
 };
