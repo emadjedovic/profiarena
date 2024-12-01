@@ -1,20 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { client } = require('../db/connect');  // Assuming you're using a client to query the database
-const queries = require('../db/queries');
+const { client } = require('../db/connect');
+
+const {
+  getApplicationStatusSQL
+} = require("../db/queries/appQueries");
+const {
+  getJobPostingByIdSQL
+} = require("../db/queries/jobPostingQueries");
 
 // Define the route to fetch job details by job ID
 router.get('/job/:id', async (req, res, next) => {
     try {
         // Fix the query by choosing a valid alias (e.g., 'status_table')
         const result = await client.query(
-          queries.getJobPostingByIdSQL, // Use double quotes for case-sensitive table name
+          getJobPostingByIdSQL, // Use double quotes for case-sensitive table name
           [req.params.id]
         );
     
         // Correct the alias for Application_Status and Application
         const status = await client.query(
-          queries.getApplicationStatusSQL,
+          getApplicationStatusSQL,
           [req.params.id, req.user.id] // Assuming you're filtering by job_posting_id in Application table
         );
     

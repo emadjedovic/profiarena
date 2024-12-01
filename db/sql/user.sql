@@ -12,13 +12,13 @@ CREATE TABLE "User" (
     "address" TEXT,
     "date_of_birth" DATE,
     "about" TEXT,
-    "education" TEXT[],       
-    "skills" TEXT[],           
-    "languages" TEXT[],        
-    "socials" TEXT[],         
-    "projects" TEXT,        
-    "cv" VARCHAR(255),        
-    "certificates" VARCHAR(255)[],
+    "education" TEXT [],
+    "skills" TEXT [],
+    "languages" TEXT [],
+    "socials" TEXT [],
+    "projects" TEXT,
+    "cv" VARCHAR(255),
+    "certificates" VARCHAR(255) [],
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

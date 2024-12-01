@@ -12,7 +12,7 @@ const path = require("path");
 const { formatDate } = require("./utils/dateFormating");
 const { connect, client } = require("./db/connect");
 const { createTables } = require("./db/schema");
-const { listenForEmailNotifications } = require("./emails/emailListener");
+const { getUserByEmailSQL, getUserByIdSQL} = require("./db/queries/userQueries");
 require('dotenv').config();
 
 const setupDatabase = async () => {
@@ -101,7 +101,7 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const result = await client.query(queries.getUserByEmailSQL, [email]);
+        const result = await client.query(getUserByEmailSQL, [email]);
         const user = result.rows[0];
         if (!user) {
           return done(null, false, { message: "User not found" });
@@ -128,7 +128,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const result = await client.query(queries.getUserByIdSQL, [id]);
+    const result = await client.query(getUserByIdSQL, [id]);
     const user = result.rows[0];
     if (user) {
       done(null, user);
@@ -144,7 +144,6 @@ app.set("port", process.env.PORT || 3000);
 app.set("view engine", "ejs");
 
 const router = require("./routes/index");
-const queries = require("./db/queries");
 app.use("/", router);
 
 app.listen(app.get("port"), () => {

@@ -4,58 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Interview Invitation</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      color: #007bff;
-      font-size: 1.5em;
-    }
-    p {
-      margin: 10px 0;
-    }
-    ul {
-      padding: 0;
-      list-style-type: none;
-    }
-    ul li {
-      margin: 5px 0;
-    }
-    a {
-      display: inline-block;
-      margin: 10px 0;
-      padding: 10px 15px;
-      text-decoration: none;
-      color: #fff;
-      background-color: #007bff;
-      border-radius: 5px;
-      font-weight: bold;
-      text-align: center;
-    }
-    a.reject {
-      background-color: #dc3545;
-    }
-    a:hover {
-      opacity: 0.9;
-    }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Interview Invitation</h1>
     <p>Dear <%= first_name %> <%= last_name %>,</p>
     <p>You have been invited for an interview for the <strong><%= job_title %></strong> position at <strong><%= job_company %></strong>.</p>
 
@@ -72,10 +22,10 @@
     <p>Please confirm your attendance by clicking one of the links below:</p>
     <p>
       <a href="<%= confirm_link %>">Confirm Attendance</a>
+      <br>
       <a href="<%= reject_link %>" class="reject">Reject Invitation</a>
     </p>
 
     <p>If you have any questions, feel free to reach out. We look forward to meeting you!</p>
-  </div>
 </body>
 </html>

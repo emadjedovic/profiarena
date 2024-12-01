@@ -7,6 +7,7 @@ CREATE TABLE "Interview_Status" (
 
 INSERT INTO "Interview_Status" ("status_desc") VALUES
     ('not_confirmed'),
-    ('confirmed'),
+    ('time_confirmed'),
+    ('time_rejected'),
     ('finished');
 
