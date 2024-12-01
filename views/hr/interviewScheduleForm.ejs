@@ -1,0 +1,50 @@
+<div class="container">
+  <div class="card shadow-sm mx-auto" style="max-width: 400px;">
+    <div class="card-header bg-primary text-white text-center">
+      <h4>Send interview invitation to</h4>
+      <h4><strong><%= application.first_name %> <%= application.last_name %></strong></h4>
+      <h4>for position at <%= application.job_company %>: </h4>
+      <h4><strong><%= application.job_title %></strong></h4>
+    </div>
+    <div class="card-body">
+      <form action="/hr/create-interview/<%= application.id %>" method="POST" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="proposed_time" class="form-label">Proposed Time:</label>
+          <input type="datetime-local" id="proposed_time" name="proposed_time" class="form-control" required>
+          <div class="invalid-feedback">Please select a proposed time.</div>
+        </div>
+
+        <div class="form-check mb-3">
+          <input type="checkbox" id="is_online" name="is_online" class="form-check-input" onchange="toggleRequiredFields(this)">
+          <label for="is_online" class="form-check-label">Is the interview online?</label>
+        </div>
+
+        <div class="mb-3">
+          <label for="city" class="form-label">City:</label>
+          <input type="text" id="city" name="city" class="form-control">
+          <div class="invalid-feedback">Please provide a city.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="street_address" class="form-label">Street Address:</label>
+          <input type="text" id="street_address" name="street_address" class="form-control">
+          <div class="invalid-feedback">Please provide a street address.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Send Email</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelector("form").addEventListener("submit", function (event) {
+  const proposedTime = document.getElementById("proposed_time").value;
+  
+  if (!proposedTime) {
+    event.preventDefault();  // Prevent form submission if proposed time is empty
+    alert("Proposed time is required.");
+  }
+});
+
+</script>

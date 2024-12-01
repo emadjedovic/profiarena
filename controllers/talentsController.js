@@ -360,6 +360,76 @@ const getJobsWithApplicationStatus = async (userId) => {
   return result.rows; // Returns jobs with `has_applied` field
 };
 
+const jwt = require('jsonwebtoken');
+
+// Talent confirms the interview
+const confirmInterview = async (req, res) => {
+  const token = req.params.token;
+  console.log("token: ", token);
+
+  try {
+    // Step 1: Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { interviewId, talentId } = decoded;
+
+    // Step 2: Check if the interview exists and belongs to the talent
+    const interviewResult = await client.query(
+      `SELECT * FROM "Interview_Schedule" WHERE "id" = $1 AND "talent_id" = $2`,
+      [interviewId, talentId]
+    );
+
+    if (interviewResult.rows.length === 0) {
+      return res.status(404).send("Interview not found or unauthorized");
+    }
+
+    // Step 3: Update the interview status to confirmed (assuming 2 = confirmed)
+    await client.query(
+      `UPDATE "Interview_Schedule" SET "interview_status_id" = 2 WHERE "id" = $1`,
+      [interviewId]
+    );
+
+    // Send a confirmation message (you could also send an email here if needed)
+    res.send('Interview confirmed!');
+  } catch (err) {
+    console.error('Error confirming interview:', err);
+    res.status(500).send('Error confirming interview.');
+  }
+};
+
+// Talent rejects the interview
+const rejectInterview = async (req, res) => {
+  const token = req.params.token;
+
+  try {
+    // Step 1: Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { interviewId, talentId } = decoded;
+
+    // Step 2: Check if the interview exists and belongs to the talent
+    const interviewResult = await client.query(
+      `SELECT * FROM "Interview_Schedule" WHERE "id" = $1 AND "talent_id" = $2`,
+      [interviewId, talentId]
+    );
+
+    if (interviewResult.rows.length === 0) {
+      return res.status(404).send("Interview not found or unauthorized");
+    }
+
+    // Step 3: Update the interview status to rejected (assuming 3 = rejected)
+    await client.query(
+      `UPDATE "Interview_Schedule" SET "interview_status_id" = 3 WHERE "id" = $1`,
+      [interviewId]
+    );
+
+    // Send a rejection message (you could also send an email here if needed)
+    res.send('Interview rejected.');
+  } catch (err) {
+    console.error('Error rejecting interview:', err);
+    res.status(500).send('Error rejecting interview.');
+  }
+};
+
+
 
 module.exports = {
   updateTalent,
@@ -370,4 +440,6 @@ module.exports = {
   fetchMyApplications,
   fetchJob,
   applyForJob,
+  confirmInterview,
+  rejectInterview
 };

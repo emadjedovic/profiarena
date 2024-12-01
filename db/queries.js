@@ -18,18 +18,21 @@ const queries = {
     ap.id,
     u.first_name AS first_name,
     u.last_name AS last_name, 
-    s.status_desc, 
+    s.status_desc,
     ap.submitted_at, 
     ap.selected_at, 
     ap.rejected_at, 
     ap.cv, 
     ap.cover_letter, 
     ap.projects, 
-    ap.certificates
+    ap.certificates,
+    ascore.total_score
   FROM "Application" ap
   INNER JOIN "User" u ON ap.talent_id = u.id
   INNER JOIN "Application_Status" s ON ap.application_status_id = s.id
+  LEFT JOIN "Application_Score" ascore ON ap.id = ascore.application_id
   WHERE ap.job_posting_id = $1
+  ORDER BY ascore.total_score DESC NULLS LAST
 `,
   getApplicationByIdSQL: `
   SELECT 
@@ -58,19 +61,24 @@ const queries = {
     WHERE j.is_archived = false
     
   `,
+  deleteAppScoreSQL: `
+  DELETE FROM "Application_Score" 
+  WHERE "application_id" = $1
+  RETURNING id;
+`,
+  insertAppScoreSQL: `INSERT INTO "Application_Score" ("application_id", "hr_id", "talent_id") VALUES ($1, $2, $3) RETURNING id`,
 
-  createAppScoreSQL: `INSERT INTO "Application_Score" ("application_id", "hr_id", "talent_id") VALUES ($1, $2, $3) RETURNING id`,
-  setStatusViewedSQL: `UPDATE "Application" SET application_status_id=2 WHERE id=$1`,
-  setStatusInvitedSQL: `UPDATE "Application" SET application_status_id=3 WHERE id=$1`,
-  setStatusShortlistenSQL: `UPDATE "Application" SET application_status_id=4 WHERE id=$1`,
-  setStatusRejectedSQL: `UPDATE "Application" SET application_status_id=5 WHERE id=$1`,
+  setStatusSQL: `UPDATE "Application" SET application_status_id = $1 WHERE id = $2`,
 
-  setEducationScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
-  setSkillsScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
-  setExperienceScoreSQL: `UPDATE "Application_Score" SET education_score=$1 WHERE id = $2`,
-  setLanguagesScoreSQL: `UPDATE "Application_Score" SET languages_score=$1 WHERE id = $2`,
-  setCertificateScoreSQL: `UPDATE "Application_Score" SET certificate_score=$1 WHERE id = $2`,
-  setProjectsScoreSQL: `UPDATE "Application_Score" SET projects_score=$1 WHERE id = $2`,
+  setScoresSQL: `UPDATE "Application_Score"
+       SET 
+         education_score = $1,
+         skills_score = $2,
+         experience_score = $3,
+         languages_score = $4,
+         certificate_score = $5,
+         projects_score = $6
+       WHERE id = $7`,
   setTotalScoreSQL: `
   UPDATE "Application_Score"
   SET total_score = (
@@ -140,6 +148,7 @@ const queries = {
               a.projects,
               a.certificates, 
               jp.title AS job_title, 
+              jp.company AS company,
               as_table.status_desc AS application_status, 
               a.submitted_at
        FROM "Application" AS a
@@ -158,6 +167,11 @@ const queries = {
   setApplicationCoverLetterSQL: `UPDATE "Application" SET "cover_letter" = $1 WHERE "id" = $2`,
   setApplicationProjectsSQL: `UPDATE "Application" SET "projects" = $1 WHERE "id" = $2`,
   setApplicationCertificatesSQL: `UPDATE "Application" SET "certificates" = $1 WHERE "id" = $2`,
+  addCommentSQL: `UPDATE "Application_Score" SET "comments"=$1 WHERE "id"=$2`,
+  getApplicationScoreByApplicationIdSQL: `
+  SELECT * FROM "Application_Score" WHERE "application_id" = $1
+`
+
 };
 
 module.exports = queries;

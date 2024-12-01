@@ -9,22 +9,15 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const favicon = require("serve-favicon");
 const path = require("path");
-const { formatDate } = require('./utils/dateFormating');
-
+const { formatDate } = require("./utils/dateFormating");
 const { connect, client } = require("./db/connect");
-const schema = require("./db/schema");
+const { createTables } = require("./db/schema");
+const { listenForEmailNotifications } = require("./emails/emailListener");
+require('dotenv').config();
 
 const setupDatabase = async () => {
   await connect();
-  
-  // await schema.createSessionTable();
-  // await schema.createLookupTables();
-  // await schema.createUserTable();
-  
-  // await schema.createJobPostingTable();
-  // await schema.createApplicationTable();
-  // await schema.createApplicationScoreTable();
-  
+  // await createTables();
 };
 
 setupDatabase();
@@ -40,7 +33,7 @@ app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
 // MIDDLEWARE
 app.use(express.static("public"));
 // Serve static files (uploads) from the 'uploads' directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(layouts);
 app.use(express.urlencoded({ extended: false }));
@@ -108,10 +101,7 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const result = await client.query(
-          queries.getUserByEmailSQL,
-          [email]
-        );
+        const result = await client.query(queries.getUserByEmailSQL, [email]);
         const user = result.rows[0];
         if (!user) {
           return done(null, false, { message: "User not found" });
@@ -138,9 +128,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const result = await client.query(queries.getUserByIdSQL, [
-      id,
-    ]);
+    const result = await client.query(queries.getUserByIdSQL, [id]);
     const user = result.rows[0];
     if (user) {
       done(null, user);
@@ -158,7 +146,6 @@ app.set("view engine", "ejs");
 const router = require("./routes/index");
 const queries = require("./db/queries");
 app.use("/", router);
-
 
 app.listen(app.get("port"), () => {
   console.log(`Server running at http://localhost:${app.get("port")}`);

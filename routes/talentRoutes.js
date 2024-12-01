@@ -7,7 +7,9 @@ const {
   fetchAllJobs,
   fetchMyApplications,
   fetchJob,
-  applyForJob
+  applyForJob,
+  confirmInterview,
+  rejectInterview
 } = require("../controllers/talentsController");
 const multer = require("multer");
 
@@ -28,6 +30,9 @@ router.get("/profile", (req, res) => {
 });
 router.get("/my-applications", fetchMyApplications);
 router.get("/browse-all-jobs", fetchAllJobs);
+
+router.get('/confirm-interview/:token', confirmInterview);
+router.get('/reject-interview/:token', rejectInterview);
 
 /*
 The files (CV, cover letter, certificates) are uploaded and processed on the server side using the multer middleware, and the relevant paths are stored in the database. The applyForJob function handles this by checking which fields are present in the request and saving the file paths to the Application record.

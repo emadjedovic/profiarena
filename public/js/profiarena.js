@@ -50,6 +50,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set the form's action dynamically
         const form = modal.querySelector('form');
         form.setAttribute('action', `/talent/jobs/${jobData.id}/apply`);
+
+      form.reset();
+
+        // Conditionally make fields required based on visibility
+      const cvInput = document.getElementById('cv');
+      const coverLetterInput = document.getElementById('cover_letter');
+
+      if (jobData.cv_field) {
+        cvInput.setAttribute('required', 'required');
+      } else {
+        cvInput.removeAttribute('required');
+      }
+
+      if (jobData.cover_letter_field) {
+        coverLetterInput.setAttribute('required', 'required');
+      } else {
+        coverLetterInput.removeAttribute('required');
+      }
+
       });
     });
   });
