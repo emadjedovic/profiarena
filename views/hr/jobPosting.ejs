@@ -17,26 +17,39 @@
       <h4>Requirements</h4>
       <ul>
         <% if (jobPosting.cv_field) { %>
-          <li>Curriculum Vitae (CV)</li>
+        <li>Curriculum Vitae (CV)</li>
         <% } %>
         <% if (jobPosting.cover_letter_field) { %>
-          <li>Cover Letter</li>
+        <li>Cover Letter</li>
         <% } %>
         <% if (jobPosting.projects_field) { %>
-          <li>Projects</li>
+        <li>Projects</li>
         <% } %>
         <% if (jobPosting.certificates_field) { %>
-          <li>Certificates</li>
+        <li>Certificates</li>
         <% } %>
         <% if (!jobPosting.cv_field && !jobPosting.cover_letter_field && !jobPosting.projects_field && !jobPosting.certificates_field) { %>
-          <li>No additional documents required.</li>
+        <li>No additional documents required.</li>
         <% } %>
       </ul>
       <hr>
-      // add application status filter for this table (applied, viewed, invited, shortlisted, rejected)
+
       <h4>Applications</h4>
+      <!-- Status Filter -->
+      <div class="mb-3">
+        <label for="statusFilter" class="form-label">Filter by Status:</label>
+        <select id="statusFilter" class="form-select">
+          <option value="all" selected>All</option>
+          <option value="applied">Applied</option>
+          <option value="viewed">Viewed</option>
+          <option value="invited">Invited</option>
+          <option value="shortlisted">Shortlisted</option>
+          <option value="rejected">Rejected</option>
+          <option value="accepted">Accepted</option>
+        </select>
+      </div>
       <% if (applications.length > 0) { %>
-        <table class="table table-bordered">
+        <table class="table table-bordered" id="applicationsTable">
           <thead>
             <tr>
               <th>#</th>
@@ -49,7 +62,7 @@
           </thead>
           <tbody>
             <% applications.forEach((application, index) => { %>
-              <tr>
+              <tr class="application-row" data-status="<%= application.status_desc.toLowerCase() %>">
                 <td><%= index + 1 %></td>
                 <td>
                   <a href="/hr/application/<%= application.id %>">
@@ -58,28 +71,28 @@
                 </td>
                 <td><%= application.status_desc %></td>
                 <td><%= application.submitted_at ? new Date(application.submitted_at).toLocaleDateString() : "N/A" %></td>
-                <td><% if(application.total_score) { %>
-                  <%= application.total_score %>
-                <% } else { %>
-                Score not given.
-              <% } %>
-            </td> <!-- Added Total Score -->
-          <td><%= application.rank %></td> <!-- Added Rank -->
-                
+                <td>
+                  <% if(application.total_score) { %>
+                    <%= application.total_score %>
+                  <% } else { %>
+                    Score not given.
+                  <% } %>
+                </td>
+                <td><%= application.rank %></td>
               </tr>
             <% }); %>
           </tbody>
         </table>
       <% } else { %>
-        <p>No applications submitted for this job posting yet.</p>
+      <p>No applications submitted for this job posting yet.</p>
       <% } %>
     </div>
     <div class="card-footer text-muted text-center">
       <form method="POST" action="/hr/toggle-archive-job/<%= jobPosting.id %>" class="d-inline">
         <% if (jobPosting.is_archived) { %>
-          <button type="submit" class="btn btn-success" name="archived" value="false">Activate</button>
+        <button type="submit" class="btn btn-success" name="archived" value="false">Activate</button>
         <% } else { %>
-          <button type="submit" class="btn btn-danger" name="archived" value="true">Archive</button>
+        <button type="submit" class="btn btn-danger" name="archived" value="true">Archive</button>
         <% } %>
       </form>
     </div>

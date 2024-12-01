@@ -46,6 +46,11 @@ getUserByEmailSQL: `SELECT * FROM "User" WHERE "email" = $1`,
 getTalentByIdSQL: `
 SELECT * FROM "User" WHERE role_id = 2 AND id = $1
 `,
+getUserEmailByIdSQL: `
+    SELECT email 
+    FROM "User" 
+    WHERE id = $1
+  `,
 }
 
 module.exports = userQueries;

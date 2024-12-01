@@ -6,6 +6,7 @@ const path = require("path");
 const {
   getApplicationByIdSQL
 } = require("../db/queries/appQueries");
+const { getUserEmailByIdSQL } = require("../db/queries/userQueries")
 
 // Configure transporter
 const transporter = nodemailer.createTransport({
@@ -82,7 +83,7 @@ const sendViewedEmail = async (applicationId, talentId) => {
     applicationId,
   ]);
   const emailResult = await client.query(
-    'SELECT email FROM "User" WHERE id = $1',
+    getUserEmailByIdSQL,
     [talentId]
   );
   const email = emailResult.rows[0].email;
@@ -133,7 +134,7 @@ const sendInvitedEmail = async (
       applicationId,
     ]);
     const emailResult = await client.query(
-      'SELECT email FROM "User" WHERE id = $1',
+      getUserEmailByIdSQL,
       [talentId]
     );
     const email = emailResult.rows[0].email;
@@ -197,7 +198,7 @@ const sendAppliedEmail = async (applicationId, talentId) => {
       applicationId,
     ]);
     const emailResult = await client.query(
-      'SELECT email FROM "User" WHERE id = $1',
+      getUserEmailByIdSQL,
       [talentId]
     );
     const email = emailResult.rows[0].email;
@@ -241,7 +242,7 @@ const sendShortlistedEmail = async (applicationId, talentId) => {
       applicationId,
     ]);
     const emailResult = await client.query(
-      'SELECT email FROM "User" WHERE id = $1',
+      getUserEmailByIdSQL,
       [talentId]
     );
     const email = emailResult.rows[0].email;
@@ -285,7 +286,7 @@ const sendRejectedEmail = async (applicationId, talentId) => {
       applicationId,
     ]);
     const emailResult = await client.query(
-      'SELECT email FROM "User" WHERE id = $1',
+      getUserEmailByIdSQL,
       [talentId]
     );
     const email = emailResult.rows[0].email;
