@@ -13,11 +13,11 @@ const { formatDate } = require("./utils/dateFormating");
 const { connect, client } = require("./db/connect");
 const { createTables } = require("./db/schema");
 const { listenForEmailNotifications } = require("./emails/emailListener");
+require('dotenv').config();
 
 const setupDatabase = async () => {
   await connect();
   // await createTables();
-  await listenForEmailNotifications();
 };
 
 setupDatabase();

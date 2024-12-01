@@ -11,6 +11,8 @@ const {
   createAppScore,
   showAppScoreForm,
   addComment,
+  showInterviewForm,
+  createInterview
 } = require("../controllers/hrController");
 
 // OTHER
@@ -35,5 +37,8 @@ router.get("/:id/edit", (req, res) => {
 router.get("/app-score-form/:applicationId", showAppScoreForm);
 router.post("/create-app-score/:applicationId", createAppScore);
 router.post("/add-comment/:appScoreId", addComment);
+
+router.get("/schedule-interview-form/:applicationId", showInterviewForm);
+router.post("/create-interview/:applicationId", createInterview);
 
 module.exports = router;

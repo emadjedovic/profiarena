@@ -10,14 +10,7 @@ CREATE TABLE "Interview_Schedule" (
     "city" VARCHAR(50),                      
     "street_address" VARCHAR(100),          
     "interview_status_id" INT NOT NULL DEFAULT 1 REFERENCES "Interview_Status"("id"),
-    "feedback" TEXT DEFAULT NULL,          
+    "impression" TEXT,          
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Add a CHECK constraint to enforce city and street_address for on-site interviews
-ALTER TABLE "Interview_Schedule"
-ADD CONSTRAINT check_address_for_onsite
-CHECK (
-    is_online = TRUE OR (city IS NOT NULL AND street_address IS NOT NULL)
 );

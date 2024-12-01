@@ -1,6 +1,6 @@
 const { client } = require("../db/connect"); // Make sure to import client
 const queries = require("../db/queries"); // Import the query file
-const { sendEmail } = require('../emails/emailService');
+const { sendEmail, sendApplicationStatusEmail } = require('../emails/emailService');
 
 // Create Job Posting
 const createJobPosting = async (req, res, next) => {
@@ -259,75 +259,30 @@ const fetchApplicationById = async (req, res) => {
   }
 };
 
-const updateApplicationStatus = async (applicationId, newStatus, talentId) => {
+const updateApplicationStatus = async (applicationId, newStatus, talentId, confirmationLink, rejectionLink) => {
   try {
-    // Step 1: Update the application status
-    await client.query(queries.setStatusSQL, [newStatus, applicationId]);
+    // Step 1: Get the status description for the new status
+    const statusResult = await client.query(
+      `SELECT "status_desc" FROM "Application_Status" WHERE id = $1`,
+      [newStatus]
+    );
 
-    // Step 2: Fetch email and detailed application info
-    const result = await client.query(queries.getApplicationByIdSQL, [applicationId]);
-    const emailResult = await client.query(queries.getUserByIdSQL, [talentId]);
-    const email = emailResult.rows[0].email;
-    
-    console.log("email: ", email);
-
-    if (result.rows.length === 0) {
-      console.error("Application not found or invalid status.");
+    if (statusResult.rows.length === 0) {
+      console.error("Status not found.");
       return;
     }
 
-    const { 
-      first_name,
-      last_name,
-      status_desc,
-      job_title,
-      job_company,
-    } = result.rows[0];
+    const status_desc = statusResult.rows[0].status_desc;
 
-    // Step 3: Send the email notification
-    const subject = `Update: Your Application Status for "${job_title}" at ${job_company}`;
-    const templateData = {
-      applicationId,
-      first_name,
-      last_name,
-      status_desc, // Current status description
-      job_title,   // Title of the job
-      job_company, // Company to which the user applied
-    };
+    // Step 2: Update the application status in the database
+    await client.query(queries.setStatusSQL, [newStatus, applicationId]);
 
-    await sendEmail(email, subject, "application-status", templateData, null, talentId, null);
-    console.log(`Notification email sent for status: ${status_desc}`);
+    // Step 3: Call the function to send the email notification
+    await sendApplicationStatusEmail(applicationId, newStatus, talentId, confirmationLink, rejectionLink);
+    console.log(`Application status updated to ${status_desc} and email sent.`);
   } catch (err) {
-    console.error("Error updating application status and sending email:", err);
-    throw err; // Handle the error appropriately in the calling function
-  }
-};
-
-
-
-// Example for rejecting an application
-const rejectApplication = async (req, res) => {
-  const applicationId = req.params.applicationId;
-
-  try {
-    const result = await client.query(
-      `SELECT talent_id FROM "Application" WHERE id = $1`,
-      [applicationId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).send("Application not found");
-    }
-
-    const talent_id = result.rows[0];
-
-    // Update status to "Rejected" and notify talent
-    await updateApplicationStatus(applicationId, 5, talent_id);
-
-    res.redirect(`/hr/applications`);
-  } catch (err) {
-    console.error("Error rejecting application:", err);
-    res.status(500).send("Server error");
+    console.error("Error updating application status:", err);
+    throw err; // Handle the error appropriately
   }
 };
 
@@ -412,8 +367,6 @@ const createAppScore = async (req, res) => {
   }
 };
 
-
-
 const showAppScoreForm = async (req, res) => {
   const applicationId = req.params.applicationId;
 
@@ -432,6 +385,100 @@ const showAppScoreForm = async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching application:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+const showInterviewForm = async (req, res) => {
+  const applicationId = req.params.applicationId;
+
+  try {
+    // Fetch the application details (optional, for showing title and company in the form)
+    const application = await client.query(queries.getApplicationByIdSQL, [
+      applicationId,
+    ]);
+
+    if (application.rows.length === 0) {
+      return res.status(404).send("Application not found");
+    }
+
+    res.render("hr/interviewScheduleForm", {
+      application: application.rows[0],
+    });
+  } catch (err) {
+    console.error("Error fetching application:", err);
+    res.status(500).send("Server error");
+  }
+};
+
+const jwt = require('jsonwebtoken');
+
+// Generate a JWT token for the talent
+const generateInterviewToken = (interviewId, talentId) => {
+  const payload = { interviewId, talentId };
+  const secret = process.env.JWT_SECRET; // Make sure to use a strong secret
+  const options = { expiresIn: '24h' }; // Token expires in 24 hours
+  return jwt.sign(payload, secret, options);
+};
+
+const createInterview = async (req, res) => {
+  const applicationId = req.params.applicationId;
+  const {
+    proposed_time,
+    is_online,
+    city,
+    street_address,
+    impression,
+  } = req.body;
+
+  try {
+    // Step 1: Check if the application exists and fetch relevant details
+    const applicationResult = await client.query(
+      `SELECT talent_id FROM "Application" WHERE id = $1`,
+      [applicationId]
+    );
+
+    if (applicationResult.rows.length === 0) {
+      return res.status(404).send("Application not found");
+    }
+
+    const talent_id = applicationResult.rows[0].talent_id;
+    const hr_id = req.user.id; // Extract the HR ID from the current user's session
+
+    // Step 2: Insert the new interview schedule with status set to "scheduled" (ID 1)
+    const result = await client.query(
+      `INSERT INTO "Interview_Schedule" (
+        "application_id", "hr_id", "talent_id", "proposed_time", "is_online", 
+        "city", "street_address", "interview_status_id", "impression"
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8) RETURNING id`, // Interview status is set to "scheduled" (ID 1)
+      [
+        applicationId,
+        hr_id,
+        talent_id,
+        proposed_time,
+        is_online || false,
+        city || null, 
+        street_address || null,
+        impression || null,
+      ]
+    );
+
+    const interviewId = result.rows[0].id;
+
+    // Step 2: Generate the token for the talent to confirm/reject
+    const token = generateInterviewToken(interviewId, talent_id);
+
+    // Step 3: Send email to talent with the confirmation/rejection links
+    const confirmationLink = `${process.env.BASE_URL}/talent/confirm-interview/${token}`;
+    const rejectionLink = `${process.env.BASE_URL}/talent/reject-interview/${token}`;
+
+    // Step 3: Update the application status to "invited" (ID 3)
+    await updateApplicationStatus(applicationId, 3, talent_id, confirmationLink, rejectionLink);
+
+    // Step 4: Redirect to the application details page
+    res.redirect(`/hr/application/${applicationId}`);
+  } catch (err) {
+    console.error("Error creating interview schedule:", err);
     res.status(500).send("Server error");
   }
 };
@@ -464,4 +511,6 @@ module.exports = {
   createAppScore,
   showAppScoreForm,
   addComment,
+  showInterviewForm,
+  createInterview
 };
