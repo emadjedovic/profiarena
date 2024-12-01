@@ -12,7 +12,8 @@ const {
   showAppScoreForm,
   addComment,
   showInterviewForm,
-  createInterview
+  createInterview,
+  fetchInterviewsByHrId
 } = require("../controllers/hrController");
 
 // OTHER
@@ -23,6 +24,7 @@ router.get("/profile", (req, res) => {
 });
 router.get("/talents", fetchTalents);
 router.get("/my-job-postings", fetchJobPostingsByHrId);
+router.get('/calendar', fetchInterviewsByHrId);
 
 router.get("/job-posting/:id", fetchJobPostingById);
 router.post("/toggle-archive-job/:id", toggleArchiveJob);

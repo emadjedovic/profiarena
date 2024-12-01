@@ -32,6 +32,7 @@ const {
   getTalentByIdSQL,
   updateHRSQL,
 } = require("../db/queries/userQueries");
+const interviewQueries = require('../db/queries/interviewQueries');
 
 // Create Job Posting
 const createJobPosting = async (req, res, next) => {
@@ -495,6 +496,32 @@ const addComment = async (req, res, next) => {
   }
 };
 
+const fetchInterviewsByHrId = async (req, res) => {
+  const hrId = req.user.id; // Get HR ID from request parameters
+
+  try {
+      // Fetch interviews
+      const result = await client.query(interviewQueries.getInterviewsByHRSQL, [hrId]);
+
+      // Prepare events for FullCalendar
+      const events = result.rows.map(interview => ({
+          title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
+          start: new Date(interview.proposed_time).toISOString(),
+          allDay: false, // Set to true if the event spans the entire day
+      }));
+
+      // Render the EJS template with serialized events
+      res.render('hr/calendar', {
+        layout: 'layout', // Use layout.ejs
+        events: JSON.stringify(events), // Serialized events
+      });
+      
+  } catch (error) {
+      console.error('Error fetching interviews:', error.message);
+      res.status(500).send('An error occurred while fetching interviews.');
+  }
+};
+
 module.exports = {
   createJobPosting,
   fetchTalents,
@@ -509,4 +536,5 @@ module.exports = {
   addComment,
   showInterviewForm,
   createInterview,
+  fetchInterviewsByHrId
 };

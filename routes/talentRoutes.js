@@ -9,7 +9,8 @@ const {
   fetchJob,
   applyForJob,
   confirmInterview,
-  rejectInterview
+  rejectInterview,
+  fetchInterviewsByTalentId
 } = require("../controllers/talentsController");
 const multer = require("multer");
 
@@ -30,6 +31,7 @@ router.get("/profile", (req, res) => {
 });
 router.get("/my-applications", fetchMyApplications);
 router.get("/browse-all-jobs", fetchAllJobs);
+router.get('/calendar', fetchInterviewsByTalentId);
 
 router.get('/confirm-interview/:token', confirmInterview);
 router.get('/reject-interview/:token', rejectInterview);

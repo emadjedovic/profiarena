@@ -13,4 +13,5 @@ VALUES
     ('viewed'),
     ('invited'),
     ('shortlisted'),
-    ('rejected');
+    ('rejected'),
+    ('accepted')
