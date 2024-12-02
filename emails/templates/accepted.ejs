@@ -11,10 +11,17 @@
     <p>We are pleased to inform you that your application for the <strong><%= job_title %></strong> position at <strong><%= job_company %></strong> has been accepted.</p>
 
     <p>We will be in touch soon with further details regarding the next steps.</p>
+
+    <p>In the meanwhile, if you have any comments or questions, please feel free to share them with us.</p>
+    <p>
+      <a href="http://localhost:3000/talent/application-feedback?applicationId=<%= applicationId %>&token=<%= feedbackToken %>">
+        Click here to provide feedback
+      </a>
+    </p>
     
     <p>We look forward to working with you!</p>
 
     <p>Best regards,</p>
-    <p>The <%= job_company %> Team</p>
+    <p><%= job_company %></p>
 </body>
 </html>

@@ -25,7 +25,13 @@
       <br>
       <a href="<%= reject_link %>" class="reject">Reject Invitation</a>
     </p>
-
-    <p>If you have any questions, feel free to reach out. We look forward to meeting you!</p>
+    <p>If you have any comments or questions, please feel free to share them with us.</p>
+    <p>
+      <a href="http://localhost:3000/talent/application-feedback?applicationId=<%= applicationId %>&token=<%= feedbackToken %>">
+        Click here to provide feedback
+      </a>
+    </p>
+    
+    <p><%= job_company %></p>
 </body>
 </html>

@@ -5,7 +5,7 @@ const {
   sendRejectedEmail,
   sendShortlistedEmail,
   sendAcceptedEmail,
-} = require("../emails/emailService");
+} = require("../emails/emailTemplates");
 const jwt = require("jsonwebtoken");
 
 const {
@@ -267,6 +267,7 @@ const fetchTalentById = async (req, res, next) => {
 
 const fetchApplicationById = async (req, res) => {
   const applicationId = req.params.id;
+  const hr_id = req.user.id;
 
   try {
     
@@ -281,7 +282,7 @@ const fetchApplicationById = async (req, res) => {
 
     if (application.status_desc === "applied") {
       await client.query(setStatusSQL, [2, applicationId]);
-      await sendViewedEmail(applicationId, application.talent_id);
+      await sendViewedEmail(applicationId, application.talent_id, hr_id);
     }
 
     
@@ -421,7 +422,7 @@ const generateInterviewToken = (interviewId, talentId) => {
 
 const createInterview = async (req, res) => {
   const applicationId = req.params.applicationId;
-  const { proposed_time, is_online, city, street_address, impression } =
+  const { proposed_time, is_online, city, street_address, review } =
     req.body;
 
   try {
@@ -442,7 +443,7 @@ const createInterview = async (req, res) => {
     const result = await client.query(
       `INSERT INTO "Interview_Schedule" (
         "application_id", "hr_id", "talent_id", "proposed_time", "is_online", 
-        "city", "street_address", "interview_status_id", "impression"
+        "city", "street_address", "interview_status_id", "review"
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8) RETURNING id`, 
       [
         applicationId,
@@ -452,7 +453,7 @@ const createInterview = async (req, res) => {
         is_online || false,
         city || null,
         street_address || null,
-        impression || null,
+        review || null,
       ]
     );
 
@@ -465,12 +466,11 @@ const createInterview = async (req, res) => {
     const confirmationLink = `${process.env.BASE_URL}/talent/confirm-interview/${token}`;
     const rejectionLink = `${process.env.BASE_URL}/talent/reject-interview/${token}`;
 
-    console.log("confirmation link from createInterview: ", confirmationLink);
-
     await client.query(setStatusSQL, [3, applicationId]);
     await sendInvitedEmail(
       applicationId,
       talent_id,
+      hr_id,
       confirmationLink,
       rejectionLink
     );
@@ -527,11 +527,12 @@ const fetchInterviewsByHrId = async (req, res) => {
 
 const shortlistedApplication = async (req,res, next) => {
   const application_id = req.params.applicationId;
+  const hr_id = req.user.id;
   try {
     await client.query(setStatusSQL, [4, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
     console.log(result.rows[0].talent_id);
-    await sendShortlistedEmail(application_id, result.rows[0].talent_id);
+    await sendShortlistedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
     } catch (error) {
       console.error(`Error shortlisting: ${error.message}`);
@@ -541,11 +542,12 @@ const shortlistedApplication = async (req,res, next) => {
 
 const acceptApplication = async (req,res, next) => {
   const application_id = req.params.applicationId;
+  const hr_id = req.user.id;
   try {
     await client.query(setStatusSQL, [6, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
     console.log(result.rows[0].talent_id);
-    await sendAcceptedEmail(application_id, result.rows[0].talent_id);
+    await sendAcceptedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
     } catch (error) {
       console.error(`Error accepting application: ${error.message}`);
@@ -555,11 +557,12 @@ const acceptApplication = async (req,res, next) => {
 
 const rejectApplication = async (req,res, next) => {
   const application_id = req.params.applicationId;
+  const hr_id = req.user.id;
   try {
     await client.query(setStatusSQL, [5, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
     console.log(result.rows[0].talent_id);
-    await sendRejectedEmail(application_id, result.rows[0].talent_id);
+    await sendRejectedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
     } catch (error) {
       console.error(`Error rejecting application: ${error.message}`);

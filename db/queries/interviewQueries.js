@@ -1,7 +1,7 @@
 const interviewQueries = {
   createInterviewScheduleSQL: `
 INSERT INTO "Interview_Schedule" 
-    ("application_id", "hr_id", "talent_id", "proposed_time", "i_schedule_online", "city", "street_address", "interview_status_id", "impression")
+    ("application_id", "hr_id", "talent_id", "proposed_time", "i_schedule_online", "city", "street_address", "interview_status_id", "review")
 VALUES 
     ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
@@ -100,10 +100,10 @@ JOIN "Interview_Status" S ON i_schedule.interview_status_id = S.id
 WHERE i_schedule.proposed_time BETWEEN $1 AND $2
 ORDER BY i_schedule.proposed_time ASC;
 `,
-  updateImpressionSQL: `
+  updatereviewSQL: `
 UPDATE "Interview_Schedule"
 SET 
-    "impression" = $2,
+    "review" = $2,
     "interview_status_id" = 4, -- Status ID for 'fini_schedulehed'
     "updated_at" = CURRENT_TIMESTAMP
 WHERE "id" = $1

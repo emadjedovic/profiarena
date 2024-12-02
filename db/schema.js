@@ -22,8 +22,7 @@ const createTables = async () => {
     'job_posting.sql',
     'application.sql',
     'application_score.sql',
-    'interview_schedule.sql',
-    'email_communication.sql',
+    'interview_schedule.sql'
   ];
 
   for (const file of sqlFiles) {

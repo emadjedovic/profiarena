@@ -3,7 +3,7 @@ const jsonWebToken = require("jsonwebtoken");
 const { client } = require("../db/connect");
 const { StatusCodes } = require("http-status-codes");
 const passport = require("passport");
-const { sendEmail } = require("../emails/emailService");
+const sendEmail = require("../emails/emailSetup");
 
 const {
   createUserSQL,
@@ -64,9 +64,7 @@ const register = async (req, res, next) => {
       }
       res.locals.user = user;
 
-      
       res.redirect("/home");
-
       
       setImmediate(async () => {
         try {
@@ -75,7 +73,7 @@ const register = async (req, res, next) => {
             userName: `${user.first_name} ${user.last_name}`, 
             email: user.email,
           };
-          await sendEmail(user.email, 'Thank You for Registering', 'welcome-message', templateData, null, user.id, null);
+          await sendEmail(user.email, 'Thank You for Registering', 'welcome-message', templateData, null, user.id);
           console.log('Welcome email sent successfully!');
         } catch (emailError) {
           console.error('Error sending welcome email:', emailError.message);
