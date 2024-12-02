@@ -74,8 +74,7 @@
     
     <a href="/hr/schedule-interview-form/<%= application.id %>" class="btn btn-primary m-2">Schedule Interview</a>
 
-    <p>Is there an interview already scheduled?</p>
-    <p>query the database and display info about the latest scheduled interview (including status of the interview) if one exists. If no scheduled interview exists for this application - only then display the "Schedule Interview" within a tags.</p>
+   
 
  <!-- If application score exists, show the comment input and button -->
 <% if (applicationScore) { %>
@@ -85,6 +84,18 @@
     </div>
     <button type="submit" class="btn btn-secondary m-3">Add Comment</button>
   </form>
+<% } %>
+
+<p>Is there an interview already scheduled?</p>
+<p>query the database and display info about the latest scheduled interview (including status of the interview) if one exists. If no scheduled interview exists for this application - only then display the "Schedule Interview" within a tags.</p>
+
+<!-- if talent_feedback from "Application" table is not empty then display it in a pretty way-->
+ <!-- Display talent feedback if it's available -->
+ <!-- Display talent feedback if it's available and convert newlines to <br> -->
+ <% if (application.talent_feedback && application.talent_feedback.trim() !== '') { %>
+  <hr>
+  <h4>Talent Feedback</h4>
+  <p><strong><%- application.talent_feedback.replace(/\n/g, '<br>') %></strong></p>
 <% } %>
 
 <hr>
