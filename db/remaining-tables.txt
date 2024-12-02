@@ -20,6 +20,6 @@ Table Report_Generation {
     id                      int [primary key]
     report_name             varchar(100) [not null]
     generated_at            timestamp [default: `now()`]
-    parameters             jsonb // store any parameters used to generate the report
-    report_data            text // or link to a file containing the report data
+    parameters             jsonb 
+    report_data            text 
 }

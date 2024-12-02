@@ -7,8 +7,39 @@
       </a>
     </h3>
     <p><em>(visit profile for additional info about applicant)</em></p>
-    <hr>
 
+    <% if(application.status_desc === 'accepted'){ %>
+      <button class="btn btn-success">ACCEPTED</button>
+  <% } else if(application.status_desc === 'rejected') { %>
+      <button class="btn btn-danger">REJECTED</button>
+  <% } else { %>
+      <% if(application.status_desc === 'shortlisted') { %>
+          <h3>SHORTLISTED</h3>
+      <% } else { %>
+          <form action="/hr/shortlist-application/<%= application.id %>" method="POST" style="display:inline;">
+              <input type="hidden" name="applicationId" value="<%= application.id %>">
+              <button type="submit" class="btn btn-warning m-1">SHORTLIST APPLICATION</button>
+          </form>
+          <br>
+      <% } %>
+  
+      <form action="/hr/accept-application/<%= application.id %>" method="POST" style="display:inline;">
+          <input type="hidden" name="applicationId" value="<%= application.id %>">
+          <button type="submit" class="btn btn-success m-1">ACCEPT APPLICATION</button>
+      </form>
+  
+      <br>
+  
+      <form action="/hr/reject-application/<%= application.id %>" method="POST" style="display:inline;">
+          <input type="hidden" name="applicationId" value="<%= application.id %>">
+          <button type="submit" class="btn btn-danger m-1">REJECT APPLICATION</button>
+      </form>
+  <% } %>
+  
+  
+        <hr>
+
+        <!-- ADD AN OPTION TO SHORTLIST-->
     <ul>
       <li><strong>Status:</strong> <%= application.status_desc %></li>
       <li><strong>Submitted At:</strong> <%= application.submitted_at ? new Date(application.submitted_at).toLocaleString() : "N/A" %></li>
@@ -45,11 +76,6 @@
 
     <p>Is there an interview already scheduled?</p>
     <p>query the database and display info about the latest scheduled interview (including status of the interview) if one exists. If no scheduled interview exists for this application - only then display the "Schedule Interview" within a tags.</p>
-
-    <p>REJECT APPLICATION</p>
-
-
-
 
  <!-- If application score exists, show the comment input and button -->
 <% if (applicationScore) { %>

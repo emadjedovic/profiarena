@@ -13,10 +13,13 @@ const {
   addComment,
   showInterviewForm,
   createInterview,
-  fetchInterviewsByHrId
+  fetchInterviewsByHrId,
+  acceptApplication,
+  rejectApplication,
+  shortlistedApplication
 } = require("../controllers/hrController");
 
-// OTHER
+
 
 router.post("/create-job-posting", createJobPosting);
 router.get("/profile", (req, res) => {
@@ -42,5 +45,9 @@ router.post("/add-comment/:appScoreId", addComment);
 
 router.get("/schedule-interview-form/:applicationId", showInterviewForm);
 router.post("/create-interview/:applicationId", createInterview);
+
+router.post("/accept-application/:applicationId", acceptApplication);
+router.post("/reject-application/:applicationId", rejectApplication);
+router.post("/shortlist-application/:applicationId", shortlistedApplication);
 
 module.exports = router;

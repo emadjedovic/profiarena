@@ -69,7 +69,7 @@
                     <%= application.first_name %> <%= application.last_name %>
                   </a>
                 </td>
-                <td><%= application.status_desc %></td>
+                <td><strong><%= application.status_desc %></strong></td>
                 <td><%= application.submitted_at ? new Date(application.submitted_at).toLocaleDateString() : "N/A" %></td>
                 <td>
                   <% if(application.total_score) { %>

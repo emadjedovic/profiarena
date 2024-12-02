@@ -17,22 +17,22 @@ require('dotenv').config();
 
 const setupDatabase = async () => {
   await connect();
-  // await createTables();
+  
 };
 
 setupDatabase();
 
-// Import connect-pg-simple
+
 const pgSession = require("connect-pg-simple")(expressSession);
 
 const app = express();
 
-// Serve the favicon
+
 app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
 
-// MIDDLEWARE
+
 app.use(express.static("public"));
-// Serve static files (uploads) from the 'uploads' directory
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(layouts);
@@ -45,17 +45,17 @@ app.use(
 );
 app.use(cookieParser("secret_passcode"));
 
-// Configure session with connect-pg-simple
+
 app.use(
   expressSession({
     store: new pgSession({
-      pool: client, // Use your PostgreSQL client
-      tableName: "session", // Optional: default is "session"
+      pool: client, 
+      tableName: "session", 
     }),
     secret: "secret_passcode",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 600000 }, // Adjust session expiration time as needed
+    cookie: { maxAge: 600000 }, 
   })
 );
 
@@ -92,7 +92,7 @@ const checkLoginStatus = (req, res, next) => {
 
 app.use(checkLoginStatus);
 
-// PASSPORT STRATEGY SETUP
+
 passport.use(
   new LocalStrategy(
     {
@@ -113,7 +113,7 @@ passport.use(
           return done(null, false, { message: "Invalid password" });
         }
 
-        return done(null, user); // Success
+        return done(null, user); 
       } catch (error) {
         return done(error);
       }
@@ -121,7 +121,7 @@ passport.use(
   )
 );
 
-// SERIALIZE AND DESERIALIZE USER
+
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });

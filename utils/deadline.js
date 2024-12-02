@@ -20,7 +20,7 @@ const getDateRange = (range) => {
   
       case 'past':
         endDate = formatDate(today);
-        startDate = null; // Only filter jobs with a deadline in the past
+        startDate = null; 
         break;
   
       default:

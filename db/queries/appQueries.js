@@ -25,6 +25,7 @@ const appQueries =
   INNER JOIN "Application_Status" s ON ap.application_status_id = s.id -- Join with Application_Status
   WHERE ap.id = $1
 `,
+getAppByIdSimple: `SELECT * FROM "Application" WHERE id=$1`,
 getAllApplicationsForJobSQL: `
 SELECT 
   ap.id,

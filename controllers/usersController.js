@@ -11,7 +11,7 @@ const {
   getUserByIdSQL
 } = require("../db/queries/userQueries");
 
-// Extract user parameters from request body
+
 const getUserParams = (body) => {
   return {
     first_name: body.first_name,
@@ -23,17 +23,17 @@ const getUserParams = (body) => {
   };
 };
 
-// Register a new user
+
 const register = async (req, res, next) => {
   if (req.skip) next();
 
-  // Get the user data and hash the password
+  
   const { password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10); 
 
   const userParams = {
     ...getUserParams(req.body),
-    password: hashedPassword, // Store hashed password
+    password: hashedPassword, 
   };
 
   try {
@@ -56,7 +56,7 @@ const register = async (req, res, next) => {
     );
 
 
-    // Log the user in automatically after registration
+    
     req.login(user, async (err) => {
       if (err) {
         console.log("Error logging in after registration:", err);
@@ -67,12 +67,12 @@ const register = async (req, res, next) => {
       
       res.redirect("/home");
 
-      // Send the email after redirect
+      
       setImmediate(async () => {
         try {
-          // Assume you have a `sendEmail` function defined
+          
           const templateData = { 
-            userName: `${user.first_name} ${user.last_name}`, // Ensure template receives this variable
+            userName: `${user.first_name} ${user.last_name}`, 
             email: user.email,
           };
           await sendEmail(user.email, 'Thank You for Registering', 'welcome-message', templateData, null, user.id, null);
@@ -94,7 +94,7 @@ const register = async (req, res, next) => {
   }
 };
 
-// Delete a user
+
 const deleteUser = async (req, res, next) => {
   const userId = req.params.id;
 
@@ -117,7 +117,7 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-// Authenticate user login
+
 const authenticate = (req, res, next) => {
   passport.authenticate("local", (error, user, info) => {
     if (error) {
@@ -151,7 +151,7 @@ const authenticate = (req, res, next) => {
   })(req, res, next);
 };
 
-// Logout the user
+
 const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
@@ -160,9 +160,9 @@ const logout = (req, res, next) => {
   });
 };
 
-// Middleware to verify JWT for protected routes
+
 const verifyJWT = async (req, res, next) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // Extract token from the Authorization header
+  const token = req.headers["authorization"]?.split(" ")[1]; 
   if (!token) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       error: true,
@@ -171,7 +171,7 @@ const verifyJWT = async (req, res, next) => {
   }
 
   try {
-    const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); // Verify the token
+    const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); 
     const result = await client.query(getUserByIdSQL, [payload.data]);
     const user = result.rows[0];
 
@@ -182,7 +182,7 @@ const verifyJWT = async (req, res, next) => {
       });
     }
 
-    req.user = user; // Attach user to the request
+    req.user = user; 
     next();
   } catch (error) {
     return res.status(StatusCodes.UNAUTHORIZED).json({

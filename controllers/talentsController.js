@@ -30,7 +30,7 @@ const interviewQueries = require('../db/queries/interviewQueries');
 const updateTalent = async (req, res, next) => {
   const userId = req.params.id;
 
-  // Access regular form data
+  
   const {
     first_name,
     last_name,
@@ -46,58 +46,58 @@ const updateTalent = async (req, res, next) => {
     projects,
   } = req.body;
 
-  // File data (cv and certificates)
+  
   const cvFile = req.files["cv"] ? req.files["cv"][0] : null;
   const certificatesFiles = req.files["certificates"]
     ? req.files["certificates"]
     : [];
 
-  // Handle missing required fields
+  
   if (!first_name || !last_name || !email) {
     req.flash("error", "First name, last name, and email are required!");
     return res.redirect(`/talents/${userId}/edit`);
   }
 
-  // Check if a new CV file is uploaded
-  const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; // Keep the existing CV if no new file is uploaded
+  
+  const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; 
 
-  // keep the existing certificates and add the new ones
+  
   const certificatesPaths =
     certificatesFiles.length > 0
       ? [
-          ...(res.locals.currentUser.certificates || []), // Existing certificates
-          ...certificatesFiles.map((file) => file.path), // New certificates
+          ...(res.locals.currentUser.certificates || []), 
+          ...certificatesFiles.map((file) => file.path), 
         ]
       : res.locals.currentUser.certificates || [];
 
-  // Convert string fields to arrays (split by commas and remove extra spaces)
+  
   const parseArray = (field) => {
     return field
       ? field
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean)
-      : null; // Ensure no empty values
+      : null; 
   };
 
   try {
-    // Update the user's information in the database
+    
     await client.query(updateTalentSQL, [
       first_name,
       last_name,
       email,
-      phone || null, // If phone is empty, store null
-      address || null, // If address is empty, store null
+      phone || null, 
+      address || null, 
       date_of_birth || res.locals.currentUser.date_of_birth,
-      about || null, // If about is empty, store null
-      parseArray(education), // Convert education to array
-      parseArray(skills), // Convert skills to array
-      parseArray(languages), // Convert languages to array
-      parseArray(socials), // Convert socials to array
-      projects || null, // If projects is empty, store null
-      cvPath, // Store file path of the uploaded CV
-      certificatesPaths, // Store file paths of the uploaded certificates
-      userId, // User ID for the WHERE clause
+      about || null, 
+      parseArray(education), 
+      parseArray(skills), 
+      parseArray(languages), 
+      parseArray(socials), 
+      projects || null, 
+      cvPath, 
+      certificatesPaths, 
+      userId, 
     ]);
 
     req.flash("success", "User updated successfully!");
@@ -109,14 +109,14 @@ const updateTalent = async (req, res, next) => {
   }
 };
 
-const fs = require("fs"); // File system module
+const fs = require("fs"); 
 
-// DELETE CV
+
 const deleteCV = async (req, res, next) => {
   const userId = req.params.id;
 
   try {
-    // Fetch user data
+    
     const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
@@ -125,11 +125,11 @@ const deleteCV = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    // Delete CV file from uploads folder
+    
     const cvPath = `uploads/${user.cv}`;
     if (fs.existsSync(cvPath)) fs.unlinkSync(cvPath);
 
-    // Update the database to remove the CV reference
+    
     await client.query(deleteCVSQL, [userId]);
 
     req.flash("success", "CV deleted successfully!");
@@ -141,13 +141,13 @@ const deleteCV = async (req, res, next) => {
   }
 };
 
-// DELETE Certificate
+
 const deleteCertificate = async (req, res, next) => {
   const userId = req.params.id;
   const certificatePath = req.body.certificatePath;
 
   try {
-    // Fetch user data
+    
     const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
@@ -156,11 +156,11 @@ const deleteCertificate = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    // Delete certificate file from uploads folder
+    
     const fullPath = `uploads/${certificatePath}`;
     if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 
-    // Update the database to remove the specific certificate
+    
     const updatedCertificates = user.certificates.filter(
       (cert) => cert !== certificatePath
     );
@@ -178,13 +178,13 @@ const deleteCertificate = async (req, res, next) => {
   }
 };
 
-// DELETE Social Link
+
 const deleteSocial = async (req, res, next) => {
   const userId = req.params.id;
   const socialLink = req.body.socialLink;
 
   try {
-    // Fetch user data
+    
     const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
@@ -193,7 +193,7 @@ const deleteSocial = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    // Update database to remove the specific social link
+    
     const updatedSocials = user.socials.filter((link) => link !== socialLink);
     await client.query(setSocialsSQL, [updatedSocials, userId]);
 
@@ -206,11 +206,11 @@ const deleteSocial = async (req, res, next) => {
   }
 };
 
-// include search (filter)
+
 const fetchAllJobs = async (req, res, next) => {
   try {
     const { search, deadlineRange } = req.query;
-    const userId = res.locals.currentUser.id; // Assuming the user is logged in
+    const userId = res.locals.currentUser.id; 
 
     if (!userId) {
       throw new Error("User must be logged in to view application statuses.");
@@ -218,9 +218,9 @@ const fetchAllJobs = async (req, res, next) => {
 
     let query = getAppliedJobsSQL;
     const params = [userId];
-    let whereAdded = false; // Track if WHERE clause is already added
+    let whereAdded = false; 
 
-    // Handle search
+    
     if (search) {
       query += `
         AND (
@@ -233,7 +233,7 @@ const fetchAllJobs = async (req, res, next) => {
       params.push(`%${search}%`);
     }
 
-    // Handle predefined date range filtering
+    
     if (deadlineRange) {
       const { startDate, endDate } = getDateRange(deadlineRange);
 
@@ -245,7 +245,7 @@ const fetchAllJobs = async (req, res, next) => {
         `;
         params.push(startDate, endDate);
       } else if (!startDate && endDate) {
-        // Handle "past" case where only endDate exists
+        
         query += `
           AND j."application_deadline" < $${params.length + 1}
         `;
@@ -253,12 +253,12 @@ const fetchAllJobs = async (req, res, next) => {
       }
     }
 
-    // Execute the query
+    
     const result = await client.query(query, params);
 
-    // Render the response
+    
     res.render("talent/allJobs", {
-      allJobs: result.rows, // Include `has_applied` field for each job
+      allJobs: result.rows, 
       searchQuery: search || "",
       deadlineRange: deadlineRange || "",
     });
@@ -270,7 +270,7 @@ const fetchAllJobs = async (req, res, next) => {
 
 const fetchMyApplications = async (req, res, next) => {
   try {
-    // Query to fetch applications with job titles and statuses
+    
     const result = await client.query(getUserApplicationsSQL, [
       res.locals.currentUser.id,
     ]);
@@ -304,23 +304,23 @@ const fetchJob = async (req, res, next) => {
 };
 
 const applyForJob = async (req, res, next) => {
-  const userId = req.user.id; // Assuming the user is authenticated
-  const jobId = req.params.jobId; // ID of the job the user is applying for
+  const userId = req.user.id; 
+  const jobId = req.params.jobId; 
 
   try {
-    // Fetch the job posting to get the required fields
+    
     const jobPostingResult = await client.query(getJobPostingByIdSQL, [
       jobId,
     ]);
     const jobPosting = jobPostingResult.rows[0];
 
-    // If job posting not found or archived
+    
     if (!jobPosting || jobPosting.is_archived) {
       req.flash("error", "Job posting not found or archived.");
       return res.redirect("/talent/browse-all-jobs");
     }
 
-    // Insert the application into the database with the default application status of 1
+    
     const applicationResult = await client.query(createApplicationSQL, [
       userId,
       jobId,
@@ -329,23 +329,23 @@ const applyForJob = async (req, res, next) => {
     const applicationId = applicationResult.rows[0].id;
     await sendAppliedEmail(applicationId, userId);
 
-    // Save the uploaded documents for the job application (CV, Cover Letter, Certificates)
+    
     let cvPath = null;
     let coverLetterPath = null;
     let certificatesPaths = [];
-    let projectsText = req.body.projects || null; // Capture the Projects text
+    let projectsText = req.body.projects || null; 
 
-    // Handle CV upload
+    
     if (req.files.cv) {
       cvPath = req.files.cv[0].path;
     }
 
-    // Handle Cover Letter upload
+    
     if (req.files.cover_letter) {
       coverLetterPath = req.files.cover_letter[0].path;
     }
 
-    // Handle Certificates upload
+    
     if (req.files.certificates) {
       certificatesPaths = req.files.certificates.map((file) => file.path);
     }
@@ -436,23 +436,23 @@ const rejectInterview = async (req, res) => {
 };
 
 const fetchInterviewsByTalentId = async (req, res) => {
-  const talentId = req.user.id; // Get HR ID from request parameters
+  const talentId = req.user.id; 
 
   try {
-      // Fetch interviews
+      
       const result = await client.query(interviewQueries.getInterviewsByTalentSQL, [talentId]);
 
-      // Prepare events for FullCalendar
+      
       const events = result.rows.map(interview => ({
           title: `${interview.hr_company_name} - ${interview.status_desc}`,
           start: new Date(interview.proposed_time).toISOString(),
-          allDay: false, // Set to true if the event spans the entire day
+          allDay: false, 
       }));
 
-      // Render the EJS template with serialized events
+      
       res.render('talent/calendar', {
-        layout: 'layout', // Use layout.ejs
-        events: JSON.stringify(events), // Serialized events
+        layout: 'layout', 
+        events: JSON.stringify(events), 
       });
       
   } catch (error) {
