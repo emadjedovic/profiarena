@@ -11,5 +11,7 @@ CREATE TABLE "Application" (
     "cv" VARCHAR(255),
     "cover_letter" VARCHAR(255),
     "projects" TEXT,
-    "certificates" VARCHAR(255) []
+    "certificates" VARCHAR(255) [],
+    "talent_feedback" TEXT,
+    "feedback_token" TEXT
 );

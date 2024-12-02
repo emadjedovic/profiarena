@@ -1,84 +1,13 @@
-const nodemailer = require("nodemailer");
 const { client } = require("../db/connect");
-const ejs = require("ejs");
-const path = require("path");
+const sendEmail = require("./emailSetup");
+const crypto = require("crypto");
 
 const {
   getApplicationByIdSQL
 } = require("../db/queries/appQueries");
 const { getUserEmailByIdSQL } = require("../db/queries/userQueries")
 
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
-/**
-Sends an email and logs the communication in the database.
-
-text - Email content.
-senderId - ID of the sender in the "User" table.
-ID of the receiver in the "User" table.
-interviewId - ID of the related interview.
- */
-
-const { formatDate } = require("../utils/dateFormating"); 
-
-async function sendEmail(
-  to,
-  subject,
-  templateName,
-  templateData,
-  senderId,
-  receiverId,
-  interviewId
-) {
-  
-  const templatePath = path.join(
-    __dirname,
-    "..",
-    "views",
-    "emails",
-    `${templateName}.ejs`
-  );
-
-  try {
-    
-    const renderedTemplate = await ejs.renderFile(templatePath, {
-      ...templateData,
-      formatDate, 
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      html: renderedTemplate, 
-    };
-
-    
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent: ${info.response}`);
-
-    
-    await client.query(
-      `INSERT INTO "Email_Communication" (interview_id, sender_id, receiver_id, subject, message)
-             VALUES ($1, $2, $3, $4, $5)`,
-      [interviewId, senderId, receiverId, subject, renderedTemplate]
-    );
-
-    return info;
-  } catch (error) {
-    console.error("Error sending email:", error.message);
-    throw error;
-  }
-}
-
-const sendViewedEmail = async (applicationId, talentId) => {
+const sendViewedEmail = async (applicationId, talentId, senderId) => {
   const result = await client.query(getApplicationByIdSQL, [
     applicationId,
   ]);
@@ -104,15 +33,16 @@ const sendViewedEmail = async (applicationId, talentId) => {
       job_title,
       job_company,
     };
+
+    console.log("senderId: ", senderId);
     
     await sendEmail(
       email,
       subject,
       templateName,
       templateData,
-      null,
-      talentId,
-      null
+      senderId,
+      talentId
     );
     console.log(
       `Notification email sent for changing application status to "viewed".`
@@ -126,6 +56,7 @@ const sendViewedEmail = async (applicationId, talentId) => {
 const sendInvitedEmail = async (
   applicationId,
   talentId,
+  senderId,
   confirmationLink,
   rejectionLink
 ) => {
@@ -156,11 +87,19 @@ const sendInvitedEmail = async (
       return;
     }
 
-    console.log("confirmation link from sendInvitedEmail: ", confirmationLink);
-
     const interviewDetails = interviewResult.rows[0];
     let subject = `Invited for "${job_title}" at ${job_company}`;
     let templateName = "invited"; 
+
+    // Generate feedback token
+    const feedbackToken = crypto.randomBytes(16).toString("hex");
+
+    // Save the token to the Application table
+    await client.query(
+      `UPDATE "Application" SET feedback_token = $1 WHERE id = $2`,
+      [feedbackToken, applicationId]
+    );
+
     let templateData = {
       applicationId,
       first_name,
@@ -174,6 +113,7 @@ const sendInvitedEmail = async (
       interview_id: interviewDetails.id,
       confirm_link: confirmationLink,
       reject_link: rejectionLink,
+      feedbackToken
     };
 
     await sendEmail(
@@ -181,9 +121,8 @@ const sendInvitedEmail = async (
       subject,
       templateName,
       templateData,
-      null,
-      talentId,
-      null
+      senderId,
+      talentId
     );
     console.log(`Notification email sent for interview invitation.`);
   } catch (error) {
@@ -192,7 +131,7 @@ const sendInvitedEmail = async (
   }
 };
 
-const sendAppliedEmail = async (applicationId, talentId) => {
+const sendAppliedEmail = async (applicationId, talentId, senderId) => {
   try {
     const result = await client.query(getApplicationByIdSQL, [
       applicationId,
@@ -225,9 +164,8 @@ const sendAppliedEmail = async (applicationId, talentId) => {
       subject,
       templateName,
       templateData,
-      null,
-      talentId,
-      null
+      senderId,
+      talentId
     );
     console.log(`Notification email sent after applying to a position.`);
   } catch (err) {
@@ -236,7 +174,7 @@ const sendAppliedEmail = async (applicationId, talentId) => {
   }
 };
 
-const sendShortlistedEmail = async (applicationId, talentId) => {
+const sendShortlistedEmail = async (applicationId, talentId, senderId) => {
   try {
     const result = await client.query(getApplicationByIdSQL, [
       applicationId,
@@ -269,9 +207,8 @@ const sendShortlistedEmail = async (applicationId, talentId) => {
       subject,
       templateName,
       templateData,
-      null,
-      talentId,
-      null
+      senderId,
+      talentId
     );
     console.log(`Notification email sent for shortlisted status.`);
   } catch (err) {
@@ -280,7 +217,7 @@ const sendShortlistedEmail = async (applicationId, talentId) => {
   }
 };
 
-const sendRejectedEmail = async (applicationId, talentId) => {
+const sendRejectedEmail = async (applicationId, talentId, senderId) => {
   try {
     const result = await client.query(getApplicationByIdSQL, [
       applicationId,
@@ -313,9 +250,8 @@ const sendRejectedEmail = async (applicationId, talentId) => {
       subject,
       templateName,
       templateData,
-      null,
-      talentId,
-      null
+      senderId,
+      talentId
     );
     console.log(`Notification email sent for rejected status.`);
   } catch (err) {
@@ -324,7 +260,7 @@ const sendRejectedEmail = async (applicationId, talentId) => {
   }
 };
 
-const sendAcceptedEmail = async (applicationId, talentId) => {
+const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
   try {
     const result = await client.query(getApplicationByIdSQL, [
       applicationId,
@@ -344,12 +280,23 @@ const sendAcceptedEmail = async (applicationId, talentId) => {
 
     let subject = `Accepted for "${job_title}" at ${job_company}`;
     let templateName = "accepted";
+
+    // Generate feedback token
+    const feedbackToken = crypto.randomBytes(16).toString("hex");
+
+    // Save the token to the Application table
+    await client.query(
+      `UPDATE "Application" SET feedback_token = $1 WHERE id = $2`,
+      [feedbackToken, applicationId]
+    );
+
     let templateData = {
       applicationId,
       first_name,
       last_name,
       job_title,
       job_company,
+      feedbackToken
     };
 
     await sendEmail(
@@ -357,9 +304,8 @@ const sendAcceptedEmail = async (applicationId, talentId) => {
       subject,
       templateName,
       templateData,
-      null,
-      talentId,
-      null
+      senderId,
+      talentId
     );
     console.log(`Notification email sent for accepted status.`);
   } catch (err) {

@@ -17,7 +17,7 @@ require('dotenv').config();
 
 const setupDatabase = async () => {
   await connect();
-  
+  // await createTables();
 };
 
 setupDatabase();

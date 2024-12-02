@@ -9,10 +9,9 @@ const {
   setApplicationCertificatesSQL,
   setApplicationCoverLetterSQL,
   setApplicationProjectsSQL,
+  getApplicationByIdSQL,
 } = require("../db/queries/appQueries");
-const {
-  getJobPostingByIdSQL,
-} = require("../db/queries/jobPostingQueries");
+const { getJobPostingByIdSQL } = require("../db/queries/jobPostingQueries");
 const {
   getAppliedJobsSQL,
   getUserApplicationsSQL,
@@ -25,12 +24,11 @@ const {
   updateTalentSQL,
 } = require("../db/queries/userQueries");
 
-const interviewQueries = require('../db/queries/interviewQueries');
+const interviewQueries = require("../db/queries/interviewQueries");
 
 const updateTalent = async (req, res, next) => {
   const userId = req.params.id;
 
-  
   const {
     first_name,
     last_name,
@@ -46,58 +44,52 @@ const updateTalent = async (req, res, next) => {
     projects,
   } = req.body;
 
-  
   const cvFile = req.files["cv"] ? req.files["cv"][0] : null;
   const certificatesFiles = req.files["certificates"]
     ? req.files["certificates"]
     : [];
 
-  
   if (!first_name || !last_name || !email) {
     req.flash("error", "First name, last name, and email are required!");
     return res.redirect(`/talents/${userId}/edit`);
   }
 
-  
-  const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; 
+  const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv;
 
-  
   const certificatesPaths =
     certificatesFiles.length > 0
       ? [
-          ...(res.locals.currentUser.certificates || []), 
-          ...certificatesFiles.map((file) => file.path), 
+          ...(res.locals.currentUser.certificates || []),
+          ...certificatesFiles.map((file) => file.path),
         ]
       : res.locals.currentUser.certificates || [];
 
-  
   const parseArray = (field) => {
     return field
       ? field
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean)
-      : null; 
+      : null;
   };
 
   try {
-    
     await client.query(updateTalentSQL, [
       first_name,
       last_name,
       email,
-      phone || null, 
-      address || null, 
+      phone || null,
+      address || null,
       date_of_birth || res.locals.currentUser.date_of_birth,
-      about || null, 
-      parseArray(education), 
-      parseArray(skills), 
-      parseArray(languages), 
-      parseArray(socials), 
-      projects || null, 
-      cvPath, 
-      certificatesPaths, 
-      userId, 
+      about || null,
+      parseArray(education),
+      parseArray(skills),
+      parseArray(languages),
+      parseArray(socials),
+      projects || null,
+      cvPath,
+      certificatesPaths,
+      userId,
     ]);
 
     req.flash("success", "User updated successfully!");
@@ -109,14 +101,12 @@ const updateTalent = async (req, res, next) => {
   }
 };
 
-const fs = require("fs"); 
-
+const fs = require("fs");
 
 const deleteCV = async (req, res, next) => {
   const userId = req.params.id;
 
   try {
-    
     const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
@@ -125,11 +115,9 @@ const deleteCV = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    
     const cvPath = `uploads/${user.cv}`;
     if (fs.existsSync(cvPath)) fs.unlinkSync(cvPath);
 
-    
     await client.query(deleteCVSQL, [userId]);
 
     req.flash("success", "CV deleted successfully!");
@@ -141,13 +129,11 @@ const deleteCV = async (req, res, next) => {
   }
 };
 
-
 const deleteCertificate = async (req, res, next) => {
   const userId = req.params.id;
   const certificatePath = req.body.certificatePath;
 
   try {
-    
     const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
@@ -156,18 +142,13 @@ const deleteCertificate = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    
     const fullPath = `uploads/${certificatePath}`;
     if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 
-    
     const updatedCertificates = user.certificates.filter(
       (cert) => cert !== certificatePath
     );
-    await client.query(setCertificatesSQL, [
-      updatedCertificates,
-      userId,
-    ]);
+    await client.query(setCertificatesSQL, [updatedCertificates, userId]);
 
     req.flash("success", "Certificate deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -178,13 +159,11 @@ const deleteCertificate = async (req, res, next) => {
   }
 };
 
-
 const deleteSocial = async (req, res, next) => {
   const userId = req.params.id;
   const socialLink = req.body.socialLink;
 
   try {
-    
     const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
@@ -193,7 +172,6 @@ const deleteSocial = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    
     const updatedSocials = user.socials.filter((link) => link !== socialLink);
     await client.query(setSocialsSQL, [updatedSocials, userId]);
 
@@ -206,11 +184,10 @@ const deleteSocial = async (req, res, next) => {
   }
 };
 
-
 const fetchAllJobs = async (req, res, next) => {
   try {
     const { search, deadlineRange } = req.query;
-    const userId = res.locals.currentUser.id; 
+    const userId = res.locals.currentUser.id;
 
     if (!userId) {
       throw new Error("User must be logged in to view application statuses.");
@@ -218,9 +195,8 @@ const fetchAllJobs = async (req, res, next) => {
 
     let query = getAppliedJobsSQL;
     const params = [userId];
-    let whereAdded = false; 
+    let whereAdded = false;
 
-    
     if (search) {
       query += `
         AND (
@@ -233,7 +209,6 @@ const fetchAllJobs = async (req, res, next) => {
       params.push(`%${search}%`);
     }
 
-    
     if (deadlineRange) {
       const { startDate, endDate } = getDateRange(deadlineRange);
 
@@ -245,7 +220,6 @@ const fetchAllJobs = async (req, res, next) => {
         `;
         params.push(startDate, endDate);
       } else if (!startDate && endDate) {
-        
         query += `
           AND j."application_deadline" < $${params.length + 1}
         `;
@@ -253,12 +227,10 @@ const fetchAllJobs = async (req, res, next) => {
       }
     }
 
-    
     const result = await client.query(query, params);
 
-    
     res.render("talent/allJobs", {
-      allJobs: result.rows, 
+      allJobs: result.rows,
       searchQuery: search || "",
       deadlineRange: deadlineRange || "",
     });
@@ -270,7 +242,6 @@ const fetchAllJobs = async (req, res, next) => {
 
 const fetchMyApplications = async (req, res, next) => {
   try {
-    
     const result = await client.query(getUserApplicationsSQL, [
       res.locals.currentUser.id,
     ]);
@@ -284,9 +255,7 @@ const fetchMyApplications = async (req, res, next) => {
 
 const fetchJob = async (req, res, next) => {
   try {
-    const result = await client.query(getJobPostingByIdSQL, [
-      req.params.id,
-    ]);
+    const result = await client.query(getJobPostingByIdSQL, [req.params.id]);
     const status = await client.query(getApplicationStatusSQL, [
       req.params.id,
       req.user.id,
@@ -294,7 +263,7 @@ const fetchJob = async (req, res, next) => {
     const statusDesc =
       status.rows.length > 0
         ? status.rows[0].status_desc
-        : "No status available";
+        : "No application status available.";
 
     res.render("talent/job", { job: result.rows[0], status: statusDesc });
   } catch (error) {
@@ -304,48 +273,39 @@ const fetchJob = async (req, res, next) => {
 };
 
 const applyForJob = async (req, res, next) => {
-  const userId = req.user.id; 
-  const jobId = req.params.jobId; 
+  const userId = req.user.id;
+  const jobId = req.params.jobId;
 
   try {
-    
-    const jobPostingResult = await client.query(getJobPostingByIdSQL, [
-      jobId,
-    ]);
+    const jobPostingResult = await client.query(getJobPostingByIdSQL, [jobId]);
     const jobPosting = jobPostingResult.rows[0];
 
-    
     if (!jobPosting || jobPosting.is_archived) {
       req.flash("error", "Job posting not found or archived.");
       return res.redirect("/talent/browse-all-jobs");
     }
 
-    
     const applicationResult = await client.query(createApplicationSQL, [
       userId,
       jobId,
     ]);
 
     const applicationId = applicationResult.rows[0].id;
-    await sendAppliedEmail(applicationId, userId);
+    await sendAppliedEmail(applicationId, userId, null);
 
-    
     let cvPath = null;
     let coverLetterPath = null;
     let certificatesPaths = [];
-    let projectsText = req.body.projects || null; 
+    let projectsText = req.body.projects || null;
 
-    
     if (req.files.cv) {
       cvPath = req.files.cv[0].path;
     }
 
-    
     if (req.files.cover_letter) {
       coverLetterPath = req.files.cover_letter[0].path;
     }
 
-    
     if (req.files.certificates) {
       certificatesPaths = req.files.certificates.map((file) => file.path);
     }
@@ -377,30 +337,55 @@ const applyForJob = async (req, res, next) => {
 };
 
 const jwt = require("jsonwebtoken");
-const { sendAppliedEmail } = require("../emails/emailService");
+const { sendAppliedEmail } = require("../emails/emailTemplates");
 
 const confirmInterview = async (req, res) => {
   const token = req.params.token;
   try {
-    console.log("token: ", token);
+    // Decode the JWT token to get interview and talent details
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { interviewId, talentId } = decoded;
 
-    const interviewResult = await client.query(
-      `SELECT * FROM "Interview_Schedule" WHERE "id" = $1 AND "talent_id" = $2`,
-      [interviewId, talentId]
-    );
+    // Fetch the interview details
+    const interviewResult = await client.query(interviewQueries.getInterviewByIdSQL, [interviewId]);
 
-    if (interviewResult.rows.length === 0) {
+    if (interviewResult.rows.length === 0 || interviewResult.rows[0].talent_id !== talentId) {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
-    await client.query(
-      `UPDATE "Interview_Schedule" SET "interview_status_id" = 2 WHERE "id" = $1`,
-      [interviewId]
-    );
+    // Update the interview status to "Confirmed" (status_id=2)
+    await client.query(interviewQueries.updateInterviewScheduleSQL, [interviewId, null, null, null, null, 2]);
 
-    res.send("Interview confirmed!");
+    const interviewData = interviewResult.rows[0];
+    const { hr_first_name, hr_last_name, talent_first_name, talent_last_name, proposed_time, is_online, city, street_address, status_desc } = interviewData;
+
+    // Format the proposed interview time
+    const formattedTime = new Date(proposed_time).toLocaleString();
+
+    // Determine interview location
+    const location = is_online ? "Online Interview" : `${city}, ${street_address}`;
+
+    // Fetch detailed application information
+    const applicationResult = await client.query(getApplicationByIdSQL, [interviewData.application_id]);
+
+    if (applicationResult.rows.length === 0) {
+      return res.status(404).send("Application not found.");
+    }
+
+    const applicationData = applicationResult.rows[0];
+
+    // Render confirmation page with necessary details
+    res.render('talent/interviewConfirmed', {
+      jobTitle: applicationData.job_title,
+      company: applicationData.job_company,
+      proposedTime: formattedTime,
+      location: location,
+      isOnline: is_online,
+      hrName: `${hr_first_name} ${hr_last_name}`,
+      talentName: `${talent_first_name} ${talent_last_name}`,
+      interviewStatus: status_desc
+    });
+
   } catch (err) {
     console.error("Error confirming interview:", err);
     res.status(500).send("Error confirming interview.");
@@ -409,55 +394,166 @@ const confirmInterview = async (req, res) => {
 
 const rejectInterview = async (req, res) => {
   const token = req.params.token;
-
   try {
+    // Decode the JWT token to get interview and talent details
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { interviewId, talentId } = decoded;
 
-    const interviewResult = await client.query(
-      `SELECT * FROM "Interview_Schedule" WHERE "id" = $1 AND "talent_id" = $2`,
-      [interviewId, talentId]
-    );
+    // Fetch the interview details
+    const interviewResult = await client.query(interviewQueries.getInterviewByIdSQL, [interviewId]);
 
-    if (interviewResult.rows.length === 0) {
+    if (interviewResult.rows.length === 0 || interviewResult.rows[0].talent_id !== talentId) {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
-    await client.query(
-      `UPDATE "Interview_Schedule" SET "interview_status_id" = 3 WHERE "id" = $1`,
-      [interviewId]
-    );
+    // Update the interview status to "Rejected" (status_id=3)
+    await client.query(interviewQueries.updateInterviewScheduleSQL, [interviewId, null, null, null, null, 3]);
 
-    res.send("Interview rejected.");
+    const interviewData = interviewResult.rows[0];
+    const { hr_first_name, hr_last_name, talent_first_name, talent_last_name, status_desc } = interviewData;
+
+    // Fetch detailed application information
+    const applicationResult = await client.query(getApplicationByIdSQL, [interviewData.application_id]);
+
+    if (applicationResult.rows.length === 0) {
+      return res.status(404).send("Application not found.");
+    }
+
+    const applicationData = applicationResult.rows[0];
+
+    // Render rejection page with necessary details
+    res.render('talent/interviewRejected', {
+      jobTitle: applicationData.job_title,
+      company: applicationData.job_company,
+      hrName: `${hr_first_name} ${hr_last_name}`,
+      talentName: `${talent_first_name} ${talent_last_name}`,
+      interviewStatus: status_desc
+    });
+
   } catch (err) {
     console.error("Error rejecting interview:", err);
     res.status(500).send("Error rejecting interview.");
   }
 };
 
+
 const fetchInterviewsByTalentId = async (req, res) => {
-  const talentId = req.user.id; 
+  const talentId = req.user.id;
 
   try {
-      
-      const result = await client.query(interviewQueries.getInterviewsByTalentSQL, [talentId]);
+    const result = await client.query(
+      interviewQueries.getInterviewsByTalentSQL,
+      [talentId]
+    );
 
-      
-      const events = result.rows.map(interview => ({
-          title: `${interview.hr_company_name} - ${interview.status_desc}`,
-          start: new Date(interview.proposed_time).toISOString(),
-          allDay: false, 
-      }));
+    const events = result.rows.map((interview) => ({
+      title: `${interview.hr_company_name} - ${interview.status_desc}`,
+      start: new Date(interview.proposed_time).toISOString(),
+      allDay: false,
+    }));
 
-      
-      res.render('talent/calendar', {
-        layout: 'layout', 
-        events: JSON.stringify(events), 
-      });
-      
+    res.render("talent/calendar", {
+      layout: "layout",
+      events: JSON.stringify(events),
+    });
   } catch (error) {
-      console.error('Error fetching interviews:', error.message);
-      res.status(500).send('An error occurred while fetching interviews.');
+    console.error("Error fetching interviews:", error.message);
+    res.status(500).send("An error occurred while fetching interviews.");
+  }
+};
+
+const getFeedbackForm = async (req, res) => {
+  console.log("Query parameters:", req.query); // Debug log
+
+  const { applicationId, token } = req.query;
+
+  if (!applicationId || !token) {
+    console.error("Missing applicationId or token");
+    return res.status(400).send("Invalid or expired link.");
+  }
+
+  try {
+    // Validate the token and application ID
+    const validationResult = await client.query(
+      `SELECT * FROM "Application" WHERE id = $1 AND feedback_token = $2`,
+      [applicationId, token]
+    );
+
+    if (validationResult.rows.length === 0) {
+      return res.status(400).send("Invalid or expired link.");
+    }
+
+    // Fetch detailed application information
+    const applicationResult = await client.query(getApplicationByIdSQL, [
+      applicationId,
+    ]);
+
+    if (applicationResult.rows.length === 0) {
+      return res.status(404).send("Application not found.");
+    }
+
+    const applicationData = applicationResult.rows[0];
+
+    // Render the feedback form with additional application data
+    res.render("talent/feedbackForm", {
+      applicationId,
+      token,
+      application: applicationData, // Pass application details to the view
+    });
+  } catch (error) {
+    console.error("Error rendering feedback form:", error.message);
+    res.status(500).send("An error occurred. Please try again later.");
+  }
+};
+
+// Handle feedback submission
+const submitFeedback = async (req, res) => {
+  const { applicationId, token, feedback } = req.body;
+
+  try {
+    // Validate the token and application ID
+    const result = await client.query(
+      `SELECT * FROM "Application" WHERE id = $1 AND feedback_token = $2`,
+      [applicationId, token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).send("Invalid or expired link.");
+    }
+
+    // Append feedback to the existing talent_feedback
+    await client.query(
+      `UPDATE "Application" 
+   SET talent_feedback = COALESCE(talent_feedback, '') || '\n' || $1 
+   WHERE id = $2`,
+      [feedback, applicationId]
+    );
+
+    // Optionally, remove the token after successful feedback submission
+    await client.query(
+      `UPDATE "Application" SET feedback_token = NULL WHERE id = $1`,
+      [applicationId]
+    );
+
+    // Fetch detailed application information
+    const applicationResult = await client.query(getApplicationByIdSQL, [
+      applicationId,
+    ]);
+
+    if (applicationResult.rows.length === 0) {
+      return res.status(404).send("Application not found.");
+    }
+
+    const applicationData = applicationResult.rows[0];
+
+    // Render a pretty confirmation page after saving feedback
+    res.render("talent/feedbackConfirmation", {
+      jobTitle: applicationData.job_title,
+      company: applicationData.job_company,
+    });
+  } catch (error) {
+    console.error("Error saving feedback:", error.message);
+    res.status(500).send("An error occurred. Please try again later.");
   }
 };
 
@@ -472,5 +568,7 @@ module.exports = {
   applyForJob,
   confirmInterview,
   rejectInterview,
-  fetchInterviewsByTalentId
+  fetchInterviewsByTalentId,
+  submitFeedback,
+  getFeedbackForm,
 };

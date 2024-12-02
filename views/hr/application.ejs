@@ -13,8 +13,11 @@
   <% } else if(application.status_desc === 'rejected') { %>
       <button class="btn btn-danger">REJECTED</button>
   <% } else { %>
-      <% if(application.status_desc === 'shortlisted') { %>
+      <% if(application.status_desc === 'shortlisted' || application.status_desc === 'invited') { %>
           <h3>SHORTLISTED</h3>
+          <% if(application.status_desc === 'invited') { %>
+            <h3>(INVITED)</h3>
+            <% } %>
       <% } else { %>
           <form action="/hr/shortlist-application/<%= application.id %>" method="POST" style="display:inline;">
               <input type="hidden" name="applicationId" value="<%= application.id %>">

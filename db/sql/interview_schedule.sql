@@ -10,7 +10,7 @@ CREATE TABLE "Interview_Schedule" (
     "city" VARCHAR(50),
     "street_address" VARCHAR(100),
     "interview_status_id" INT NOT NULL DEFAULT 1 REFERENCES "Interview_Status" ("id"),
-    "impression" TEXT,
+    "review" TEXT,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
