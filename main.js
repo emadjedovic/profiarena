@@ -12,27 +12,27 @@ const path = require("path");
 const { formatDate } = require("./utils/dateFormating");
 const { connect, client } = require("./db/connect");
 const { createTables } = require("./db/schema");
-const { listenForEmailNotifications } = require("./emails/emailListener");
+const { getUserByEmailSQL, getUserByIdSQL} = require("./db/queries/userQueries");
 require('dotenv').config();
 
 const setupDatabase = async () => {
   await connect();
-  // await createTables();
+  
 };
 
 setupDatabase();
 
-// Import connect-pg-simple
+
 const pgSession = require("connect-pg-simple")(expressSession);
 
 const app = express();
 
-// Serve the favicon
+
 app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
 
-// MIDDLEWARE
+
 app.use(express.static("public"));
-// Serve static files (uploads) from the 'uploads' directory
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(layouts);
@@ -45,17 +45,17 @@ app.use(
 );
 app.use(cookieParser("secret_passcode"));
 
-// Configure session with connect-pg-simple
+
 app.use(
   expressSession({
     store: new pgSession({
-      pool: client, // Use your PostgreSQL client
-      tableName: "session", // Optional: default is "session"
+      pool: client, 
+      tableName: "session", 
     }),
     secret: "secret_passcode",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 600000 }, // Adjust session expiration time as needed
+    cookie: { maxAge: 600000 }, 
   })
 );
 
@@ -92,7 +92,7 @@ const checkLoginStatus = (req, res, next) => {
 
 app.use(checkLoginStatus);
 
-// PASSPORT STRATEGY SETUP
+
 passport.use(
   new LocalStrategy(
     {
@@ -101,7 +101,7 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const result = await client.query(queries.getUserByEmailSQL, [email]);
+        const result = await client.query(getUserByEmailSQL, [email]);
         const user = result.rows[0];
         if (!user) {
           return done(null, false, { message: "User not found" });
@@ -113,7 +113,7 @@ passport.use(
           return done(null, false, { message: "Invalid password" });
         }
 
-        return done(null, user); // Success
+        return done(null, user); 
       } catch (error) {
         return done(error);
       }
@@ -121,14 +121,14 @@ passport.use(
   )
 );
 
-// SERIALIZE AND DESERIALIZE USER
+
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const result = await client.query(queries.getUserByIdSQL, [id]);
+    const result = await client.query(getUserByIdSQL, [id]);
     const user = result.rows[0];
     if (user) {
       done(null, user);
@@ -144,7 +144,6 @@ app.set("port", process.env.PORT || 3000);
 app.set("view engine", "ejs");
 
 const router = require("./routes/index");
-const queries = require("./db/queries");
 app.use("/", router);
 
 app.listen(app.get("port"), () => {

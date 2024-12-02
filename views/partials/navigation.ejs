@@ -20,6 +20,9 @@
         <li class="nav-item">
           <a class="nav-link <%= currentPath === '/hr/my-job-postings' ? 'active text-decoration-underline' : '' %>" href="/hr/my-job-postings">My Job Postings</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/hr/calendar' ? 'active text-decoration-underline' : '' %>" href="/hr/calendar">Calendar</a>
+        </li>
         <% } %>
 
         <!-- TALENTS ONLY -->
@@ -33,8 +36,9 @@
         <li class="nav-item">
           <a class="nav-link <%= currentPath === '/talent/my-applications' ? 'active text-decoration-underline' : '' %>" href="/talent/my-applications">My Applications</a>
         </li>
-
-
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/talent/calendar' ? 'active text-decoration-underline' : '' %>" href="/talent/calendar">Calendar</a>
+        </li>
         <% } %>
       </ul>
 

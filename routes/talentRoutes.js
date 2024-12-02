@@ -9,17 +9,18 @@ const {
   fetchJob,
   applyForJob,
   confirmInterview,
-  rejectInterview
+  rejectInterview,
+  fetchInterviewsByTalentId
 } = require("../controllers/talentsController");
 const multer = require("multer");
 
-// Set the storage engine and destination for uploaded files
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // The folder where you want to store the uploaded files
+    cb(null, "uploads/"); 
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); // Generate a unique file name
+    cb(null, Date.now() + "-" + file.originalname); 
   },
 });
 
@@ -30,6 +31,7 @@ router.get("/profile", (req, res) => {
 });
 router.get("/my-applications", fetchMyApplications);
 router.get("/browse-all-jobs", fetchAllJobs);
+router.get('/calendar', fetchInterviewsByTalentId);
 
 router.get('/confirm-interview/:token', confirmInterview);
 router.get('/reject-interview/:token', rejectInterview);
@@ -49,12 +51,12 @@ router.get("/:id/edit", (req, res) => {
   res.render("talent/edit");
 });
 
-// handle the multiple file inputs
+
 router.put(
   "/:id/update",
   upload.fields([
-    { name: "cv", maxCount: 1 }, // Handling CV upload
-    { name: "certificates", maxCount: 5 }, // Handling certificates upload
+    { name: "cv", maxCount: 1 }, 
+    { name: "certificates", maxCount: 5 }, 
   ]),
   updateTalent
 );

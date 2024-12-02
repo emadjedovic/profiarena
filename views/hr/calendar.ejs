@@ -1,0 +1,28 @@
+<div id="calendar"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    
+    const calendarEl = document.getElementById('calendar');
+
+    
+    const events = JSON.parse('<%- events %>');
+
+    
+    console.log("Loaded Events: ", events);
+
+    
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth', 
+      headerToolbar: {
+        left: 'prev,next today',    
+        center: 'title',           
+        right: 'dayGridMonth,timeGridWeek,timeGridDay', 
+      },
+      events: events, 
+    });
+
+    
+    calendar.render();
+  });
+</script>

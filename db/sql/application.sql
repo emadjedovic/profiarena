@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS "Application" CASCADE;
+
 CREATE TABLE "Application" (
     "id" SERIAL PRIMARY KEY,
     "talent_id" INT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
@@ -10,5 +11,5 @@ CREATE TABLE "Application" (
     "cv" VARCHAR(255),
     "cover_letter" VARCHAR(255),
     "projects" TEXT,
-    "certificates" VARCHAR(255)[]
+    "certificates" VARCHAR(255) []
 );

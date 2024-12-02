@@ -1,8 +1,43 @@
-const { client } = require("../db/connect"); // Make sure to import client
-const queries = require("../db/queries"); // Import the query file
-const { sendEmail, sendApplicationStatusEmail } = require('../emails/emailService');
+const { client } = require("../db/connect");
+const {
+  sendViewedEmail,
+  sendInvitedEmail,
+  sendRejectedEmail,
+  sendShortlistedEmail,
+  sendAcceptedEmail,
+} = require("../emails/emailService");
+const jwt = require("jsonwebtoken");
 
-// Create Job Posting
+const {
+  getAllApplicationsForJobSQL,
+  getApplicationByIdSQL,
+  setStatusSQL,
+  getAppByIdSimple,
+  getTalentIdSQL
+} = require("../db/queries/appQueries");
+const {
+  addCommentSQL,
+  deleteAppScoreSQL,
+  getApplicationScoreByApplicationIdSQL,
+  insertAppScoreSQL,
+  setScoresSQL,
+  setTotalScoreSQL,
+} = require("../db/queries/appScoreQueries");
+const {} = require("../db/queries/interviewQueries");
+const {
+  createJobPostingSQL,
+  getJobPostingByIdSQL,
+  getJobPostingsByHrIdSQL,
+  toggleArchiveJobSQL,
+} = require("../db/queries/jobPostingQueries");
+const {
+  getAllTalentsSQL,
+  getTalentByIdSQL,
+  updateHRSQL,
+} = require("../db/queries/userQueries");
+const interviewQueries = require('../db/queries/interviewQueries');
+
+
 const createJobPosting = async (req, res, next) => {
   const {
     title,
@@ -16,9 +51,9 @@ const createJobPosting = async (req, res, next) => {
     certificates_field,
   } = req.body;
 
-  // Insert job posting into the database
+  
   try {
-    await client.query(queries.createJobPostingSQL, [
+    await client.query(createJobPostingSQL, [
       title,
       description,
       city,
@@ -31,18 +66,18 @@ const createJobPosting = async (req, res, next) => {
       req.user.id,
     ]);
     req.flash("success", "Job posting created successfully!");
-    res.redirect("back"); // Redirect to a success page or the home page
+    res.redirect("back"); 
   } catch (error) {
     console.log(`Error creating job posting: ${error.message}`);
     req.flash("error", "Failed to create job posting.");
-    res.redirect("back"); // Redirect back to home or another page on failure
+    res.redirect("back"); 
   }
 };
 
-// Fetch all users
+
 const fetchTalents = async (req, res, next) => {
   try {
-    const result = await client.query(queries.getAllTalentsSQL);
+    const result = await client.query(getAllTalentsSQL);
     res.render("hr/listTalents", { talents: result.rows });
   } catch (error) {
     console.log(`Error fetching talents: ${error.message}`);
@@ -50,7 +85,7 @@ const fetchTalents = async (req, res, next) => {
   }
 };
 
-// filters and search bar included
+
 const fetchJobPostingsByHrId = async (req, res, next) => {
   try {
     const {
@@ -62,11 +97,11 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       cover_letter_field,
     } = req.query;
 
-    // Base query to fetch job postings
-    let query = queries.getJobPostingsByHrIdSQL;
+    
+    let query = getJobPostingsByHrIdSQL;
     let params = [req.user.id];
 
-    // Add search condition (search in title, company, city, description, street address)
+    
     if (search) {
       query += `
         AND (
@@ -80,7 +115,7 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       params.push(`%${search}%`);
     }
 
-    // Add archive condition
+    
     if (archive !== undefined && archive !== "") {
       if (archive === "true" || archive === "false") {
         query += `
@@ -90,7 +125,7 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       }
     }
 
-    // Add filters for each document field if checked
+    
     if (cv_field) {
       query += `
         AND "cv_field" = TRUE
@@ -112,10 +147,10 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       `;
     }
 
-    // Execute the query
+    
     const result = await client.query(query, params);
 
-    // Render the job postings page with the results
+    
     res.render("hr/jobsByHrId", {
       jobPostings: result.rows,
       searchQuery: search || "",
@@ -135,31 +170,32 @@ const fetchJobPostingById = async (req, res, next) => {
   try {
     const jobPostingId = req.params.id;
 
-    // Fetch the job posting details
-    const jobPosting = await client.query(queries.getJobPostingByIdSQL, [
-      jobPostingId,
-    ]);
-
-    // Fetch applications with their corresponding total scores
-    const applications = await client.query(
-      queries.getAllApplicationsForJobSQL,
+    
+    const jobPosting = await client.query(
+      getJobPostingByIdSQL,
       [jobPostingId]
     );
 
-    // Rank the applications based on total score
+    
+    const applications = await client.query(
+      getAllApplicationsForJobSQL,
+      [jobPostingId]
+    );
+
+    
     applications.rows.forEach((application, index) => {
-      application.rank = index + 1; // Start ranking from 1
+      application.rank = index + 1; 
     });
 
-    // Sort applications by total_score in descending order to rank
+    
     applications.rows.sort((a, b) => b.total_score - a.total_score);
 
-    // Assign ranks to the sorted applications
+    
     applications.rows.forEach((application, index) => {
-      application.rank = index + 1; // Rank starts at 1
+      application.rank = index + 1; 
     });
 
-    // Render the job posting page with the applications and ranks
+    
     res.render("hr/jobPosting", {
       jobPosting: jobPosting.rows[0],
       applications: applications.rows,
@@ -178,7 +214,10 @@ const toggleArchiveJob = async (req, res, next) => {
       [jobId]
     );
     const isArchived = result.rows[0].is_archived;
-    await client.query(queries.toggleArchiveJobSQL, [!isArchived, jobId]);
+    await client.query(toggleArchiveJobSQL, [
+      !isArchived,
+      jobId,
+    ]);
     res.redirect("back");
   } catch (error) {
     console.error(`Error toggling archive status: ${error.message}`);
@@ -186,7 +225,7 @@ const toggleArchiveJob = async (req, res, next) => {
   }
 };
 
-// Update a user
+
 const updateHR = async (req, res, next) => {
   const userId = req.params.id;
 
@@ -198,13 +237,13 @@ const updateHR = async (req, res, next) => {
   }
 
   try {
-    await client.query(queries.updateHRSQL, [
+    await client.query(updateHRSQL, [
       first_name,
       last_name,
       email,
       company_name,
       userId,
-    ]); // Use the query from queries.js
+    ]);
 
     req.flash("success", "User updated successfully!");
     res.redirect(`/hr/profile`);
@@ -218,7 +257,7 @@ const updateHR = async (req, res, next) => {
 const fetchTalentById = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const result = await client.query(queries.getTalentByIdSQL, [userId]);
+    const result = await client.query(getTalentByIdSQL, [userId]);
     res.render("hr/talent", { talent: result.rows[0] });
   } catch (error) {
     console.log(`Error fetching talent: ${error.message}`);
@@ -230,23 +269,26 @@ const fetchApplicationById = async (req, res) => {
   const applicationId = req.params.id;
 
   try {
-    // Fetch the application details
+    
     const applicationResult = await client.query(
-      queries.getApplicationByIdSQL,
+      getApplicationByIdSQL,
       [applicationId]
     );
-
     if (applicationResult.rows.length === 0) {
       return res.status(404).send("Application not found");
     }
+    const application = applicationResult.rows[0];
 
-    // Fetch the application score if it exists
+    if (application.status_desc === "applied") {
+      await client.query(setStatusSQL, [2, applicationId]);
+      await sendViewedEmail(applicationId, application.talent_id);
+    }
+
+    
     const appScoreResult = await client.query(
-      queries.getApplicationScoreByApplicationIdSQL,
+      getApplicationScoreByApplicationIdSQL,
       [applicationId]
     );
-
-    const application = applicationResult.rows[0];
     const applicationScore = appScoreResult.rows[0];
 
     res.render("hr/application", {
@@ -256,33 +298,6 @@ const fetchApplicationById = async (req, res) => {
   } catch (err) {
     console.error("Error fetching application details:", err);
     res.status(500).send("Server error");
-  }
-};
-
-const updateApplicationStatus = async (applicationId, newStatus, talentId, confirmationLink, rejectionLink) => {
-  try {
-    // Step 1: Get the status description for the new status
-    const statusResult = await client.query(
-      `SELECT "status_desc" FROM "Application_Status" WHERE id = $1`,
-      [newStatus]
-    );
-
-    if (statusResult.rows.length === 0) {
-      console.error("Status not found.");
-      return;
-    }
-
-    const status_desc = statusResult.rows[0].status_desc;
-
-    // Step 2: Update the application status in the database
-    await client.query(queries.setStatusSQL, [newStatus, applicationId]);
-
-    // Step 3: Call the function to send the email notification
-    await sendApplicationStatusEmail(applicationId, newStatus, talentId, confirmationLink, rejectionLink);
-    console.log(`Application status updated to ${status_desc} and email sent.`);
-  } catch (err) {
-    console.error("Error updating application status:", err);
-    throw err; // Handle the error appropriately
   }
 };
 
@@ -298,7 +313,7 @@ const createAppScore = async (req, res) => {
     comments,
   } = req.body;
 
-  // Calculate the total score (assuming the formula is correct)
+  
   const totalScore =
     (education_score +
       skills_score +
@@ -309,7 +324,6 @@ const createAppScore = async (req, res) => {
     6;
 
   try {
-    // Step 1: Fetch the talent_id for the given applicationId
     const applicationResult = await client.query(
       `SELECT talent_id FROM "Application" WHERE id = $1`,
       [applicationId]
@@ -320,46 +334,32 @@ const createAppScore = async (req, res) => {
     }
 
     const talent_id = applicationResult.rows[0].talent_id;
+    await client.query(deleteAppScoreSQL, [applicationId]);
 
-    // Step 2: Delete any existing scores for this application
-    await client.query(queries.deleteAppScoreSQL, [applicationId]);
-
-    // Step 3: Insert the new score
-    const result = await client.query(queries.insertAppScoreSQL, [
+    const result = await client.query(insertAppScoreSQL, [
       applicationId,
-      req.user.id, // Assuming the HR user is logged in
-      talent_id, // Talent ID fetched from the Application table
+      req.user.id, 
+      talent_id, 
     ]);
 
     const appScoreId = result.rows[0].id;
 
-    // Step 4: Use a single UPDATE query to update all score fields
-    await client.query(
-      queries.setScoresSQL,
-      [
-        education_score,
-        skills_score,
-        experience_score,
-        languages_score,
-        certificate_score,
-        projects_score,
-        appScoreId,
-      ]
-    );
+    await client.query(setScoresSQL, [
+      education_score,
+      skills_score,
+      experience_score,
+      languages_score,
+      certificate_score,
+      projects_score,
+      appScoreId,
+    ]);
 
-    // Step 5: Update the total score for this application score
-    await client.query(queries.setTotalScoreSQL, [appScoreId]);
-
-    // Step 6: Insert comments into the application score
+    await client.query(setTotalScoreSQL, [appScoreId]);
     await client.query(
       'UPDATE "Application_Score" SET comments=$1 WHERE id=$2',
       [comments, appScoreId]
     );
 
-    // Step 7: Change the application status to "viewed" and send notification
-    await updateApplicationStatus(applicationId, 2, talent_id);
-
-    // Step 8: Redirect to the application details page
     res.redirect(`/hr/application/${applicationId}`);
   } catch (err) {
     console.error("Error submitting score:", err);
@@ -371,8 +371,8 @@ const showAppScoreForm = async (req, res) => {
   const applicationId = req.params.applicationId;
 
   try {
-    // Fetch the application details (optional, for showing title and company in the form)
-    const application = await client.query(queries.getApplicationByIdSQL, [
+    
+    const application = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
 
@@ -393,8 +393,8 @@ const showInterviewForm = async (req, res) => {
   const applicationId = req.params.applicationId;
 
   try {
-    // Fetch the application details (optional, for showing title and company in the form)
-    const application = await client.query(queries.getApplicationByIdSQL, [
+    
+    const application = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
 
@@ -411,28 +411,21 @@ const showInterviewForm = async (req, res) => {
   }
 };
 
-const jwt = require('jsonwebtoken');
 
-// Generate a JWT token for the talent
 const generateInterviewToken = (interviewId, talentId) => {
   const payload = { interviewId, talentId };
-  const secret = process.env.JWT_SECRET; // Make sure to use a strong secret
-  const options = { expiresIn: '24h' }; // Token expires in 24 hours
+  const secret = process.env.JWT_SECRET; 
+  const options = { expiresIn: "24h" }; 
   return jwt.sign(payload, secret, options);
 };
 
 const createInterview = async (req, res) => {
   const applicationId = req.params.applicationId;
-  const {
-    proposed_time,
-    is_online,
-    city,
-    street_address,
-    impression,
-  } = req.body;
+  const { proposed_time, is_online, city, street_address, impression } =
+    req.body;
 
   try {
-    // Step 1: Check if the application exists and fetch relevant details
+    
     const applicationResult = await client.query(
       `SELECT talent_id FROM "Application" WHERE id = $1`,
       [applicationId]
@@ -443,21 +436,21 @@ const createInterview = async (req, res) => {
     }
 
     const talent_id = applicationResult.rows[0].talent_id;
-    const hr_id = req.user.id; // Extract the HR ID from the current user's session
+    const hr_id = req.user.id; 
 
-    // Step 2: Insert the new interview schedule with status set to "scheduled" (ID 1)
+    
     const result = await client.query(
       `INSERT INTO "Interview_Schedule" (
         "application_id", "hr_id", "talent_id", "proposed_time", "is_online", 
         "city", "street_address", "interview_status_id", "impression"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8) RETURNING id`, // Interview status is set to "scheduled" (ID 1)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8) RETURNING id`, 
       [
         applicationId,
         hr_id,
         talent_id,
         proposed_time,
         is_online || false,
-        city || null, 
+        city || null,
         street_address || null,
         impression || null,
       ]
@@ -465,17 +458,24 @@ const createInterview = async (req, res) => {
 
     const interviewId = result.rows[0].id;
 
-    // Step 2: Generate the token for the talent to confirm/reject
+    
     const token = generateInterviewToken(interviewId, talent_id);
 
-    // Step 3: Send email to talent with the confirmation/rejection links
+    
     const confirmationLink = `${process.env.BASE_URL}/talent/confirm-interview/${token}`;
     const rejectionLink = `${process.env.BASE_URL}/talent/reject-interview/${token}`;
 
-    // Step 3: Update the application status to "invited" (ID 3)
-    await updateApplicationStatus(applicationId, 3, talent_id, confirmationLink, rejectionLink);
+    console.log("confirmation link from createInterview: ", confirmationLink);
 
-    // Step 4: Redirect to the application details page
+    await client.query(setStatusSQL, [3, applicationId]);
+    await sendInvitedEmail(
+      applicationId,
+      talent_id,
+      confirmationLink,
+      rejectionLink
+    );
+
+    
     res.redirect(`/hr/application/${applicationId}`);
   } catch (err) {
     console.error("Error creating interview schedule:", err);
@@ -488,8 +488,8 @@ const addComment = async (req, res, next) => {
   const appScoreId = req.params.appScoreId;
 
   try {
-    // Update the comment in the Application_Score table
-    await client.query(queries.addCommentSQL, [comment, appScoreId]);
+    
+    await client.query(addCommentSQL, [comment, appScoreId]);
     req.flash("success", "Comment added successfully!");
     res.redirect(`back`);
   } catch (error) {
@@ -498,6 +498,74 @@ const addComment = async (req, res, next) => {
     res.redirect("back");
   }
 };
+
+const fetchInterviewsByHrId = async (req, res) => {
+  const hrId = req.user.id; 
+
+  try {
+      
+      const result = await client.query(interviewQueries.getInterviewsByHRSQL, [hrId]);
+
+      
+      const events = result.rows.map(interview => ({
+          title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
+          start: new Date(interview.proposed_time).toISOString(),
+          allDay: false, 
+      }));
+
+      
+      res.render('hr/calendar', {
+        layout: 'layout', 
+        events: JSON.stringify(events), 
+      });
+      
+  } catch (error) {
+      console.error('Error fetching interviews:', error.message);
+      res.status(500).send('An error occurred while fetching interviews.');
+  }
+};
+
+const shortlistedApplication = async (req,res, next) => {
+  const application_id = req.params.applicationId;
+  try {
+    await client.query(setStatusSQL, [4, application_id]);
+    const result = await client.query(getAppByIdSimple, [application_id]);
+    console.log(result.rows[0].talent_id);
+    await sendShortlistedEmail(application_id, result.rows[0].talent_id);
+    res.redirect("back");
+    } catch (error) {
+      console.error(`Error shortlisting: ${error.message}`);
+      next(error);
+    }
+}
+
+const acceptApplication = async (req,res, next) => {
+  const application_id = req.params.applicationId;
+  try {
+    await client.query(setStatusSQL, [6, application_id]);
+    const result = await client.query(getAppByIdSimple, [application_id]);
+    console.log(result.rows[0].talent_id);
+    await sendAcceptedEmail(application_id, result.rows[0].talent_id);
+    res.redirect("back");
+    } catch (error) {
+      console.error(`Error accepting application: ${error.message}`);
+      next(error);
+    }
+}
+
+const rejectApplication = async (req,res, next) => {
+  const application_id = req.params.applicationId;
+  try {
+    await client.query(setStatusSQL, [5, application_id]);
+    const result = await client.query(getAppByIdSimple, [application_id]);
+    console.log(result.rows[0].talent_id);
+    await sendRejectedEmail(application_id, result.rows[0].talent_id);
+    res.redirect("back");
+    } catch (error) {
+      console.error(`Error rejecting application: ${error.message}`);
+      next(error);
+    }
+}
 
 module.exports = {
   createJobPosting,
@@ -512,5 +580,9 @@ module.exports = {
   showAppScoreForm,
   addComment,
   showInterviewForm,
-  createInterview
+  createInterview,
+  fetchInterviewsByHrId,
+  acceptApplication,
+  rejectApplication,
+  shortlistedApplication
 };

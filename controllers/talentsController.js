@@ -1,12 +1,36 @@
-const { client } = require("../db/connect"); // Make sure to import client
-const queries = require("../db/queries"); // Import the query file
-const multer = require("multer"); // If you haven't imported multer yet
-const { getDateRange } = require("../utils/deadline"); // Import helper function
+const { client } = require("../db/connect");
+const multer = require("multer");
+const { getDateRange } = require("../utils/deadline");
+
+const {
+  createApplicationSQL,
+  getApplicationStatusSQL,
+  setApplicationCVSQL,
+  setApplicationCertificatesSQL,
+  setApplicationCoverLetterSQL,
+  setApplicationProjectsSQL,
+} = require("../db/queries/appQueries");
+const {
+  getJobPostingByIdSQL,
+} = require("../db/queries/jobPostingQueries");
+const {
+  getAppliedJobsSQL,
+  getUserApplicationsSQL,
+} = require("../db/queries/otherQueries");
+const {
+  deleteCVSQL,
+  getUserByIdSQL,
+  setCertificatesSQL,
+  setSocialsSQL,
+  updateTalentSQL,
+} = require("../db/queries/userQueries");
+
+const interviewQueries = require('../db/queries/interviewQueries');
 
 const updateTalent = async (req, res, next) => {
   const userId = req.params.id;
 
-  // Access regular form data
+  
   const {
     first_name,
     last_name,
@@ -22,58 +46,58 @@ const updateTalent = async (req, res, next) => {
     projects,
   } = req.body;
 
-  // File data (cv and certificates)
+  
   const cvFile = req.files["cv"] ? req.files["cv"][0] : null;
   const certificatesFiles = req.files["certificates"]
     ? req.files["certificates"]
     : [];
 
-  // Handle missing required fields
+  
   if (!first_name || !last_name || !email) {
     req.flash("error", "First name, last name, and email are required!");
     return res.redirect(`/talents/${userId}/edit`);
   }
 
-  // Check if a new CV file is uploaded
-  const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; // Keep the existing CV if no new file is uploaded
+  
+  const cvPath = cvFile ? cvFile.path : res.locals.currentUser.cv; 
 
-  // keep the existing certificates and add the new ones
+  
   const certificatesPaths =
     certificatesFiles.length > 0
       ? [
-          ...(res.locals.currentUser.certificates || []), // Existing certificates
-          ...certificatesFiles.map((file) => file.path), // New certificates
+          ...(res.locals.currentUser.certificates || []), 
+          ...certificatesFiles.map((file) => file.path), 
         ]
       : res.locals.currentUser.certificates || [];
 
-  // Convert string fields to arrays (split by commas and remove extra spaces)
+  
   const parseArray = (field) => {
     return field
       ? field
           .split(",")
           .map((item) => item.trim())
           .filter(Boolean)
-      : null; // Ensure no empty values
+      : null; 
   };
 
   try {
-    // Update the user's information in the database
-    await client.query(queries.updateTalentSQL, [
+    
+    await client.query(updateTalentSQL, [
       first_name,
       last_name,
       email,
-      phone || null, // If phone is empty, store null
-      address || null, // If address is empty, store null
+      phone || null, 
+      address || null, 
       date_of_birth || res.locals.currentUser.date_of_birth,
-      about || null, // If about is empty, store null
-      parseArray(education), // Convert education to array
-      parseArray(skills), // Convert skills to array
-      parseArray(languages), // Convert languages to array
-      parseArray(socials), // Convert socials to array
-      projects || null, // If projects is empty, store null
-      cvPath, // Store file path of the uploaded CV
-      certificatesPaths, // Store file paths of the uploaded certificates
-      userId, // User ID for the WHERE clause
+      about || null, 
+      parseArray(education), 
+      parseArray(skills), 
+      parseArray(languages), 
+      parseArray(socials), 
+      projects || null, 
+      cvPath, 
+      certificatesPaths, 
+      userId, 
     ]);
 
     req.flash("success", "User updated successfully!");
@@ -85,15 +109,15 @@ const updateTalent = async (req, res, next) => {
   }
 };
 
-const fs = require("fs"); // File system module
+const fs = require("fs"); 
 
-// DELETE CV
+
 const deleteCV = async (req, res, next) => {
   const userId = req.params.id;
 
   try {
-    // Fetch user data
-    const result = await client.query(queries.getUserByIdSQL, [userId]);
+    
+    const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.cv) {
@@ -101,12 +125,12 @@ const deleteCV = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    // Delete CV file from uploads folder
+    
     const cvPath = `uploads/${user.cv}`;
     if (fs.existsSync(cvPath)) fs.unlinkSync(cvPath);
 
-    // Update the database to remove the CV reference
-    await client.query(queries.deleteCVSQL, [userId]);
+    
+    await client.query(deleteCVSQL, [userId]);
 
     req.flash("success", "CV deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -117,14 +141,14 @@ const deleteCV = async (req, res, next) => {
   }
 };
 
-// DELETE Certificate
+
 const deleteCertificate = async (req, res, next) => {
   const userId = req.params.id;
   const certificatePath = req.body.certificatePath;
 
   try {
-    // Fetch user data
-    const result = await client.query(queries.getUserByIdSQL, [userId]);
+    
+    const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.certificates || !user.certificates.includes(certificatePath)) {
@@ -132,15 +156,15 @@ const deleteCertificate = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    // Delete certificate file from uploads folder
+    
     const fullPath = `uploads/${certificatePath}`;
     if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
 
-    // Update the database to remove the specific certificate
+    
     const updatedCertificates = user.certificates.filter(
       (cert) => cert !== certificatePath
     );
-    await client.query(queries.setCertificatesSQL, [
+    await client.query(setCertificatesSQL, [
       updatedCertificates,
       userId,
     ]);
@@ -154,14 +178,14 @@ const deleteCertificate = async (req, res, next) => {
   }
 };
 
-// DELETE Social Link
+
 const deleteSocial = async (req, res, next) => {
   const userId = req.params.id;
   const socialLink = req.body.socialLink;
 
   try {
-    // Fetch user data
-    const result = await client.query(queries.getUserByIdSQL, [userId]);
+    
+    const result = await client.query(getUserByIdSQL, [userId]);
     const user = result.rows[0];
 
     if (!user.socials || !user.socials.includes(socialLink)) {
@@ -169,9 +193,9 @@ const deleteSocial = async (req, res, next) => {
       return res.redirect(`/talent/profile`);
     }
 
-    // Update database to remove the specific social link
+    
     const updatedSocials = user.socials.filter((link) => link !== socialLink);
-    await client.query(queries.setSocialsSQL, [updatedSocials, userId]);
+    await client.query(setSocialsSQL, [updatedSocials, userId]);
 
     req.flash("success", "Social link deleted successfully!");
     res.redirect(`/talent/profile`);
@@ -182,21 +206,21 @@ const deleteSocial = async (req, res, next) => {
   }
 };
 
-// include search (filter)
+
 const fetchAllJobs = async (req, res, next) => {
   try {
     const { search, deadlineRange } = req.query;
-    const userId = res.locals.currentUser.id; // Assuming the user is logged in
+    const userId = res.locals.currentUser.id; 
 
     if (!userId) {
       throw new Error("User must be logged in to view application statuses.");
     }
 
-    let query = queries.getAppliedJobsSQL;
+    let query = getAppliedJobsSQL;
     const params = [userId];
-    let whereAdded = false; // Track if WHERE clause is already added
+    let whereAdded = false; 
 
-    // Handle search
+    
     if (search) {
       query += `
         AND (
@@ -209,17 +233,19 @@ const fetchAllJobs = async (req, res, next) => {
       params.push(`%${search}%`);
     }
 
-    // Handle predefined date range filtering
+    
     if (deadlineRange) {
       const { startDate, endDate } = getDateRange(deadlineRange);
 
       if (startDate && endDate) {
         query += `
-          AND j."application_deadline" BETWEEN $${params.length + 1} AND $${params.length + 2}
+          AND j."application_deadline" BETWEEN $${params.length + 1} AND $${
+          params.length + 2
+        }
         `;
         params.push(startDate, endDate);
       } else if (!startDate && endDate) {
-        // Handle "past" case where only endDate exists
+        
         query += `
           AND j."application_deadline" < $${params.length + 1}
         `;
@@ -227,12 +253,12 @@ const fetchAllJobs = async (req, res, next) => {
       }
     }
 
-    // Execute the query
+    
     const result = await client.query(query, params);
 
-    // Render the response
+    
     res.render("talent/allJobs", {
-      allJobs: result.rows, // Include `has_applied` field for each job
+      allJobs: result.rows, 
       searchQuery: search || "",
       deadlineRange: deadlineRange || "",
     });
@@ -244,8 +270,8 @@ const fetchAllJobs = async (req, res, next) => {
 
 const fetchMyApplications = async (req, res, next) => {
   try {
-    // Query to fetch applications with job titles and statuses
-    const result = await client.query(queries.getUserApplicationsSQL, [
+    
+    const result = await client.query(getUserApplicationsSQL, [
       res.locals.currentUser.id,
     ]);
 
@@ -258,10 +284,10 @@ const fetchMyApplications = async (req, res, next) => {
 
 const fetchJob = async (req, res, next) => {
   try {
-    const result = await client.query(queries.getJobPostingByIdSQL, [
+    const result = await client.query(getJobPostingByIdSQL, [
       req.params.id,
     ]);
-    const status = await client.query(queries.getApplicationStatusSQL, [
+    const status = await client.query(getApplicationStatusSQL, [
       req.params.id,
       req.user.id,
     ]);
@@ -278,64 +304,65 @@ const fetchJob = async (req, res, next) => {
 };
 
 const applyForJob = async (req, res, next) => {
-  const userId = req.user.id; // Assuming the user is authenticated
-  const jobId = req.params.jobId; // ID of the job the user is applying for
+  const userId = req.user.id; 
+  const jobId = req.params.jobId; 
 
   try {
-    // Fetch the job posting to get the required fields
-    const jobPostingResult = await client.query(queries.getJobPostingByIdSQL, [
+    
+    const jobPostingResult = await client.query(getJobPostingByIdSQL, [
       jobId,
     ]);
     const jobPosting = jobPostingResult.rows[0];
 
-    // If job posting not found or archived
+    
     if (!jobPosting || jobPosting.is_archived) {
       req.flash("error", "Job posting not found or archived.");
       return res.redirect("/talent/browse-all-jobs");
     }
 
-    // Insert the application into the database with the default application status of 1
-    const applicationResult = await client.query(queries.createApplicationSQL, [
+    
+    const applicationResult = await client.query(createApplicationSQL, [
       userId,
       jobId,
-      1,
     ]);
-    const applicationId = applicationResult.rows[0].id;
 
-    // Save the uploaded documents for the job application (CV, Cover Letter, Certificates)
+    const applicationId = applicationResult.rows[0].id;
+    await sendAppliedEmail(applicationId, userId);
+
+    
     let cvPath = null;
     let coverLetterPath = null;
     let certificatesPaths = [];
-    let projectsText = req.body.projects || null; // Capture the Projects text
+    let projectsText = req.body.projects || null; 
 
-    // Handle CV upload
+    
     if (req.files.cv) {
       cvPath = req.files.cv[0].path;
     }
 
-    // Handle Cover Letter upload
+    
     if (req.files.cover_letter) {
       coverLetterPath = req.files.cover_letter[0].path;
     }
 
-    // Handle Certificates upload
+    
     if (req.files.certificates) {
       certificatesPaths = req.files.certificates.map((file) => file.path);
     }
 
-    await client.query(queries.setApplicationCVSQL, [cvPath, applicationId]);
+    await client.query(setApplicationCVSQL, [cvPath, applicationId]);
 
-    await client.query(queries.setApplicationCoverLetterSQL, [
+    await client.query(setApplicationCoverLetterSQL, [
       coverLetterPath,
       applicationId,
     ]);
 
-    await client.query(queries.setApplicationCertificatesSQL, [
+    await client.query(setApplicationCertificatesSQL, [
       certificatesPaths,
       applicationId,
     ]);
 
-    await client.query(queries.setApplicationProjectsSQL, [
+    await client.query(setApplicationProjectsSQL, [
       projectsText,
       applicationId,
     ]);
@@ -349,30 +376,16 @@ const applyForJob = async (req, res, next) => {
   }
 };
 
-const getJobsWithApplicationStatus = async (userId) => {
-  const query = `
-    SELECT j.*, 
-           CASE WHEN a.talent_id IS NOT NULL THEN true ELSE false END AS has_applied
-    FROM "Job_Posting" j
-    LEFT JOIN "Applications" a ON j.id = a.job_posting_id AND a.talent_id = $1
-  `;
-  const result = await db.query(query, [userId]);
-  return result.rows; // Returns jobs with `has_applied` field
-};
+const jwt = require("jsonwebtoken");
+const { sendAppliedEmail } = require("../emails/emailService");
 
-const jwt = require('jsonwebtoken');
-
-// Talent confirms the interview
 const confirmInterview = async (req, res) => {
   const token = req.params.token;
-  console.log("token: ", token);
-
   try {
-    // Step 1: Verify the token
+    console.log("token: ", token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { interviewId, talentId } = decoded;
 
-    // Step 2: Check if the interview exists and belongs to the talent
     const interviewResult = await client.query(
       `SELECT * FROM "Interview_Schedule" WHERE "id" = $1 AND "talent_id" = $2`,
       [interviewId, talentId]
@@ -382,30 +395,25 @@ const confirmInterview = async (req, res) => {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
-    // Step 3: Update the interview status to confirmed (assuming 2 = confirmed)
     await client.query(
       `UPDATE "Interview_Schedule" SET "interview_status_id" = 2 WHERE "id" = $1`,
       [interviewId]
     );
 
-    // Send a confirmation message (you could also send an email here if needed)
-    res.send('Interview confirmed!');
+    res.send("Interview confirmed!");
   } catch (err) {
-    console.error('Error confirming interview:', err);
-    res.status(500).send('Error confirming interview.');
+    console.error("Error confirming interview:", err);
+    res.status(500).send("Error confirming interview.");
   }
 };
 
-// Talent rejects the interview
 const rejectInterview = async (req, res) => {
   const token = req.params.token;
 
   try {
-    // Step 1: Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { interviewId, talentId } = decoded;
 
-    // Step 2: Check if the interview exists and belongs to the talent
     const interviewResult = await client.query(
       `SELECT * FROM "Interview_Schedule" WHERE "id" = $1 AND "talent_id" = $2`,
       [interviewId, talentId]
@@ -415,21 +423,43 @@ const rejectInterview = async (req, res) => {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
-    // Step 3: Update the interview status to rejected (assuming 3 = rejected)
     await client.query(
       `UPDATE "Interview_Schedule" SET "interview_status_id" = 3 WHERE "id" = $1`,
       [interviewId]
     );
 
-    // Send a rejection message (you could also send an email here if needed)
-    res.send('Interview rejected.');
+    res.send("Interview rejected.");
   } catch (err) {
-    console.error('Error rejecting interview:', err);
-    res.status(500).send('Error rejecting interview.');
+    console.error("Error rejecting interview:", err);
+    res.status(500).send("Error rejecting interview.");
   }
 };
 
+const fetchInterviewsByTalentId = async (req, res) => {
+  const talentId = req.user.id; 
 
+  try {
+      
+      const result = await client.query(interviewQueries.getInterviewsByTalentSQL, [talentId]);
+
+      
+      const events = result.rows.map(interview => ({
+          title: `${interview.hr_company_name} - ${interview.status_desc}`,
+          start: new Date(interview.proposed_time).toISOString(),
+          allDay: false, 
+      }));
+
+      
+      res.render('talent/calendar', {
+        layout: 'layout', 
+        events: JSON.stringify(events), 
+      });
+      
+  } catch (error) {
+      console.error('Error fetching interviews:', error.message);
+      res.status(500).send('An error occurred while fetching interviews.');
+  }
+};
 
 module.exports = {
   updateTalent,
@@ -441,5 +471,6 @@ module.exports = {
   fetchJob,
   applyForJob,
   confirmInterview,
-  rejectInterview
+  rejectInterview,
+  fetchInterviewsByTalentId
 };
