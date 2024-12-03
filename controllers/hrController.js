@@ -470,9 +470,14 @@ const fetchInterviewsByHrId = async (req, res) => {
     ]);
 
     const events = result.rows.map((interview) => ({
+      id: interview.id,  // Include the event id here
       title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
       start: new Date(interview.proposed_time).toISOString(),
       allDay: false,
+      extendedProps: {
+        status_id: interview.interview_status_id, // If you need additional data
+        review: interview.review || '', // You can add any additional properties here
+      }
     }));
 
     res.render("hr/calendar", {
@@ -484,6 +489,7 @@ const fetchInterviewsByHrId = async (req, res) => {
     res.status(500).send("An error occurred while fetching interviews.");
   }
 };
+
 
 const shortlistedApplication = async (req, res, next) => {
   const application_id = req.params.applicationId;
@@ -549,19 +555,6 @@ const createInterviewCalendar = async (req, res) => {
 
     const talent_id = talentResult.rows[0].talent_id;
 
-    console.log(
-      "[application_id, hr_id, talent_id, proposed_time, is_online, city, street_address]: ",
-      [
-        application_id,
-        hr_id,
-        talent_id,
-        proposed_time,
-        is_online,
-        city,
-        street_address,
-      ]
-    );
-
     // Insert interview into the database
     const insertResult = await client.query(
       interviewQueries.createInterviewScheduleSQL,
@@ -597,6 +590,20 @@ const createInterviewCalendar = async (req, res) => {
     newInterview.talent_last_name = talent.last_name;
     newInterview.status_desc = status.status_desc;
 
+    const token = generateInterviewToken(newInterview.id, talent_id);
+
+    const confirmationLink = `${process.env.BASE_URL}/talent/confirm-interview/${token}`;
+    const rejectionLink = `${process.env.BASE_URL}/talent/reject-interview/${token}`;
+
+    await client.query(setStatusSQL, [3, application_id]);
+    await sendInvitedEmail(
+      application_id,
+      talent_id,
+      hr_id,
+      confirmationLink,
+      rejectionLink
+    );
+
     return res.json(newInterview); // Send the new interview data back
   } catch (err) {
     console.error("Error adding interview:", err.message);
@@ -605,41 +612,52 @@ const createInterviewCalendar = async (req, res) => {
 };
 
 
-// Update an interview and redirect back to the calendar
 const updateInterview = async (req, res) => {
+  console.log("PUT request received for update interview");
   const { id } = req.params;
-  const { interview_status_id, review } = req.body;
+  const { interview_status_id, review, proposed_time } = req.body;
 
   try {
     // Update interview in the database
     await client.query(
       `
       UPDATE "Interview_Schedule"
-      SET interview_status_id = $1, review = $2, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $3;
+      SET 
+        interview_status_id = $1, 
+        review = $2, 
+        proposed_time = COALESCE($3, proposed_time), 
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4;
       `,
-      [interview_status_id, review, id]
+      [interview_status_id, review, proposed_time, id]
     );
 
-    // Fetch updated events to render in the calendar
+    console.log("interview status: ", interview_status_id)
+    
+
+    // Fetch the updated interview data from the database
     const result = await client.query(`
-      SELECT id, application_id, proposed_time, is_online, city, street_address 
-      FROM "Interview_Schedule";
-    `);
+      SELECT id, application_id, proposed_time, is_online, city, street_address, interview_status_id, review
+      FROM "Interview_Schedule"
+      WHERE id = $1;
+    `, [id]);
 
-    const events = result.rows;
+    const updatedInterview = result.rows[0];
 
-    console.log("Events:", events);
+    if (updatedInterview) {
+      res.json(updatedInterview);
+    } else {
+      res.status(404).send("Interview not found");
+    }
 
-    // Render the calendar page with updated events
-    res.render("hr/calendar", { events });
   } catch (err) {
     console.error("Error updating interview:", err.message);
     res.status(500).send("Error updating interview");
   }
 };
 
-// Delete an interview and redirect back to the calendar
+
+// FIX THIS MAYBE
 const deleteInterview = async (req, res) => {
   const { id } = req.params;
 
@@ -655,9 +673,6 @@ const deleteInterview = async (req, res) => {
 
     const events = result.rows;
 
-    console.log("Events:", events);
-
-    // Render the calendar page with updated events
     res.render("hr/calendar", { events });
   } catch (err) {
     console.error("Error deleting interview:", err.message);

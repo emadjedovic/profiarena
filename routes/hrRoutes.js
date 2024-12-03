@@ -22,8 +22,6 @@ const {
   createInterviewCalendar
 } = require("../controllers/hrController");
 
-
-
 router.post("/create-job-posting", createJobPosting);
 router.get("/profile", (req, res) => {
   res.render("hr/profile");

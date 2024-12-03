@@ -39,44 +39,43 @@
 
 <script>
   document
-  .getElementById("addInterviewForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
+    .getElementById("addInterviewForm")
+    .addEventListener("submit", function(e) {
+      e.preventDefault();
 
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
 
-    fetch("/hr/interviews", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to add interview. Please try again.");
-        }
-        return response.json();
-      })
-      .then((newInterview) => {
-        // Add the new event to the calendar
-        calendar.addEvent({
-          id: newInterview.id,
-          title: `${newInterview.talent_first_name} ${newInterview.talent_last_name} - ${newInterview.status_desc}`,
-          start: new Date(newInterview.proposed_time).toISOString(),
-          allDay: false,
-          extendedProps: {
-            status_id: newInterview.interview_status_id,
-            review: newInterview.review || '',
+      fetch("/hr/interviews", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
           },
+          body: JSON.stringify(data),
+        })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to add interview. Please try again.");
+          }
+          return response.json();
+        })
+        .then((newInterview) => {
+          calendar.addEvent({
+            id: newInterview.id,
+            title: `${newInterview.talent_first_name} ${newInterview.talent_last_name} - ${newInterview.status_desc}`,
+            start: new Date(newInterview.proposed_time).toISOString(),
+            allDay: false,
+            extendedProps: {
+              status_id: newInterview.interview_status_id,
+              review: newInterview.review || '',
+            },
+          });
+
+          $("#addInterviewModal").modal("hide");
+        })
+        .catch((error) => {
+          console.error("Error adding interview:", error);
+          alert(error.message);
         });
-
-        // Hide the modal
-        $("#addInterviewModal").modal("hide");
-      })
-      .catch((error) => {
-        console.error("Error adding interview:", error);
-        alert(error.message);
-      });
-  });
-
+    });
 </script>
