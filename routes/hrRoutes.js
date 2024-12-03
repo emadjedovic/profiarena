@@ -16,7 +16,10 @@ const {
   fetchInterviewsByHrId,
   acceptApplication,
   rejectApplication,
-  shortlistedApplication
+  shortlistedApplication,
+  updateInterview,
+  deleteInterview,
+  createInterviewCalendar
 } = require("../controllers/hrController");
 
 
@@ -28,6 +31,10 @@ router.get("/profile", (req, res) => {
 router.get("/talents", fetchTalents);
 router.get("/my-job-postings", fetchJobPostingsByHrId);
 router.get('/calendar', fetchInterviewsByHrId);
+
+router.post('/interviews', createInterviewCalendar);
+router.put('/interviews/:id', updateInterview);
+router.delete('/interviews/:id', deleteInterview);
 
 router.get("/job-posting/:id", fetchJobPostingById);
 router.post("/toggle-archive-job/:id", toggleArchiveJob);

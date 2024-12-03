@@ -1,28 +1,67 @@
 <div id="calendar"></div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    
-    const calendarEl = document.getElementById('calendar');
+<!-- Include modals as partials -->
+<%- include('../partials/addInterviewModal') %>
+<%- include('../partials/editInterviewModal') %>
 
-    
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    const calendarEl = document.getElementById('calendar');
     const events = JSON.parse('<%- events %>');
 
-    
     console.log("Loaded Events: ", events);
 
-    
     const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth', 
+      initialView: 'dayGridMonth',
       headerToolbar: {
-        left: 'prev,next today',    
-        center: 'title',           
-        right: 'dayGridMonth,timeGridWeek,timeGridDay', 
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay',
       },
-      events: events, 
+      events: events,
+
+      // Day click handler
+      dateClick: function(info) {
+        const clickedDate = info.dateStr; // This gives the date in YYYY-MM-DD format
+        openInterviewModal(clickedDate);
+      },
+
+      // Event click handler for editing
+      eventClick: function(info) {
+        const interview = info.event;
+
+        // Set up the edit modal with event data
+        openEditInterviewModal(interview);
+      },
     });
 
-    
     calendar.render();
   });
+
+  // Open Add Interview Modal (for day click)
+  function openInterviewModal(clickedDate) {
+    const modal = document.getElementById("addInterviewModal");
+    const proposedTimeInput = document.getElementById("proposed_time");
+
+    // Set the proposed time to the clicked date
+    proposedTimeInput.value = clickedDate + "T09:00"; // Set a default time (e.g., 9:00 AM)
+
+    // Open the modal
+    $(modal).modal('show');
+  }
+
+  // Open Edit Interview Modal (for event click)
+  function openEditInterviewModal(event) {
+    const modal = document.getElementById("editInterviewModal");
+
+    // Populate the modal with the event data
+    document.getElementById("interview_id").value = event.id;
+    document.getElementById("interview_status_id").value = event.extendedProps.status_id; // Assuming status_id is part of the event data
+    document.getElementById("review").value = event.extendedProps.review || ''; // Assuming review is part of the event data
+    document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16); // Format the time to match the input format
+
+    // Open the modal
+    $(modal).modal('show');
+  }
 </script>

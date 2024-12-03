@@ -1,0 +1,35 @@
+<div id="editInterviewModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editInterviewForm">
+        <input type="hidden" id="interview_id" name="id">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Interview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="interview_status_id" class="form-label">Status</label>
+            <select id="interview_status_id" name="interview_status_id" class="form-select">
+              <option value="1">Scheduled</option>
+              <option value="2">Finished</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="review" class="form-label">Review</label>
+            <textarea id="review" name="review" class="form-control"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="proposed_time" class="form-label">Proposed Time</label>
+            <input type="datetime-local" id="proposed_time" name="proposed_time" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-danger" id="deleteInterviewBtn">Delete Interview</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

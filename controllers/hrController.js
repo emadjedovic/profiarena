@@ -570,6 +570,97 @@ const rejectApplication = async (req,res, next) => {
     }
 }
 
+// Create an interview and redirect back to the calendar
+const createInterviewCalendar = async (req, res) => {
+  const { application_id, proposed_time, is_online, city, street_address } = req.body;
+  const hr_id = req.user.id; // HR ID from session
+  
+  try {
+    // Insert interview into the database
+    await client.query(
+      `
+      INSERT INTO "Interview_Schedule" (application_id, hr_id, talent_id, proposed_time, is_online, city, street_address)
+      VALUES ($1, $2, (SELECT talent_id FROM "Application" WHERE id = $1), $3, $4, $5, $6);
+      `,
+      [application_id, hr_id, proposed_time, is_online, city, street_address]
+    );
+
+    // Fetch updated events to render in the calendar
+    const result = await client.query(`
+      SELECT id, application_id, proposed_time, is_online, city, street_address 
+      FROM "Interview_Schedule"
+      WHERE hr_id = $1;
+    `, [hr_id]);
+
+    const events = result.rows;
+
+    // Render the calendar page with updated events
+    res.render('calendar', { events });
+    
+  } catch (err) {
+    console.error('Error adding interview:', err.message);
+    res.status(500).send('Error adding interview');
+  }
+};
+
+// Update an interview and redirect back to the calendar
+const updateInterview = async (req, res) => {
+  const { id } = req.params;
+  const { interview_status_id, review } = req.body;
+
+  try {
+    // Update interview in the database
+    await client.query(
+      `
+      UPDATE "Interview_Schedule"
+      SET interview_status_id = $1, review = $2, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3;
+      `,
+      [interview_status_id, review, id]
+    );
+
+    // Fetch updated events to render in the calendar
+    const result = await client.query(`
+      SELECT id, application_id, proposed_time, is_online, city, street_address 
+      FROM "Interview_Schedule";
+    `);
+
+    const events = result.rows;
+
+    // Render the calendar page with updated events
+    res.render('calendar', { events });
+    
+  } catch (err) {
+    console.error('Error updating interview:', err.message);
+    res.status(500).send('Error updating interview');
+  }
+};
+
+// Delete an interview and redirect back to the calendar
+const deleteInterview = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Delete the interview from the database
+    await client.query('DELETE FROM "Interview_Schedule" WHERE id = $1;', [id]);
+
+    // Fetch updated events to render in the calendar
+    const result = await client.query(`
+      SELECT id, application_id, proposed_time, is_online, city, street_address 
+      FROM "Interview_Schedule";
+    `);
+
+    const events = result.rows;
+
+    // Render the calendar page with updated events
+    res.render('calendar', { events });
+    
+  } catch (err) {
+    console.error('Error deleting interview:', err.message);
+    res.status(500).send('Error deleting interview');
+  }
+};
+
 module.exports = {
   createJobPosting,
   fetchTalents,
@@ -587,5 +678,8 @@ module.exports = {
   fetchInterviewsByHrId,
   acceptApplication,
   rejectApplication,
-  shortlistedApplication
+  shortlistedApplication,
+  createInterviewCalendar,
+  updateInterview,
+  deleteInterview
 };
