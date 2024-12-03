@@ -5,6 +5,9 @@
 <%- include('../partials/editInterviewModal') %>
 
 <script>
+
+  let calendar;
+
   document.addEventListener('DOMContentLoaded', function() {
 
     const calendarEl = document.getElementById('calendar');
@@ -12,7 +15,7 @@
 
     console.log("Loaded Events: ", events);
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
       headerToolbar: {
         left: 'prev,next today',
