@@ -13,7 +13,7 @@ const {
   getApplicationByIdSQL,
   setStatusSQL,
   getAppByIdSimple,
-  getTalentIdSQL
+  getTalentIdSQL,
 } = require("../db/queries/appQueries");
 const {
   addCommentSQL,
@@ -35,8 +35,7 @@ const {
   getTalentByIdSQL,
   updateHRSQL,
 } = require("../db/queries/userQueries");
-const interviewQueries = require('../db/queries/interviewQueries');
-
+const interviewQueries = require("../db/queries/interviewQueries");
 
 const createJobPosting = async (req, res, next) => {
   const {
@@ -51,7 +50,6 @@ const createJobPosting = async (req, res, next) => {
     certificates_field,
   } = req.body;
 
-  
   try {
     await client.query(createJobPostingSQL, [
       title,
@@ -66,14 +64,13 @@ const createJobPosting = async (req, res, next) => {
       req.user.id,
     ]);
     req.flash("success", "Job posting created successfully!");
-    res.redirect("back"); 
+    res.redirect("back");
   } catch (error) {
     console.log(`Error creating job posting: ${error.message}`);
     req.flash("error", "Failed to create job posting.");
-    res.redirect("back"); 
+    res.redirect("back");
   }
 };
-
 
 const fetchTalents = async (req, res, next) => {
   try {
@@ -84,7 +81,6 @@ const fetchTalents = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const fetchJobPostingsByHrId = async (req, res, next) => {
   try {
@@ -97,11 +93,9 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       cover_letter_field,
     } = req.query;
 
-    
     let query = getJobPostingsByHrIdSQL;
     let params = [req.user.id];
 
-    
     if (search) {
       query += `
         AND (
@@ -115,7 +109,6 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       params.push(`%${search}%`);
     }
 
-    
     if (archive !== undefined && archive !== "") {
       if (archive === "true" || archive === "false") {
         query += `
@@ -125,7 +118,6 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       }
     }
 
-    
     if (cv_field) {
       query += `
         AND "cv_field" = TRUE
@@ -147,10 +139,8 @@ const fetchJobPostingsByHrId = async (req, res, next) => {
       `;
     }
 
-    
     const result = await client.query(query, params);
 
-    
     res.render("hr/jobsByHrId", {
       jobPostings: result.rows,
       searchQuery: search || "",
@@ -170,32 +160,22 @@ const fetchJobPostingById = async (req, res, next) => {
   try {
     const jobPostingId = req.params.id;
 
-    
-    const jobPosting = await client.query(
-      getJobPostingByIdSQL,
-      [jobPostingId]
-    );
+    const jobPosting = await client.query(getJobPostingByIdSQL, [jobPostingId]);
 
-    
-    const applications = await client.query(
-      getAllApplicationsForJobSQL,
-      [jobPostingId]
-    );
+    const applications = await client.query(getAllApplicationsForJobSQL, [
+      jobPostingId,
+    ]);
 
-    
     applications.rows.forEach((application, index) => {
-      application.rank = index + 1; 
+      application.rank = index + 1;
     });
 
-    
     applications.rows.sort((a, b) => b.total_score - a.total_score);
 
-    
     applications.rows.forEach((application, index) => {
-      application.rank = index + 1; 
+      application.rank = index + 1;
     });
 
-    
     res.render("hr/jobPosting", {
       jobPosting: jobPosting.rows[0],
       applications: applications.rows,
@@ -214,17 +194,13 @@ const toggleArchiveJob = async (req, res, next) => {
       [jobId]
     );
     const isArchived = result.rows[0].is_archived;
-    await client.query(toggleArchiveJobSQL, [
-      !isArchived,
-      jobId,
-    ]);
+    await client.query(toggleArchiveJobSQL, [!isArchived, jobId]);
     res.redirect("back");
   } catch (error) {
     console.error(`Error toggling archive status: ${error.message}`);
     next(error);
   }
 };
-
 
 const updateHR = async (req, res, next) => {
   const userId = req.params.id;
@@ -270,11 +246,9 @@ const fetchApplicationById = async (req, res) => {
   const hr_id = req.user.id;
 
   try {
-    
-    const applicationResult = await client.query(
-      getApplicationByIdSQL,
-      [applicationId]
-    );
+    const applicationResult = await client.query(getApplicationByIdSQL, [
+      applicationId,
+    ]);
     if (applicationResult.rows.length === 0) {
       return res.status(404).send("Application not found");
     }
@@ -285,7 +259,6 @@ const fetchApplicationById = async (req, res) => {
       await sendViewedEmail(applicationId, application.talent_id, hr_id);
     }
 
-    
     const appScoreResult = await client.query(
       getApplicationScoreByApplicationIdSQL,
       [applicationId]
@@ -314,7 +287,6 @@ const createAppScore = async (req, res) => {
     comments,
   } = req.body;
 
-  
   const totalScore =
     (education_score +
       skills_score +
@@ -339,8 +311,8 @@ const createAppScore = async (req, res) => {
 
     const result = await client.query(insertAppScoreSQL, [
       applicationId,
-      req.user.id, 
-      talent_id, 
+      req.user.id,
+      talent_id,
     ]);
 
     const appScoreId = result.rows[0].id;
@@ -372,7 +344,6 @@ const showAppScoreForm = async (req, res) => {
   const applicationId = req.params.applicationId;
 
   try {
-    
     const application = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
@@ -394,7 +365,6 @@ const showInterviewForm = async (req, res) => {
   const applicationId = req.params.applicationId;
 
   try {
-    
     const application = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
@@ -412,21 +382,18 @@ const showInterviewForm = async (req, res) => {
   }
 };
 
-
 const generateInterviewToken = (interviewId, talentId) => {
   const payload = { interviewId, talentId };
-  const secret = process.env.JWT_SECRET; 
-  const options = { expiresIn: "24h" }; 
+  const secret = process.env.JWT_SECRET;
+  const options = { expiresIn: "24h" };
   return jwt.sign(payload, secret, options);
 };
 
 const createInterview = async (req, res) => {
   const applicationId = req.params.applicationId;
-  const { proposed_time, is_online, city, street_address, review } =
-    req.body;
+  const { proposed_time, is_online, city, street_address, review } = req.body;
 
   try {
-    
     const applicationResult = await client.query(
       `SELECT talent_id FROM "Application" WHERE id = $1`,
       [applicationId]
@@ -437,14 +404,13 @@ const createInterview = async (req, res) => {
     }
 
     const talent_id = applicationResult.rows[0].talent_id;
-    const hr_id = req.user.id; 
+    const hr_id = req.user.id;
 
-    
     const result = await client.query(
       `INSERT INTO "Interview_Schedule" (
         "application_id", "hr_id", "talent_id", "proposed_time", "is_online", 
         "city", "street_address", "interview_status_id", "review"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8) RETURNING id`, 
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 1, $8) RETURNING id`,
       [
         applicationId,
         hr_id,
@@ -459,10 +425,8 @@ const createInterview = async (req, res) => {
 
     const interviewId = result.rows[0].id;
 
-    
     const token = generateInterviewToken(interviewId, talent_id);
 
-    
     const confirmationLink = `${process.env.BASE_URL}/talent/confirm-interview/${token}`;
     const rejectionLink = `${process.env.BASE_URL}/talent/reject-interview/${token}`;
 
@@ -475,7 +439,6 @@ const createInterview = async (req, res) => {
       rejectionLink
     );
 
-    
     res.redirect(`/hr/application/${applicationId}`);
   } catch (err) {
     console.error("Error creating interview schedule:", err);
@@ -488,7 +451,6 @@ const addComment = async (req, res, next) => {
   const appScoreId = req.params.appScoreId;
 
   try {
-    
     await client.query(addCommentSQL, [comment, appScoreId]);
     req.flash("success", "Comment added successfully!");
     res.redirect(`back`);
@@ -500,32 +462,36 @@ const addComment = async (req, res, next) => {
 };
 
 const fetchInterviewsByHrId = async (req, res) => {
-  const hrId = req.user.id; 
+  const hrId = req.user.id;
 
   try {
-      
-      const result = await client.query(interviewQueries.getInterviewsByHRSQL, [hrId]);
+    const result = await client.query(interviewQueries.getInterviewsByHRSQL, [
+      hrId,
+    ]);
 
-      
-      const events = result.rows.map(interview => ({
-          title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
-          start: new Date(interview.proposed_time).toISOString(),
-          allDay: false, 
-      }));
+    const events = result.rows.map((interview) => ({
+      id: interview.id,  // Include the event id here
+      title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
+      start: new Date(interview.proposed_time).toISOString(),
+      allDay: false,
+      extendedProps: {
+        status_id: interview.interview_status_id, // If you need additional data
+        review: interview.review || '', // You can add any additional properties here
+      }
+    }));
 
-      
-      res.render('hr/calendar', {
-        layout: 'layout', 
-        events: JSON.stringify(events), 
-      });
-      
+    res.render("hr/calendar", {
+      layout: "layout",
+      events: JSON.stringify(events),
+    });
   } catch (error) {
-      console.error('Error fetching interviews:', error.message);
-      res.status(500).send('An error occurred while fetching interviews.');
+    console.error("Error fetching interviews:", error.message);
+    res.status(500).send("An error occurred while fetching interviews.");
   }
 };
 
-const shortlistedApplication = async (req,res, next) => {
+
+const shortlistedApplication = async (req, res, next) => {
   const application_id = req.params.applicationId;
   const hr_id = req.user.id;
   try {
@@ -534,13 +500,13 @@ const shortlistedApplication = async (req,res, next) => {
     console.log(result.rows[0].talent_id);
     await sendShortlistedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
-    } catch (error) {
-      console.error(`Error shortlisting: ${error.message}`);
-      next(error);
-    }
-}
+  } catch (error) {
+    console.error(`Error shortlisting: ${error.message}`);
+    next(error);
+  }
+};
 
-const acceptApplication = async (req,res, next) => {
+const acceptApplication = async (req, res, next) => {
   const application_id = req.params.applicationId;
   const hr_id = req.user.id;
   try {
@@ -549,13 +515,13 @@ const acceptApplication = async (req,res, next) => {
     console.log(result.rows[0].talent_id);
     await sendAcceptedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
-    } catch (error) {
-      console.error(`Error accepting application: ${error.message}`);
-      next(error);
-    }
-}
+  } catch (error) {
+    console.error(`Error accepting application: ${error.message}`);
+    next(error);
+  }
+};
 
-const rejectApplication = async (req,res, next) => {
+const rejectApplication = async (req, res, next) => {
   const application_id = req.params.applicationId;
   const hr_id = req.user.id;
   try {
@@ -564,11 +530,155 @@ const rejectApplication = async (req,res, next) => {
     console.log(result.rows[0].talent_id);
     await sendRejectedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
-    } catch (error) {
-      console.error(`Error rejecting application: ${error.message}`);
-      next(error);
+  } catch (error) {
+    console.error(`Error rejecting application: ${error.message}`);
+    next(error);
+  }
+};
+
+const createInterviewCalendar = async (req, res) => {
+  const { application_id, proposed_time, is_online, city, street_address } =
+    req.body;
+  const hr_id = req.user.id;
+
+  try {
+    // Get the talent_id from the Application table
+    const talentResult = await client.query(
+      'SELECT talent_id FROM "Application" WHERE id = $1 LIMIT 1;',
+      [application_id]
+    );
+
+    if (talentResult.rows.length === 0) {
+      console.error("Talent not found for the given application");
+      return res.status(404).send("Talent not found for the given application");
     }
-}
+
+    const talent_id = talentResult.rows[0].talent_id;
+
+    // Insert interview into the database
+    const insertResult = await client.query(
+      interviewQueries.createInterviewScheduleSQL,
+      [
+        application_id,
+        hr_id,
+        talent_id,
+        proposed_time,
+        is_online,
+        city,
+        street_address,
+      ]
+    );
+
+    const newInterview = insertResult.rows[0];
+
+    // Fetch additional details for the new interview (e.g., talent name and status description)
+    const talentNameResult = await client.query(
+      'SELECT first_name, last_name FROM "User" WHERE id = $1',
+      [talent_id]
+    );
+
+    const interviewStatusResult = await client.query(
+      'SELECT status_desc FROM "Interview_Status" WHERE id = $1',
+      [newInterview.interview_status_id]
+    );
+
+    const talent = talentNameResult.rows[0];
+    const status = interviewStatusResult.rows[0];
+
+    // Include additional details in the response
+    newInterview.talent_first_name = talent.first_name;
+    newInterview.talent_last_name = talent.last_name;
+    newInterview.status_desc = status.status_desc;
+
+    const token = generateInterviewToken(newInterview.id, talent_id);
+
+    const confirmationLink = `${process.env.BASE_URL}/talent/confirm-interview/${token}`;
+    const rejectionLink = `${process.env.BASE_URL}/talent/reject-interview/${token}`;
+
+    await client.query(setStatusSQL, [3, application_id]);
+    await sendInvitedEmail(
+      application_id,
+      talent_id,
+      hr_id,
+      confirmationLink,
+      rejectionLink
+    );
+
+    return res.json(newInterview); // Send the new interview data back
+  } catch (err) {
+    console.error("Error adding interview:", err.message);
+    return res.status(500).send("Error adding interview: " + err.message);
+  }
+};
+
+
+const updateInterview = async (req, res) => {
+  console.log("PUT request received for update interview");
+  const { id } = req.params;
+  const { interview_status_id, review, proposed_time } = req.body;
+
+  try {
+    // Update interview in the database
+    await client.query(
+      `
+      UPDATE "Interview_Schedule"
+      SET 
+        interview_status_id = $1, 
+        review = $2, 
+        proposed_time = COALESCE($3, proposed_time), 
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4;
+      `,
+      [interview_status_id, review, proposed_time, id]
+    );
+
+    console.log("interview status: ", interview_status_id)
+    
+
+    // Fetch the updated interview data from the database
+    const result = await client.query(`
+      SELECT id, application_id, proposed_time, is_online, city, street_address, interview_status_id, review
+      FROM "Interview_Schedule"
+      WHERE id = $1;
+    `, [id]);
+
+    const updatedInterview = result.rows[0];
+
+    if (updatedInterview) {
+      res.json(updatedInterview);
+    } else {
+      res.status(404).send("Interview not found");
+    }
+
+  } catch (err) {
+    console.error("Error updating interview:", err.message);
+    res.status(500).send("Error updating interview");
+  }
+};
+
+
+// FIX THIS MAYBE
+const deleteInterview = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Delete the interview from the database
+    await client.query('DELETE FROM "Interview_Schedule" WHERE id = $1;', [id]);
+
+    // Fetch updated events to render in the calendar
+    const result = await client.query(`
+      SELECT id, application_id, proposed_time, is_online, city, street_address 
+      FROM "Interview_Schedule";
+    `);
+
+    const events = result.rows;
+
+    res.render("hr/calendar", { events });
+  } catch (err) {
+    console.error("Error deleting interview:", err.message);
+    res.status(500).send("Error deleting interview");
+  }
+};
 
 module.exports = {
   createJobPosting,
@@ -587,5 +697,8 @@ module.exports = {
   fetchInterviewsByHrId,
   acceptApplication,
   rejectApplication,
-  shortlistedApplication
+  shortlistedApplication,
+  createInterviewCalendar,
+  updateInterview,
+  deleteInterview,
 };
