@@ -570,20 +570,33 @@ const rejectApplication = async (req,res, next) => {
     }
 }
 
-// Create an interview and redirect back to the calendar
 const createInterviewCalendar = async (req, res) => {
   const { application_id, proposed_time, is_online, city, street_address } = req.body;
-  const hr_id = req.user.id; // HR ID from session
-  
+  const hr_id = req.user.id;
+
   try {
-    // Insert interview into the database
-    await client.query(
-      `
-      INSERT INTO "Interview_Schedule" (application_id, hr_id, talent_id, proposed_time, is_online, city, street_address)
-      VALUES ($1, $2, (SELECT talent_id FROM "Application" WHERE id = $1), $3, $4, $5, $6);
-      `,
-      [application_id, hr_id, proposed_time, is_online, city, street_address]
+    // Get the talent_id from the Application table
+    const talentResult = await client.query(
+      'SELECT talent_id FROM "Application" WHERE id = $1 LIMIT 1;',
+      [application_id]
     );
+
+    if (talentResult.rows.length === 0) {
+      console.error("Talent not found for the given application");
+      return res.status(404).send('Talent not found for the given application');
+    }
+
+    const talent_id = talentResult.rows[0].talent_id;
+
+    console.log("[application_id, hr_id, talent_id, proposed_time, is_online, city, street_address]: ", 
+                [application_id, hr_id, talent_id, proposed_time, is_online, city, street_address]);
+
+    // Insert interview into the database
+    const insertResult = await client.query(interviewQueries.createInterviewScheduleSQL, 
+      [application_id, hr_id, talent_id, proposed_time, is_online, city, street_address]
+    );
+    
+    console.log("Interview created:", insertResult.rows[0]);
 
     // Fetch updated events to render in the calendar
     const result = await client.query(`
@@ -595,13 +608,15 @@ const createInterviewCalendar = async (req, res) => {
     const events = result.rows;
 
     // Render the calendar page with updated events
-    res.render('calendar', { events });
-    
+    return res.render('hr/calendar', { events });
+
   } catch (err) {
     console.error('Error adding interview:', err.message);
-    res.status(500).send('Error adding interview');
+    return res.status(500).send('Error adding interview: ' + err.message);
   }
 };
+
+
 
 // Update an interview and redirect back to the calendar
 const updateInterview = async (req, res) => {
@@ -627,8 +642,11 @@ const updateInterview = async (req, res) => {
 
     const events = result.rows;
 
+    console.log('Events:', events);
+
+
     // Render the calendar page with updated events
-    res.render('calendar', { events });
+    res.render('hr/calendar', { events });
     
   } catch (err) {
     console.error('Error updating interview:', err.message);
@@ -652,8 +670,11 @@ const deleteInterview = async (req, res) => {
 
     const events = result.rows;
 
+    console.log('Events:', events);
+
+
     // Render the calendar page with updated events
-    res.render('calendar', { events });
+    res.render('hr/calendar', { events });
     
   } catch (err) {
     console.error('Error deleting interview:', err.message);

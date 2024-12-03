@@ -1,9 +1,9 @@
 const interviewQueries = {
   createInterviewScheduleSQL: `
 INSERT INTO "Interview_Schedule" 
-    ("application_id", "hr_id", "talent_id", "proposed_time", "is_online", "city", "street_address", "interview_status_id", "review")
+    ("application_id", "hr_id", "talent_id", "proposed_time", "is_online", "city", "street_address", "interview_status_id")
 VALUES 
-    ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    ($1, $2, $3, $4, $5, $6, $7, 1)
 RETURNING *;
 `,
   getInterviewsByHRSQL: `
