@@ -1,37 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Interview Invitation</title>
 </head>
+
 <body>
-    <p>Dear <%= first_name %> <%= last_name %>,</p>
-    <p>You have been invited for an interview for the <strong><%= job_title %></strong> position at <strong><%= job_company %></strong>.</p>
+  <p>Dear <%= first_name %> <%= last_name %>,</p>
+  <p>You have been invited for an interview for the <strong><%= job_title %></strong> position at <strong><%= job_company %></strong>.</p>
 
-    <h2>Interview Details:</h2>
-    <ul>
-      <li><strong>Date and Time:</strong> <%= formatDate(proposed_time) %></li>
-      <li><strong>Format:</strong> <%= is_online ? 'Online' : 'On-site' %></li>
-      <% if (!is_online) { %>
-        <li><strong>City:</strong> <%= city %></li>
-        <li><strong>Street Address:</strong> <%= street_address %></li>
-      <% } %>
-    </ul>
+  <h2>Interview Details:</h2>
+  <ul>
+    <li><strong>Date and Time:</strong> <%= formatDate(proposed_time) %></li>
+    <li><strong>Format:</strong> <%= is_online ? 'Online' : 'On-site' %></li>
+    <% if (!is_online) { %>
+    <li><strong>City:</strong> <%= city %></li>
+    <li><strong>Street Address:</strong> <%= street_address %></li>
+    <% } %>
+  </ul>
 
-    <p>Please confirm your attendance by clicking one of the links below:</p>
-    <p>
-      <a href="<%= confirm_link %>">Confirm Attendance</a>
-      <br>
-      <a href="<%= reject_link %>" class="reject">Reject Invitation</a>
-    </p>
-    <p>If you have any comments or questions, please feel free to share them with us.</p>
-    <p>
-      <a href="http://localhost:3000/talent/application-feedback?applicationId=<%= applicationId %>&token=<%= feedbackToken %>">
-        Click here to provide feedback
-      </a>
-    </p>
-    
-    <p><%= job_company %></p>
+  <p>Please confirm your attendance by clicking one of the links below:</p>
+  <p>
+    <a href="<%= confirm_link %>">Confirm Attendance</a>
+    <br>
+    <a href="<%= reject_link %>" class="reject">Reject Invitation</a>
+  </p>
+  <p>If you have any comments or questions, please feel free to share them with us.</p>
+  <p>
+    <a href="http://localhost:3000/talent/application-feedback?applicationId=<%= applicationId %>&token=<%= feedbackToken %>">
+      Click here to provide feedback
+    </a>
+  </p>
+
+  <p><%= job_company %></p>
 </body>
+
 </html>

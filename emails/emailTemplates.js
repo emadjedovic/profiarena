@@ -2,19 +2,13 @@ const { client } = require("../db/connect");
 const sendEmail = require("./emailSetup");
 const crypto = require("crypto");
 
-const {
-  getApplicationByIdSQL
-} = require("../db/queries/appQueries");
-const { getUserEmailByIdSQL } = require("../db/queries/userQueries")
+const { getApplicationByIdSQL } = require("../db/queries/appQueries");
+const { getUserEmailByIdSQL } = require("../db/queries/userQueries");
+const { getInterviewByIdSQL } = require("../db/queries/interviewQueries");
 
 const sendViewedEmail = async (applicationId, talentId, senderId) => {
-  const result = await client.query(getApplicationByIdSQL, [
-    applicationId,
-  ]);
-  const emailResult = await client.query(
-    getUserEmailByIdSQL,
-    [talentId]
-  );
+  const result = await client.query(getApplicationByIdSQL, [applicationId]);
+  const emailResult = await client.query(getUserEmailByIdSQL, [talentId]);
   const email = emailResult.rows[0].email;
 
   if (result.rows.length === 0) {
@@ -25,7 +19,7 @@ const sendViewedEmail = async (applicationId, talentId, senderId) => {
     const { first_name, last_name, job_title, job_company } = result.rows[0];
 
     let subject = `Your application for "${job_title}" at ${job_company} has been viewed.`;
-    let templateName = "viewed"; 
+    let templateName = "viewed";
     let templateData = {
       applicationId,
       first_name,
@@ -35,7 +29,7 @@ const sendViewedEmail = async (applicationId, talentId, senderId) => {
     };
 
     console.log("senderId: ", senderId);
-    
+
     await sendEmail(
       email,
       subject,
@@ -49,7 +43,7 @@ const sendViewedEmail = async (applicationId, talentId, senderId) => {
     );
   } catch (err) {
     console.error("Error sending email:", err);
-    throw err; 
+    throw err;
   }
 };
 
@@ -61,13 +55,8 @@ const sendInvitedEmail = async (
   rejectionLink
 ) => {
   try {
-    const result = await client.query(getApplicationByIdSQL, [
-      applicationId,
-    ]);
-    const emailResult = await client.query(
-      getUserEmailByIdSQL,
-      [talentId]
-    );
+    const result = await client.query(getApplicationByIdSQL, [applicationId]);
+    const emailResult = await client.query(getUserEmailByIdSQL, [talentId]);
     const email = emailResult.rows[0].email;
 
     if (result.rows.length === 0) {
@@ -89,7 +78,7 @@ const sendInvitedEmail = async (
 
     const interviewDetails = interviewResult.rows[0];
     let subject = `Invited for "${job_title}" at ${job_company}`;
-    let templateName = "invited"; 
+    let templateName = "invited";
 
     // Generate feedback token
     const feedbackToken = crypto.randomBytes(16).toString("hex");
@@ -113,7 +102,7 @@ const sendInvitedEmail = async (
       interview_id: interviewDetails.id,
       confirm_link: confirmationLink,
       reject_link: rejectionLink,
-      feedbackToken
+      feedbackToken,
     };
 
     await sendEmail(
@@ -127,19 +116,14 @@ const sendInvitedEmail = async (
     console.log(`Notification email sent for interview invitation.`);
   } catch (error) {
     console.error("Error sending email:", err);
-    throw err; 
+    throw err;
   }
 };
 
 const sendAppliedEmail = async (applicationId, talentId, senderId) => {
   try {
-    const result = await client.query(getApplicationByIdSQL, [
-      applicationId,
-    ]);
-    const emailResult = await client.query(
-      getUserEmailByIdSQL,
-      [talentId]
-    );
+    const result = await client.query(getApplicationByIdSQL, [applicationId]);
+    const emailResult = await client.query(getUserEmailByIdSQL, [talentId]);
     const email = emailResult.rows[0].email;
 
     if (result.rows.length === 0) {
@@ -150,7 +134,7 @@ const sendAppliedEmail = async (applicationId, talentId, senderId) => {
     const { first_name, last_name, job_title, job_company } = result.rows[0];
 
     let subject = `Applied for "${job_title}" at ${job_company}`;
-    let templateName = "applied"; 
+    let templateName = "applied";
     let templateData = {
       applicationId,
       first_name,
@@ -170,19 +154,14 @@ const sendAppliedEmail = async (applicationId, talentId, senderId) => {
     console.log(`Notification email sent after applying to a position.`);
   } catch (err) {
     console.error("Error sending email:", err);
-    throw err; 
+    throw err;
   }
 };
 
 const sendShortlistedEmail = async (applicationId, talentId, senderId) => {
   try {
-    const result = await client.query(getApplicationByIdSQL, [
-      applicationId,
-    ]);
-    const emailResult = await client.query(
-      getUserEmailByIdSQL,
-      [talentId]
-    );
+    const result = await client.query(getApplicationByIdSQL, [applicationId]);
+    const emailResult = await client.query(getUserEmailByIdSQL, [talentId]);
     const email = emailResult.rows[0].email;
 
     if (result.rows.length === 0) {
@@ -193,7 +172,7 @@ const sendShortlistedEmail = async (applicationId, talentId, senderId) => {
     const { first_name, last_name, job_title, job_company } = result.rows[0];
 
     let subject = `Shortlisted for "${job_title}" at ${job_company}`;
-    let templateName = "shortlisted"; 
+    let templateName = "shortlisted";
     let templateData = {
       applicationId,
       first_name,
@@ -213,19 +192,14 @@ const sendShortlistedEmail = async (applicationId, talentId, senderId) => {
     console.log(`Notification email sent for shortlisted status.`);
   } catch (err) {
     console.error("Error sending email:", err);
-    throw err; 
+    throw err;
   }
 };
 
 const sendRejectedEmail = async (applicationId, talentId, senderId) => {
   try {
-    const result = await client.query(getApplicationByIdSQL, [
-      applicationId,
-    ]);
-    const emailResult = await client.query(
-      getUserEmailByIdSQL,
-      [talentId]
-    );
+    const result = await client.query(getApplicationByIdSQL, [applicationId]);
+    const emailResult = await client.query(getUserEmailByIdSQL, [talentId]);
     const email = emailResult.rows[0].email;
 
     if (result.rows.length === 0) {
@@ -236,7 +210,7 @@ const sendRejectedEmail = async (applicationId, talentId, senderId) => {
     const { first_name, last_name, job_title, job_company } = result.rows[0];
 
     let subject = `Rejection for "${job_title}" at ${job_company}`;
-    let templateName = "rejected"; 
+    let templateName = "rejected";
     let templateData = {
       applicationId,
       first_name,
@@ -256,27 +230,27 @@ const sendRejectedEmail = async (applicationId, talentId, senderId) => {
     console.log(`Notification email sent for rejected status.`);
   } catch (err) {
     console.error("Error sending email:", err);
-    throw err; 
+    throw err;
   }
 };
 
 const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
   try {
-    const result = await client.query(getApplicationByIdSQL, [
+    const appResult = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
-    const emailResult = await client.query(
-      getUserEmailByIdSQL,
-      [talentId]
-    );
+    const emailResult = await client.query(getUserEmailByIdSQL, [talentId]);
     const email = emailResult.rows[0].email;
 
-    if (result.rows.length === 0) {
+    if (appResult.rows.length === 0) {
       console.error("Application not found or invalid status.");
       return;
     }
 
-    const { first_name, last_name, job_title, job_company } = result.rows[0];
+    const { first_name, last_name, job_title, job_company, message_to_talent } =
+      appResult.rows[0];
+
+    console.log("Message to talent: ", message_to_talent);
 
     let subject = `Accepted for "${job_title}" at ${job_company}`;
     let templateName = "accepted";
@@ -296,7 +270,8 @@ const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
       last_name,
       job_title,
       job_company,
-      feedbackToken
+      feedbackToken,
+      message_to_talent,
     };
 
     await sendEmail(
@@ -310,7 +285,7 @@ const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
     console.log(`Notification email sent for accepted status.`);
   } catch (err) {
     console.error("Error sending email:", err);
-    throw err; 
+    throw err;
   }
 };
 
@@ -321,5 +296,5 @@ module.exports = {
   sendInvitedEmail,
   sendShortlistedEmail,
   sendRejectedEmail,
-  sendAcceptedEmail
+  sendAcceptedEmail,
 };

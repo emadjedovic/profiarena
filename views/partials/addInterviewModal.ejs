@@ -46,6 +46,9 @@
       const formData = new FormData(this);
       const data = Object.fromEntries(formData);
 
+      // explicitly sets data.is_online to true if the checkbox is checked and false otherwise
+      data.is_online = document.getElementById("is_online").checked;
+
       fetch("/hr/interviews", {
           method: "POST",
           headers: {
@@ -66,7 +69,7 @@
             start: new Date(newInterview.proposed_time).toISOString(),
             allDay: false,
             extendedProps: {
-              status_id: newInterview.interview_status_id,
+              interview_status_id: newInterview.interview_status_id,
               review: newInterview.review || '',
             },
           });

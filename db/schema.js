@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { client } = require('./connect');
+const fs = require("fs");
+const path = require("path");
+const { client } = require("./connect");
 
 const runSQLFile = async (filePath) => {
   try {
-    const sql = fs.readFileSync(filePath, 'utf8');
+    const sql = fs.readFileSync(filePath, "utf8");
     await client.query(sql);
     console.log(`Executed: ${path.basename(filePath)}`);
   } catch (err) {
@@ -14,22 +14,22 @@ const runSQLFile = async (filePath) => {
 
 const createTables = async () => {
   const sqlFiles = [
-    'session.sql',
-    'role.sql',
-    'application_status.sql',
-    'interview_status.sql',
-    'user.sql',
-    'job_posting.sql',
-    'application.sql',
-    'application_score.sql',
-    'interview_schedule.sql'
+    "session.sql",
+    "role.sql",
+    "application_status.sql",
+    "interview_status.sql",
+    "user.sql",
+    "job_posting.sql",
+    "application.sql",
+    "application_score.sql",
+    "interview_schedule.sql",
   ];
 
   for (const file of sqlFiles) {
-    await runSQLFile(path.join(__dirname, './sql', file));
+    await runSQLFile(path.join(__dirname, "./sql", file));
   }
 };
 
 module.exports = {
-  createTables
+  createTables,
 };

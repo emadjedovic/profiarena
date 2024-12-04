@@ -347,26 +347,53 @@ const confirmInterview = async (req, res) => {
     const { interviewId, talentId } = decoded;
 
     // Fetch the interview details
-    const interviewResult = await client.query(interviewQueries.getInterviewByIdSQL, [interviewId]);
+    const interviewResult = await client.query(
+      interviewQueries.getInterviewByIdSQL,
+      [interviewId]
+    );
 
-    if (interviewResult.rows.length === 0 || interviewResult.rows[0].talent_id !== talentId) {
+    if (
+      interviewResult.rows.length === 0 ||
+      interviewResult.rows[0].talent_id !== talentId
+    ) {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
     // Update the interview status to "Confirmed" (status_id=2)
-    await client.query(interviewQueries.updateInterviewScheduleSQL, [interviewId, null, null, null, null, 2]);
+    await client.query(interviewQueries.updateInterviewScheduleSQL, [
+      interviewId,
+      null,
+      null,
+      null,
+      null,
+      2,
+    ]);
 
     const interviewData = interviewResult.rows[0];
-    const { hr_first_name, hr_last_name, talent_first_name, talent_last_name, proposed_time, is_online, city, street_address, status_desc } = interviewData;
+    const {
+      hr_first_name,
+      hr_last_name,
+      talent_first_name,
+      talent_last_name,
+      proposed_time,
+      is_online,
+      city,
+      street_address,
+      status_desc,
+    } = interviewData;
 
     // Format the proposed interview time
     const formattedTime = new Date(proposed_time).toLocaleString();
 
     // Determine interview location
-    const location = is_online ? "Online Interview" : `${city}, ${street_address}`;
+    const location = is_online
+      ? "Online Interview"
+      : `${city}, ${street_address}`;
 
     // Fetch detailed application information
-    const applicationResult = await client.query(getApplicationByIdSQL, [interviewData.application_id]);
+    const applicationResult = await client.query(getApplicationByIdSQL, [
+      interviewData.application_id,
+    ]);
 
     if (applicationResult.rows.length === 0) {
       return res.status(404).send("Application not found.");
@@ -375,7 +402,7 @@ const confirmInterview = async (req, res) => {
     const applicationData = applicationResult.rows[0];
 
     // Render confirmation page with necessary details
-    res.render('talent/interviewConfirmed', {
+    res.render("talent/interviewConfirmed", {
       jobTitle: applicationData.job_title,
       company: applicationData.job_company,
       proposedTime: formattedTime,
@@ -383,9 +410,8 @@ const confirmInterview = async (req, res) => {
       isOnline: is_online,
       hrName: `${hr_first_name} ${hr_last_name}`,
       talentName: `${talent_first_name} ${talent_last_name}`,
-      interviewStatus: status_desc
+      interviewStatus: status_desc,
     });
-
   } catch (err) {
     console.error("Error confirming interview:", err);
     res.status(500).send("Error confirming interview.");
@@ -400,20 +426,41 @@ const rejectInterview = async (req, res) => {
     const { interviewId, talentId } = decoded;
 
     // Fetch the interview details
-    const interviewResult = await client.query(interviewQueries.getInterviewByIdSQL, [interviewId]);
+    const interviewResult = await client.query(
+      interviewQueries.getInterviewByIdSQL,
+      [interviewId]
+    );
 
-    if (interviewResult.rows.length === 0 || interviewResult.rows[0].talent_id !== talentId) {
+    if (
+      interviewResult.rows.length === 0 ||
+      interviewResult.rows[0].talent_id !== talentId
+    ) {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
     // Update the interview status to "Rejected" (status_id=3)
-    await client.query(interviewQueries.updateInterviewScheduleSQL, [interviewId, null, null, null, null, 3]);
+    await client.query(interviewQueries.updateInterviewScheduleSQL, [
+      interviewId,
+      null,
+      null,
+      null,
+      null,
+      3,
+    ]);
 
     const interviewData = interviewResult.rows[0];
-    const { hr_first_name, hr_last_name, talent_first_name, talent_last_name, status_desc } = interviewData;
+    const {
+      hr_first_name,
+      hr_last_name,
+      talent_first_name,
+      talent_last_name,
+      status_desc,
+    } = interviewData;
 
     // Fetch detailed application information
-    const applicationResult = await client.query(getApplicationByIdSQL, [interviewData.application_id]);
+    const applicationResult = await client.query(getApplicationByIdSQL, [
+      interviewData.application_id,
+    ]);
 
     if (applicationResult.rows.length === 0) {
       return res.status(404).send("Application not found.");
@@ -422,20 +469,18 @@ const rejectInterview = async (req, res) => {
     const applicationData = applicationResult.rows[0];
 
     // Render rejection page with necessary details
-    res.render('talent/interviewRejected', {
+    res.render("talent/interviewRejected", {
       jobTitle: applicationData.job_title,
       company: applicationData.job_company,
       hrName: `${hr_first_name} ${hr_last_name}`,
       talentName: `${talent_first_name} ${talent_last_name}`,
-      interviewStatus: status_desc
+      interviewStatus: status_desc,
     });
-
   } catch (err) {
     console.error("Error rejecting interview:", err);
     res.status(500).send("Error rejecting interview.");
   }
 };
-
 
 const fetchInterviewsByTalentId = async (req, res) => {
   const talentId = req.user.id;

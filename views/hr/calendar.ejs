@@ -4,7 +4,6 @@
 <%- include('../partials/editInterviewModal') %>
 
 <script>
-
   let calendar;
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -50,10 +49,29 @@
 
     function openEditInterviewModal(event) {
       const modal = document.getElementById("editInterviewModal");
-      document.getElementById("interview_id").value = event.id;
-      document.getElementById("interview_status_id").value = event.extendedProps.status_id || '';
-      document.getElementById("review").value = event.extendedProps.review || '';
+
+      document.getElementById("id").value = event.id;
+      document.getElementById("current_proposed_time").value = event.extendedProps.current_proposed_time;
       document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
+
+      const finishedCheckbox = document.getElementById("interview_status_id");
+      finishedCheckbox.checked = event.extendedProps.interview_status_id == 4;
+      finishedCheckbox.dataset.currentStatusId = event.extendedProps.interview_status_id;
+
+      document.getElementById("review").value = event.extendedProps.review || '';
+      document.getElementById("message_to_talent").value = event.extendedProps.message_to_talent || "";
+      document.getElementById("talent_name").textContent = `${event.title.split(" - ")[0]}`;
+      document.getElementById("application_status_id").value = event.extendedProps.application_status_id || '';
+
+      const isFinished = event.extendedProps.isFinished;
+      const modalFields = modal.querySelectorAll("input, select, textarea, button");
+
+      modalFields.forEach((field) => {
+        if (field.id !== "deleteInterviewBtn") {
+          field.disabled = isFinished; // Disable all except delete button
+        }
+      });
+
       $(modal).modal('show');
     }
 

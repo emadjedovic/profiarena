@@ -95,6 +95,3 @@ CREATE TABLE "Application_Score" (
     "comments" TEXT DEFAULT 'No added comments.'
 );
 
-
-
-

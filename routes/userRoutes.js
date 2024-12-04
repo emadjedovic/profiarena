@@ -7,7 +7,6 @@ const {
   verifyJWT,
 } = require("../controllers/usersController");
 
-
 router.get("/home", (req, res) => {
   res.render("home");
 });
@@ -15,10 +14,7 @@ router.get("/home", (req, res) => {
 router.get("/register", (req, res) => {
   res.render("register");
 });
-router.post(
-  "/register",
-  register
-);
+router.post("/register", register);
 router.get("/login", (req, res) => {
   res.render("login");
 });

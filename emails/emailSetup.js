@@ -12,12 +12,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function sendEmail(to, subject, templateName, templateData, senderId, receiverId, attachments=[]) {
-  const templatePath = path.join(
-    __dirname,
-    "templates",
-    `${templateName}.ejs`
-  );
+async function sendEmail(
+  to,
+  subject,
+  templateName,
+  templateData,
+  senderId,
+  receiverId,
+  attachments = []
+) {
+  const templatePath = path.join(__dirname, "templates", `${templateName}.ejs`);
 
   try {
     // Get the sender's email address
@@ -52,8 +56,11 @@ async function sendEmail(to, subject, templateName, templateData, senderId, rece
     // Set replyTo for no-reply templates
     // talents can reply to "invited" and "accepted" emails
     // For the "invited" and "accepted" emails, there is no replyTo set, meaning the reply will go to the sender's email by default.
-    if (["applied", "viewed", "shortlisted", "rejected"].includes(templateName)) {
-      mailOptions.replyTo = process.env.NO_REPLY_EMAIL || "no-reply@example.com";
+    if (
+      ["applied", "viewed", "shortlisted", "rejected"].includes(templateName)
+    ) {
+      mailOptions.replyTo =
+        process.env.NO_REPLY_EMAIL || "no-reply@example.com";
     }
 
     const info = await transporter.sendMail(mailOptions);
