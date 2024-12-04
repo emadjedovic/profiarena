@@ -50,22 +50,27 @@
     function openEditInterviewModal(event) {
       const modal = document.getElementById("editInterviewModal");
 
-      // Set interview ID
       document.getElementById("id").value = event.id;
-      // Set current proposed time (readonly)
       document.getElementById("current_proposed_time").value = event.extendedProps.current_proposed_time;
-      // Set proposed time
       document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
 
-      // Configure the "Finished" checkbox
       const finishedCheckbox = document.getElementById("interview_status_id");
-      finishedCheckbox.checked = event.extendedProps.interview_status_id == 4; // Check if "Finished"
-      finishedCheckbox.dataset.currentStatusId = event.extendedProps.interview_status_id; // Store the current status ID
+      finishedCheckbox.checked = event.extendedProps.interview_status_id == 4;
+      finishedCheckbox.dataset.currentStatusId = event.extendedProps.interview_status_id;
 
-      // Set review and proposed time
       document.getElementById("review").value = event.extendedProps.review || '';
-      document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
-      document.getElementById("talent_name").textContent = `${event.title.split(" - ")[0]}`; // Use title to extract talent name
+      document.getElementById("message_to_talent").value = event.extendedProps.message_to_talent || "";
+      document.getElementById("talent_name").textContent = `${event.title.split(" - ")[0]}`;
+      document.getElementById("application_status_id").value = event.extendedProps.application_status_id || '';
+
+      const isFinished = event.extendedProps.isFinished;
+      const modalFields = modal.querySelectorAll("input, select, textarea, button");
+
+      modalFields.forEach((field) => {
+        if (field.id !== "deleteInterviewBtn") {
+          field.disabled = isFinished; // Disable all except delete button
+        }
+      });
 
       $(modal).modal('show');
     }

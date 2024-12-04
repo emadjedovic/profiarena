@@ -13,5 +13,6 @@ CREATE TABLE "Application" (
     "projects" TEXT,
     "certificates" VARCHAR(255) [],
     "talent_feedback" TEXT,
+    "message_to_talent" TEXT,
     "feedback_token" TEXT
 );

@@ -23,6 +23,22 @@
             </div>
           </div>
 
+          <!-- Application Status -->
+          <div class="mb-3">
+            <label for="application_status_id" class="form-label">Application Status</label>
+            <select id="application_status_id" name="application_status_id" class="form-select">
+              <option value="5">Accepted</option>
+              <option value="6">Rejected</option>
+            </select>
+          </div>
+
+          <!-- Message to Talent -->
+          <div class="mb-3">
+            <label for="message_to_talent" class="form-label">Message to Talent</label>
+            <textarea id="message_to_talent" name="message_to_talent" class="form-control"></textarea>
+          </div>
+
+
           <div class="mb-3">
             <label for="review" class="form-label">Review</label>
             <textarea id="review" name="review" class="form-control"></textarea>
@@ -73,6 +89,10 @@
         data.interview_status_id = null; // Send null if unchecked
       }
 
+      // Send application status and message to talent
+  data.application_status_id = document.getElementById("application_status_id").value;
+  data.message_to_talent = document.getElementById("message_to_talent").value;
+
       if (!data.proposed_time) {
         data.proposed_time = null; // Explicitly set to null if empty
       }
@@ -101,6 +121,9 @@
             // Update extended properties
             event.setExtendedProp("interview_status_id", updatedInterview.interview_status_id);
             event.setExtendedProp("review", updatedInterview.review);
+            event.setExtendedProp("application_status_id", updatedInterview.application_status_id);
+            event.setExtendedProp("message_to_talent", updatedInterview.message_to_talent);
+            event.setExtendedProp("current_proposed_time", updatedInterview.current_proposed_time);
 
             // Force a calendar refresh
             calendar.refetchEvents(); // Refresh events after updating

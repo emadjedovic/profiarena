@@ -36,9 +36,7 @@ const {
   updateHRSQL,
 } = require("../db/queries/userQueries");
 const interviewQueries = require("../db/queries/interviewQueries");
-const {
-  formatDate
-} = require('../utils/dateFormating');
+const { formatDate } = require("../utils/dateFormating");
 
 const createJobPosting = async (req, res, next) => {
   const {
@@ -468,31 +466,47 @@ const fetchInterviewsByHrId = async (req, res) => {
   const hrId = req.user.id;
 
   try {
-    const result = await client.query(interviewQueries.getInterviewsByHRSQL, [
-      hrId,
-    ]);
+    const result = await client.query(interviewQueries.getInterviewsByHRSQL, [hrId]);
 
     console.log(result.rows); // Log the database query result
 
-    const events = result.rows.map((interview) => ({
-      id: interview.id,
-      title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
-      start: new Date(interview.proposed_time).toISOString(),
-      allDay: false,
-      extendedProps: {
-        interview_status_id: interview.interview_status_id, // If you need additional data
-        review: interview.review || '', // You can add any additional properties here
-        current_proposed_time: formatDate(new Date(interview.proposed_time), 'en-GB', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false, // Use 24-hour format
-        }), // Format date before sending
+    const events = result.rows.map((interview) => {
+      const event = {
+        id: interview.id,
+        title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
+        start: new Date(interview.proposed_time).toISOString(),
+        allDay: false,
+        extendedProps: {
+          interview_status_id: interview.interview_status_id, // Store status in extendedProps
+          application_status_id: interview.application_status_id,
+          review: interview.review || "", // Add review to extendedProps
+          current_proposed_time: formatDate(
+            new Date(interview.proposed_time),
+            "en-GB",
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false, // Use 24-hour format
+            }
+          ), // Format date for proposed time
+          isFinished: interview.application_status_id == 5 || interview.application_status_id == 6, // Add a flag if finished
+        },
+      };
+
+      // Apply custom class or background color if interview is finished (status_id = 4)
+      if (interview.interview_status_id === 4) {
+        event.classNames = event.classNames || [];
+        event.classNames.push('finished-interview'); // Add custom class for finished interview
+        event.backgroundColor = 'green'; // Set background color for finished interview
+        event.textColor = 'white'; // Change text color to white
       }
-    }));
+
+      return event;
+    });
 
     res.render("hr/calendar", {
       layout: "layout",
-      events: JSON.stringify(events)
+      events: JSON.stringify(events),
     });
   } catch (error) {
     console.error("Error fetching interviews:", error.message);
@@ -621,11 +635,16 @@ const createInterviewCalendar = async (req, res) => {
   }
 };
 
-
 const updateInterview = async (req, res) => {
   console.log("PUT request received for update interview");
   const { id } = req.params;
-  const { interview_status_id, review, proposed_time } = req.body;
+  const {
+    interview_status_id,
+    review,
+    proposed_time,
+    application_status_id,
+    message_to_talent,
+  } = req.body;
 
   try {
     // Update the interview in the database
@@ -642,15 +661,49 @@ const updateInterview = async (req, res) => {
       [interview_status_id, review, proposed_time, id]
     );
 
-    console.log("interview status: ", interview_status_id)
+    // Get associated application_id
+    const appResult = await client.query(
+      `
+    SELECT "application_id", 
+           (SELECT "application_status_id" FROM "Application" WHERE "id" = "Interview_Schedule"."application_id") AS current_application_status_id
+    FROM "Interview_Schedule" 
+    WHERE "id" = $1;
+  `,
+      [id]
+    );
+    const { application_id: applicationId, current_application_status_id } = appResult.rows[0];
+
+
+    // Determine the application_status_id to use
+    const finalApplicationStatusId =
+    application_status_id && application_status_id !== "" ? application_status_id : current_application_status_id;
+
     
+    console.log("before update app query", [finalApplicationStatusId, message_to_talent, applicationId]);
+
+  // Update the Application table
+    await client.query(
+      `
+  UPDATE "Application"
+  SET "application_status_id" = $1, "message_to_talent" = $2
+  WHERE "id" = $3
+`,
+      [finalApplicationStatusId, message_to_talent, applicationId]
+    );
+
+    console.log("after update app query");
 
     // Fetch the updated interview data from the database
-    const result = await client.query(`
+    const result = await client.query(
+      `
       SELECT id, application_id, proposed_time, is_online, city, street_address, interview_status_id, review
       FROM "Interview_Schedule"
       WHERE id = $1;
-    `, [id]);
+    `,
+      [id]
+    );
+
+    console.log("before const updatedInterview");
 
     const updatedInterview = result.rows[0];
 
@@ -659,13 +712,11 @@ const updateInterview = async (req, res) => {
     } else {
       res.status(404).send("Interview not found");
     }
-
   } catch (err) {
     console.error("Error updating interview:", err.message);
     res.status(500).send("Error updating interview");
   }
 };
-
 
 // FIX THIS MAYBE
 const deleteInterview = async (req, res) => {

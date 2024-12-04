@@ -5,7 +5,8 @@ const crypto = require("crypto");
 const {
   getApplicationByIdSQL
 } = require("../db/queries/appQueries");
-const { getUserEmailByIdSQL } = require("../db/queries/userQueries")
+const { getUserEmailByIdSQL } = require("../db/queries/userQueries");
+const { getInterviewByIdSQL } = require("../db/queries/interviewQueries");
 
 const sendViewedEmail = async (applicationId, talentId, senderId) => {
   const result = await client.query(getApplicationByIdSQL, [
@@ -262,7 +263,7 @@ const sendRejectedEmail = async (applicationId, talentId, senderId) => {
 
 const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
   try {
-    const result = await client.query(getApplicationByIdSQL, [
+    const appResult = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
     const emailResult = await client.query(
@@ -271,12 +272,12 @@ const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
     );
     const email = emailResult.rows[0].email;
 
-    if (result.rows.length === 0) {
+    if (appResult.rows.length === 0) {
       console.error("Application not found or invalid status.");
       return;
     }
 
-    const { first_name, last_name, job_title, job_company } = result.rows[0];
+    const { first_name, last_name, job_title, job_company, message_to_talent } = appResult.rows[0];
 
     let subject = `Accepted for "${job_title}" at ${job_company}`;
     let templateName = "accepted";
@@ -296,7 +297,8 @@ const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
       last_name,
       job_title,
       job_company,
-      feedbackToken
+      feedbackToken,
+      message_to_talent
     };
 
     await sendEmail(
