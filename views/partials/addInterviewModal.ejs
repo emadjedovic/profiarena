@@ -69,7 +69,7 @@
             start: new Date(newInterview.proposed_time).toISOString(),
             allDay: false,
             extendedProps: {
-              status_id: newInterview.interview_status_id,
+              interview_status_id: newInterview.interview_status_id,
               review: newInterview.review || '',
             },
           });

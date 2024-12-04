@@ -2,34 +2,45 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="editInterviewForm">
-        <input type="hidden" id="interview_id" name="id">
+        <input type="hidden" id="id" name="id">
         <div class="modal-header">
           <h5 class="modal-title">Edit Interview</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+
+          <!-- Talent Information -->
+          <div class="mb-3">
+            <label class="form-label">Talent Name</label>
+            <p id="talent_name" class="form-text"></p>
+          </div>
+
           <div class="mb-3">
             <label for="interview_status_id" class="form-label">Status</label>
             <div class="form-check">
-              <input 
-                type="checkbox" 
-                id="interview_status_id" 
-                name="interview_status_id" 
-                value="4" 
-                class="form-check-input"
-              >
+              <input type="checkbox" id="interview_status_id" name="interview_status_id" value="4" class="form-check-input">
               <label class="form-check-label" for="interview_status_id">Finished</label>
             </div>
           </div>
-          
+
           <div class="mb-3">
             <label for="review" class="form-label">Review</label>
             <textarea id="review" name="review" class="form-control"></textarea>
           </div>
+
+
+          <!-- Display Current Proposed Time -->
           <div class="mb-3">
-            <label for="proposed_time" class="form-label">Proposed Time</label>
+            <label for="current_proposed_time" class="form-label">Current Proposed Time</label>
+            <input type="text" id="current_proposed_time" name="current_proposed_time" class="form-control" readonly>
+          </div>
+
+          <!-- Display New Proposed Time -->
+          <div class="mb-3">
+            <label for="proposed_time" class="form-label">New Proposed Time</label>
             <input type="datetime-local" id="proposed_time" name="proposed_time" class="form-control">
           </div>
+
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Save</button>
@@ -42,92 +53,96 @@
 </div>
 
 <script>
-document
-  .getElementById("editInterviewForm")
-  .addEventListener("submit", function (e) {
-    e.preventDefault();
+  document
+    .getElementById("editInterviewForm")
+    .addEventListener("submit", function(e) {
+      e.preventDefault();
 
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
 
-  if (!data.id) {
-    console.error("Interview ID is missing!");
-  }
+      if (!data.id) {
+        console.error("Interview ID is missing!");
+      }
 
-  // Handle "Finished" checkbox logic
-  const finishedCheckbox = document.getElementById("interview_status_id");
-    if (finishedCheckbox.checked) {
-      data.interview_status_id = finishedCheckbox.value; // Send "4" if checked
-    } else {
-      data.interview_status_id = null; // Send null if unchecked
-    }
+      // Handle "Finished" checkbox logic
+      const finishedCheckbox = document.getElementById("interview_status_id");
+      if (finishedCheckbox.checked) {
+        data.interview_status_id = finishedCheckbox.value; // Send "4" if checked
+      } else {
+        data.interview_status_id = null; // Send null if unchecked
+      }
 
-  if (!data.proposed_time) {
-  data.proposed_time = null; // Explicitly set to null if empty
-}
+      if (!data.proposed_time) {
+        data.proposed_time = null; // Explicitly set to null if empty
+      }
 
-    fetch(`/hr/interviews/${data.id}`, {
-      method: "PUT", 
-      headers: { "Content-Type": "application/json"},
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((updatedInterview) => {
-        const allEvents = calendar.getEvents();
+      fetch(`/hr/interviews/${data.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data),
+        })
+        .then((response) => response.json())
+        .then((updatedInterview) => {
+          const event = calendar.getEventById(updatedInterview.id);
 
-        if (!updatedInterview.id) {
-          console.error("Updated interview ID is missing");
-          return;
-        }
+          if (event) {
+            console.log("Event found:", event);
 
-        const event = calendar.getEventById(updatedInterview.id);
-
-        if (event) {
-          event.setProp("title", `${updatedInterview.talent_first_name} ${updatedInterview.talent_last_name} - ${updatedInterview.status_desc}`);
-          // Update the event's start time only if a new proposed_time was provided
-          if (updatedInterview.proposed_time) {
-            event.setStart(updatedInterview.proposed_time);
-          }
-          event.setExtendedProp("status_id", updatedInterview.interview_status_id);
-          event.setExtendedProp("review", updatedInterview.review);
-        } else {
-          console.error("Event not found in the calendar");
-        }
-
-        $("#editInterviewModal").modal("hide");
-      })
-      .catch((error) => console.error("Error editing interview:", error));
-  });
-
-document
-  .getElementById("deleteInterviewBtn")
-  .addEventListener("click", function () {
-    const interviewId = document.getElementById("interview_id").value;
-
-    if (confirm("Are you sure you want to delete this interview?")) {
-      fetch(`/hr/interviews/${interviewId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      })
-        .then((response) => {
-          if (response.ok) {
-            const event = calendar.getEventById(interviewId);
-            if (event) {
-              event.remove();
+            // Update the event properties
+            event.setProp("title", `${updatedInterview.talent_first_name} ${updatedInterview.talent_last_name} - ${updatedInterview.status_desc}`);
+            if (updatedInterview.proposed_time) {
+              const newStartTime = new Date(updatedInterview.proposed_time);
+              event.setStart(newStartTime); // Update start time
             }
 
-            $("#editInterviewModal").modal("hide");
-            alert("Interview deleted successfully");
+            // Update extended properties
+            event.setExtendedProp("interview_status_id", updatedInterview.interview_status_id);
+            event.setExtendedProp("review", updatedInterview.review);
+
+            // Force a calendar refresh
+            calendar.refetchEvents(); // Refresh events after updating
           } else {
-            alert("Failed to delete interview");
+            console.error("Event not found in the calendar");
           }
+
+          $("#editInterviewModal").modal("hide");
         })
-        .catch((error) => {
-          console.error("Error deleting interview:", error);
-          alert("Error deleting interview");
-        });
-    }
-  });
+        .catch((error) => console.error("Error editing interview:", error));
 
+    });
 
+  document
+    .getElementById("deleteInterviewBtn")
+    .addEventListener("click", function() {
+      const interviewId = document.getElementById("id").value;
+
+      if (confirm("Are you sure you want to delete this interview?")) {
+        fetch(`/hr/interviews/${interviewId}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json"
+            },
+          })
+          .then((response) => {
+            if (response.ok) {
+              const event = calendar.getEventById(interviewId);
+              if (event) {
+                event.remove();
+              }
+
+              $("#editInterviewModal").modal("hide");
+              alert("Interview deleted successfully");
+            } else {
+              alert("Failed to delete interview");
+            }
+          })
+          .catch((error) => {
+            console.error("Error deleting interview:", error);
+            alert("Error deleting interview");
+          });
+      }
+    });
 </script>

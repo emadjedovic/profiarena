@@ -4,7 +4,6 @@
 <%- include('../partials/editInterviewModal') %>
 
 <script>
-
   let calendar;
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -49,22 +48,27 @@
     }
 
     function openEditInterviewModal(event) {
-  const modal = document.getElementById("editInterviewModal");
+      const modal = document.getElementById("editInterviewModal");
 
-  // Set interview ID
-  document.getElementById("interview_id").value = event.id;
+      // Set interview ID
+      document.getElementById("id").value = event.id;
+      // Set current proposed time (readonly)
+      document.getElementById("current_proposed_time").value = event.extendedProps.current_proposed_time;
+      // Set proposed time
+      document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
 
-  // Configure the "Finished" checkbox
-  const finishedCheckbox = document.getElementById("interview_status_id");
-  finishedCheckbox.checked = event.extendedProps.status_id == 4; // Check if "Finished"
-  finishedCheckbox.dataset.currentStatusId = event.extendedProps.status_id; // Store the current status ID
+      // Configure the "Finished" checkbox
+      const finishedCheckbox = document.getElementById("interview_status_id");
+      finishedCheckbox.checked = event.extendedProps.interview_status_id == 4; // Check if "Finished"
+      finishedCheckbox.dataset.currentStatusId = event.extendedProps.interview_status_id; // Store the current status ID
 
-  // Set review and proposed time
-  document.getElementById("review").value = event.extendedProps.review || '';
-  document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
+      // Set review and proposed time
+      document.getElementById("review").value = event.extendedProps.review || '';
+      document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
+      document.getElementById("talent_name").textContent = `${event.title.split(" - ")[0]}`; // Use title to extract talent name
 
-  $(modal).modal('show');
-}
+      $(modal).modal('show');
+    }
 
 
     calendar.render();

@@ -36,6 +36,9 @@ const {
   updateHRSQL,
 } = require("../db/queries/userQueries");
 const interviewQueries = require("../db/queries/interviewQueries");
+const {
+  formatDate
+} = require('../utils/dateFormating');
 
 const createJobPosting = async (req, res, next) => {
   const {
@@ -469,20 +472,27 @@ const fetchInterviewsByHrId = async (req, res) => {
       hrId,
     ]);
 
+    console.log(result.rows); // Log the database query result
+
     const events = result.rows.map((interview) => ({
-      id: interview.id,  // Include the event id here
+      id: interview.id,
       title: `${interview.talent_first_name} ${interview.talent_last_name} - ${interview.status_desc}`,
       start: new Date(interview.proposed_time).toISOString(),
       allDay: false,
       extendedProps: {
-        status_id: interview.interview_status_id, // If you need additional data
+        interview_status_id: interview.interview_status_id, // If you need additional data
         review: interview.review || '', // You can add any additional properties here
+        current_proposed_time: formatDate(new Date(interview.proposed_time), 'en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false, // Use 24-hour format
+        }), // Format date before sending
       }
     }));
 
     res.render("hr/calendar", {
       layout: "layout",
-      events: JSON.stringify(events),
+      events: JSON.stringify(events)
     });
   } catch (error) {
     console.error("Error fetching interviews:", error.message);
