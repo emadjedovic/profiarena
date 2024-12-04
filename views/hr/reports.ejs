@@ -1,0 +1,14 @@
+<div class="container mt-5">
+  <h2>PDF Reports</h2>
+  <p>Generate and download detailed reports about candidates and job postings.</p>
+
+  <!-- Loop through job postings and create a button for each -->
+  <% jobPostings.forEach((job) => { %>
+      <div class="mb-3">
+          <h4><%= job.title %></h4>
+          <p><%= job.company %></p>
+          <!-- Generate a link/button for each job posting -->
+          <a href="/hr/reports/generate/<%= job.id %>" class="btn btn-primary">Download Report for <%= job.title %></a>
+      </div>
+  <% }) %>
+</div>

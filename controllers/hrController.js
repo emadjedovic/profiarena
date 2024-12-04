@@ -559,6 +559,11 @@ const acceptApplication = async (req, res, next) => {
   try {
     await client.query(setStatusSQL, [6, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
+    // !!! timestamp the selected_at attribute
+    await client.query(`UPDATE "Application"
+SET "selected_at" = CURRENT_TIMESTAMP
+WHERE "id" = $1;
+`, [application_id])
     console.log(result.rows[0].talent_id);
     await sendAcceptedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
@@ -574,6 +579,11 @@ const rejectApplication = async (req, res, next) => {
   try {
     await client.query(setStatusSQL, [5, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
+    // !!! timestamp the rejected_at attribute
+    await client.query(`UPDATE "Application"
+SET "rejected_at" = CURRENT_TIMESTAMP
+WHERE "id" = $1;
+`, [application_id])
     console.log(result.rows[0].talent_id);
     await sendRejectedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
@@ -703,11 +713,21 @@ const updateInterview = async (req, res) => {
     } = intResult.rows[0];
 
     if (application_status_id === "5") {
+      // !!! timestamp the rejected_at attribute
+    await client.query(`UPDATE "Application"
+      SET "rejected_at" = CURRENT_TIMESTAMP
+      WHERE "id" = $1;
+      `, [applicationId])
       await sendRejectedEmail(applicationId, talentId, req.user.id);
       console.log("Rejected email sent");
     }
 
     if (application_status_id === "6") {
+      // !!! timestamp the rejected_at attribute
+    await client.query(`UPDATE "Application"
+      SET "selected_at" = CURRENT_TIMESTAMP
+      WHERE "id" = $1;
+      `, [applicationId])
       await sendAcceptedEmail(applicationId, talentId, req.user.id);
       console.log("Accepted email sent");
     }

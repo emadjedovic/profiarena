@@ -207,7 +207,7 @@ const sendRejectedEmail = async (applicationId, talentId, senderId) => {
       return;
     }
 
-    const { first_name, last_name, job_title, job_company } = result.rows[0];
+    const { first_name, last_name, job_title, job_company, message_to_talent } = result.rows[0];
 
     let subject = `Rejection for "${job_title}" at ${job_company}`;
     let templateName = "rejected";
@@ -217,6 +217,7 @@ const sendRejectedEmail = async (applicationId, talentId, senderId) => {
       last_name,
       job_title,
       job_company,
+      message_to_talent
     };
 
     await sendEmail(
