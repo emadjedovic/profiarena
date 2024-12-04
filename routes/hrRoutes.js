@@ -19,7 +19,7 @@ const {
   shortlistedApplication,
   updateInterview,
   deleteInterview,
-  createInterviewCalendar
+  createInterviewCalendar,
 } = require("../controllers/hrController");
 
 router.post("/create-job-posting", createJobPosting);
@@ -28,11 +28,11 @@ router.get("/profile", (req, res) => {
 });
 router.get("/talents", fetchTalents);
 router.get("/my-job-postings", fetchJobPostingsByHrId);
-router.get('/calendar', fetchInterviewsByHrId);
+router.get("/calendar", fetchInterviewsByHrId);
 
-router.post('/interviews', createInterviewCalendar);
-router.put('/interviews/:id', updateInterview);
-router.delete('/interviews/:id', deleteInterview);
+router.post("/interviews", createInterviewCalendar);
+router.put("/interviews/:id", updateInterview);
+router.delete("/interviews/:id", deleteInterview);
 
 router.get("/job-posting/:id", fetchJobPostingById);
 router.post("/toggle-archive-job/:id", toggleArchiveJob);

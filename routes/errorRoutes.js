@@ -1,4 +1,4 @@
-const router = require("express").Router()
+const router = require("express").Router();
 const errorController = require("../controllers/errorController");
 
 router.use(errorController.internalServerError);

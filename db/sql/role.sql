@@ -8,5 +8,3 @@ INSERT INTO "Role" ("name") VALUES
     ('hr'),
     ('talent');
 
-
-

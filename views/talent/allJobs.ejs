@@ -2,13 +2,11 @@
   <div class="row align-items-center">
     <form action="/talent/browse-all-jobs" method="GET" class="d-flex align-items-center">
 
-      <!-- Search Bar -->
       <div class="col-6 m-3 mt-0">
         <label for="search" class="form-label visually-hidden">Search</label>
         <input type="text" class="form-control" name="search" placeholder="Search by title, company, city, description, deadline" value="<%= searchQuery || '' %>" />
       </div>
 
-      <!-- Deadline Filter Dropdown -->
       <div class="col-2 m-3 mt-0">
         <select name="deadlineRange" id="deadlineRange" class="form-select">
           <option value="">Select Deadline</option>
@@ -19,7 +17,6 @@
         </select>
       </div>
 
-      <!-- Filter Button -->
       <div class="col-2 m-3 mt-0">
         <button type="submit" class="btn btn-primary">Filter</button>
       </div>
@@ -28,7 +25,7 @@
   </div>
 
   <div class="row">
-    <!-- Job Postings Table -->
+    
     <table class="table table-striped table-hover table-bordered">
       <thead class="thead-dark">
         <tr>
@@ -54,20 +51,18 @@
 
           <td>
             <% if (job.has_applied) { %>
-              <button type="button" class="btn btn-secondary" disabled>
-                Already Applied
-              </button>
+            <button type="button" class="btn btn-secondary" disabled>
+              Already Applied
+            </button>
             <% } else { %>
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job='<%= JSON.stringify(job) %>'>
-                Apply for Job
-              </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyJobModal" data-job='<%= JSON.stringify(job) %>'>
+              Apply for Job
+            </button>
             <% } %>
           </td>
 
-
         </tr>
 
-        <!-- Include the Apply Modal Partial for each job -->
         <%- include('../partials/applyJobModal', {job: job}) %>
         <% }); %>
         <% } else { %>

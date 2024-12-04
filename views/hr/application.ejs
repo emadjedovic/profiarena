@@ -9,40 +9,38 @@
     <p><em>(visit profile for additional info about applicant)</em></p>
 
     <% if(application.status_desc === 'accepted'){ %>
-      <button class="btn btn-success">ACCEPTED</button>
-  <% } else if(application.status_desc === 'rejected') { %>
-      <button class="btn btn-danger">REJECTED</button>
-  <% } else { %>
-      <% if(application.status_desc === 'shortlisted' || application.status_desc === 'invited') { %>
-          <h3>SHORTLISTED</h3>
-          <% if(application.status_desc === 'invited') { %>
-            <h3>(INVITED)</h3>
-            <% } %>
-      <% } else { %>
-          <form action="/hr/shortlist-application/<%= application.id %>" method="POST" style="display:inline;">
-              <input type="hidden" name="applicationId" value="<%= application.id %>">
-              <button type="submit" class="btn btn-warning m-1">SHORTLIST APPLICATION</button>
-          </form>
-          <br>
-      <% } %>
-  
-      <form action="/hr/accept-application/<%= application.id %>" method="POST" style="display:inline;">
-          <input type="hidden" name="applicationId" value="<%= application.id %>">
-          <button type="submit" class="btn btn-success m-1">ACCEPT APPLICATION</button>
-      </form>
-  
-      <br>
-  
-      <form action="/hr/reject-application/<%= application.id %>" method="POST" style="display:inline;">
-          <input type="hidden" name="applicationId" value="<%= application.id %>">
-          <button type="submit" class="btn btn-danger m-1">REJECT APPLICATION</button>
-      </form>
-  <% } %>
-  
-  
-        <hr>
+    <button class="btn btn-success">ACCEPTED</button>
+    <% } else if(application.status_desc === 'rejected') { %>
+    <button class="btn btn-danger">REJECTED</button>
+    <% } else { %>
+    <% if(application.status_desc === 'shortlisted' || application.status_desc === 'invited') { %>
+    <h3>SHORTLISTED</h3>
+    <% if(application.status_desc === 'invited') { %>
+    <h3>(INVITED)</h3>
+    <% } %>
+    <% } else { %>
+    <form action="/hr/shortlist-application/<%= application.id %>" method="POST" style="display:inline;">
+      <input type="hidden" name="applicationId" value="<%= application.id %>">
+      <button type="submit" class="btn btn-warning m-1">SHORTLIST APPLICATION</button>
+    </form>
+    <br>
+    <% } %>
 
-        <!-- ADD AN OPTION TO SHORTLIST-->
+    <form action="/hr/accept-application/<%= application.id %>" method="POST" style="display:inline;">
+      <input type="hidden" name="applicationId" value="<%= application.id %>">
+      <button type="submit" class="btn btn-success m-1">ACCEPT APPLICATION</button>
+    </form>
+
+    <br>
+
+    <form action="/hr/reject-application/<%= application.id %>" method="POST" style="display:inline;">
+      <input type="hidden" name="applicationId" value="<%= application.id %>">
+      <button type="submit" class="btn btn-danger m-1">REJECT APPLICATION</button>
+    </form>
+    <% } %>
+
+    <hr>
+
     <ul>
       <li><strong>Status:</strong> <%= application.status_desc %></li>
       <li><strong>Submitted At:</strong> <%= application.submitted_at ? new Date(application.submitted_at).toLocaleString() : "N/A" %></li>
@@ -53,51 +51,60 @@
     <h4>Uploaded Documents</h4>
     <ul>
       <% if (application.cv) { %>
-        <li><a href="<%= `/${application.cv}` %>" target="_blank">CV</a></li>
+      <li><a href="<%= `/${application.cv}` %>" target="_blank">CV</a></li>
       <% } %>
       <% if (application.cover_letter) { %>
-        <li><a href="<%= `/${application.cover_letter}` %>" target="_blank">Cover Letter</a></li>
+      <li><a href="<%= `/${application.cover_letter}` %>" target="_blank">Cover Letter</a></li>
       <% } %>
       <% if (application.projects) { %>
-        <li><strong>Projects:</strong> <%= application.projects %></li>
+      <li><strong>Projects:</strong> <%= application.projects %></li>
       <% } %>
       <% if (application.certificates && application.certificates.length > 0) { %>
-        <li>Certificates:
-          <ul>
-            <% application.certificates.forEach(certificate => { %>
-              <li><a href="<%= `/${certificate}` %>" target="_blank"><%= certificate %></a></li>
-            <% }); %>
-          </ul>
-        </li>
+      <li>Certificates:
+        <ul>
+          <% application.certificates.forEach(certificate => { %>
+          <li><a href="<%= `/${certificate}` %>" target="_blank"><%= certificate %></a></li>
+          <% }); %>
+        </ul>
+      </li>
       <% } %>
     </ul>
     <hr>
 
-    <a href="/hr/app-score-form/<%= application.id %>" class="btn btn-primary m-2">Create Application Score</a>
-    
+    <% if (latestInterview) { %>
+    <h4>Latest Scheduled Interview</h4>
+    <ul>
+      <li><strong>Proposed Time:</strong> <%= new Date(latestInterview.proposed_time).toLocaleString() %></li>
+      <li><strong>Status:</strong> <%= latestInterview.interview_status_desc %></li>
+      <li><strong>Is online? <%= latestInterview.is_online %></strong></li>
+      <li><strong>City:</strong> <%= latestInterview.city || "N/A" %></li>
+      <li><strong>Street Address:</strong> <%= latestInterview.street_address || "N/A" %></li>
+    </ul>
+    <% } else { %>
     <a href="/hr/schedule-interview-form/<%= application.id %>" class="btn btn-primary m-2">Schedule Interview</a>
+    <% } %>
 
-   
+    <a href="/hr/schedule-interview-form/<%= application.id %>" class="btn btn-primary m-2">Schedule New Interview</a>
 
- <!-- If application score exists, show the comment input and button -->
-<% if (applicationScore) { %>
-  <form method="POST" action="/hr/add-comment/<%= applicationScore.id %>">
-    <div class="form-group">
-      <textarea id="comment" name="comment" class="form-control m-3" rows="4" placeholder="Enter your comment here..."></textarea>
-    </div>
-    <button type="submit" class="btn btn-secondary m-3">Add Comment</button>
-  </form>
-<% } %>
+    <% if (applicationScore) { %>
+    <form method="POST" action="/hr/add-comment/<%= applicationScore.id %>">
+      <div class="form-group">
+        <textarea id="comment" name="comment" class="form-control m-3" rows="4" placeholder="Enter your comment here..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-secondary m-3">Add Comment</button>
+    </form>
+    <% } %>
 
-<p>Is there an interview already scheduled?</p>
-<p>query the database and display info about the latest scheduled interview (including status of the interview) if one exists. If no scheduled interview exists for this application - only then display the "Schedule Interview" within a tags.</p>
+    <% if (application.talent_feedback && application.talent_feedback.trim() !== '') { %>
+    <hr>
+    <h4>Talent Feedback</h4>
+    <p><strong><%- application.talent_feedback.replace(/\n/g, '<br>') %></strong></p>
+    <% } %>
+    <hr>
 
- <% if (application.talent_feedback && application.talent_feedback.trim() !== '') { %>
-  <hr>
-  <h4>Talent Feedback</h4>
-  <p><strong><%- application.talent_feedback.replace(/\n/g, '<br>') %></strong></p>
-<% } %>
+    <a href="/hr/app-score-form/<%= application.id %>" class="btn btn-primary m-2">Create Application Score</a>
 
-<hr>
-    <a href="/hr/job-posting/<%= application.job_posting_id %>" class="btn m-2"> <-- Back to Job Posting</a>
+    <hr>
+    <a href="/hr/job-posting/<%= application.job_posting_id %>" class="btn m-2">
+      <-- Back to Job Posting</a>
   </div>

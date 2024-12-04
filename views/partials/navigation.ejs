@@ -7,12 +7,11 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mx-5">
-        <!-- Home Link -->
+        
         <li class="nav-item">
           <a class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>" href="/">Home</a>
         </li>
 
-        <!-- HR ONLY -->
         <% if (loggedIn && currentUser.role_id === 1) { %>
         <li class="nav-item">
           <a class="nav-link <%= currentPath === '/hr/profile' ? 'active text-decoration-underline' : '' %>" href="/hr/profile">Profile</a>
@@ -25,7 +24,6 @@
         </li>
         <% } %>
 
-        <!-- TALENTS ONLY -->
         <% if (loggedIn && currentUser.role_id === 2) { %>
         <li class="nav-item">
           <a class="nav-link <%= currentPath === '/talent/profile' ? 'active text-decoration-underline' : '' %>" href="/talent/profile">Profile</a>
@@ -39,7 +37,6 @@
         <% } %>
       </ul>
 
-      <!-- Login/Logout section -->
       <div class="ms-auto">
         <ul class="navbar-nav">
           <% if (loggedIn) { %>

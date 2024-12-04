@@ -1,5 +1,5 @@
 const userQueries = {
-    createUserSQL: `
+  createUserSQL: `
     INSERT INTO "User" ("first_name", "last_name", "email", "password", "phone", "role_id")
     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
   `,
@@ -34,23 +34,23 @@ const userQueries = {
   RETURNING *
 `,
 
-updateHRSQL: `
+  updateHRSQL: `
 UPDATE "User"
 SET "first_name" = $1, "last_name" = $2, "email" = $3, "company_name" = $4
 WHERE "id" = $5
 `,
-getAllTalentsSQL: `
+  getAllTalentsSQL: `
 SELECT * FROM "User" WHERE role_id = 2
 `,
-getUserByEmailSQL: `SELECT * FROM "User" WHERE "email" = $1`,
-getTalentByIdSQL: `
+  getUserByEmailSQL: `SELECT * FROM "User" WHERE "email" = $1`,
+  getTalentByIdSQL: `
 SELECT * FROM "User" WHERE role_id = 2 AND id = $1
 `,
-getUserEmailByIdSQL: `
+  getUserEmailByIdSQL: `
     SELECT email 
     FROM "User" 
     WHERE id = $1
   `,
-}
+};
 
 module.exports = userQueries;

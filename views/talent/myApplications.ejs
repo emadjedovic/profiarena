@@ -11,44 +11,41 @@
   <tbody>
     <% if (myApplications.length > 0) { %>
     <% myApplications.forEach(app => { %>
-      <tr>
-        <td>
-          <%= app.company %>
-        </td>
-        <!-- Job Title -->
-        <td>
-          <a href="<%= `/talent/job/${app.job_posting_id}` %>">
-            <%= app.job_title %>
-          </a>
-        </td>
+    <tr>
+      <td>
+        <%= app.company %>
+      </td>
+      
+      <td>
+        <a href="<%= `/talent/job/${app.job_posting_id}` %>">
+          <%= app.job_title %>
+        </a>
+      </td>
 
-        <!-- Status -->
-        <td>
-          <%= app.application_status %>
-        </td>
+      <td>
+        <%= app.application_status %>
+      </td>
 
-        <!-- Submitted At -->
-        <td>
-          <%= app.submitted_at ? formatDate(app.submitted_at) : "N/A" %>
-        </td>
+      <td>
+        <%= app.submitted_at ? formatDate(app.submitted_at) : "N/A" %>
+      </td>
 
-        <!-- Sent Materials -->
-        <td>
-          <% const sentMaterials = []; %>
-          <% if (app.cv) sentMaterials.push("CV"); %>
-          <% if (app.cover_letter) sentMaterials.push("Cover Letter"); %>
-          <% if (app.projects) sentMaterials.push("Projects"); %>
-          <% if (app.certificates && app.certificates.length > 0) sentMaterials.push("Certificates"); %>
-          <%= sentMaterials.join(", ") %>
-        </td>
-      </tr>
+      <td>
+        <% const sentMaterials = []; %>
+        <% if (app.cv) sentMaterials.push("CV"); %>
+        <% if (app.cover_letter) sentMaterials.push("Cover Letter"); %>
+        <% if (app.projects) sentMaterials.push("Projects"); %>
+        <% if (app.certificates && app.certificates.length > 0) sentMaterials.push("Certificates"); %>
+        <%= sentMaterials.join(", ") %>
+      </td>
+    </tr>
     <% }); %>
     <% } else { %>
-      <tr>
-        <td colspan="5" class="text-center text-muted">
-          You haven't applied for any jobs yet.
-        </td>
-      </tr>
-      <% } %>
+    <tr>
+      <td colspan="5" class="text-center text-muted">
+        You haven't applied for any jobs yet.
+      </td>
+    </tr>
+    <% } %>
   </tbody>
 </table>

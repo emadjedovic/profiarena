@@ -13,25 +13,21 @@
         <form id="applyForm" action="" method="POST" enctype="multipart/form-data">
           <input type="hidden" name="job_posting_id" id="modalJobId" />
 
-          <!-- CV Upload -->
           <div class="mb-3" id="cvField" style="display: none;">
             <label for="cv" class="form-label">Upload CV</label>
-            <input type="file" class="form-control" id="cv" name="cv" accept=".pdf,.docx,.txt"/>
+            <input type="file" class="form-control" id="cv" name="cv" accept=".pdf,.docx,.txt" />
           </div>
 
-          <!-- Cover Letter -->
           <div class="mb-3" id="coverLetterField" style="display: none;">
             <label for="cover_letter" class="form-label">Cover Letter</label>
             <input type="file" class="form-control" id="cover_letter" name="cover_letter" accept=".pdf,.docx,.txt" />
           </div>
 
-          <!-- Projects -->
           <div class="mb-3" id="projectsField" style="display: none;">
             <label for="projects" class="form-label">Projects</label>
             <textarea class="form-control" id="projects" name="projects" rows="4"></textarea>
           </div>
 
-          <!-- Certificates -->
           <div class="mb-3" id="certificatesField" style="display: none;">
             <label for="certificates" class="form-label">Certificates (Optional)</label>
             <input type="file" class="form-control" id="certificates" name="certificates" multiple />

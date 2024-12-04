@@ -9,7 +9,6 @@
         </div>
         <div class="modal-body">
 
-          <!-- Talent Information -->
           <div class="mb-3">
             <label class="form-label">Talent Name</label>
             <p id="talent_name" class="form-text"></p>
@@ -23,7 +22,6 @@
             </div>
           </div>
 
-          <!-- Application Status -->
           <div class="mb-3">
             <label for="application_status_id" class="form-label">Application Status</label>
             <select id="application_status_id" name="application_status_id" class="form-select">
@@ -32,26 +30,21 @@
             </select>
           </div>
 
-          <!-- Message to Talent -->
           <div class="mb-3">
             <label for="message_to_talent" class="form-label">Message to Talent</label>
             <textarea id="message_to_talent" name="message_to_talent" class="form-control"></textarea>
           </div>
-
 
           <div class="mb-3">
             <label for="review" class="form-label">Review</label>
             <textarea id="review" name="review" class="form-control"></textarea>
           </div>
 
-
-          <!-- Display Current Proposed Time -->
           <div class="mb-3">
             <label for="current_proposed_time" class="form-label">Current Proposed Time</label>
             <input type="text" id="current_proposed_time" name="current_proposed_time" class="form-control" readonly>
           </div>
 
-          <!-- Display New Proposed Time -->
           <div class="mb-3">
             <label for="proposed_time" class="form-label">New Proposed Time</label>
             <input type="datetime-local" id="proposed_time" name="proposed_time" class="form-control">
@@ -90,8 +83,8 @@
       }
 
       // Send application status and message to talent
-  data.application_status_id = document.getElementById("application_status_id").value;
-  data.message_to_talent = document.getElementById("message_to_talent").value;
+      data.application_status_id = document.getElementById("application_status_id").value;
+      data.message_to_talent = document.getElementById("message_to_talent").value;
 
       if (!data.proposed_time) {
         data.proposed_time = null; // Explicitly set to null if empty

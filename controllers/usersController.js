@@ -8,9 +8,8 @@ const sendEmail = require("../emails/emailSetup");
 const {
   createUserSQL,
   deleteUserSQL,
-  getUserByIdSQL
+  getUserByIdSQL,
 } = require("../db/queries/userQueries");
-
 
 const getUserParams = (body) => {
   return {
@@ -23,31 +22,26 @@ const getUserParams = (body) => {
   };
 };
 
-
 const register = async (req, res, next) => {
   if (req.skip) next();
 
-  
   const { password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10); 
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const userParams = {
     ...getUserParams(req.body),
-    password: hashedPassword, 
+    password: hashedPassword,
   };
 
   try {
-    const result = await client.query(
-      createUserSQL,
-      [
-        userParams.first_name,
-        userParams.last_name,
-        userParams.email,
-        userParams.password,
-        userParams.phone,
-        userParams.role_id,
-      ]
-    );
+    const result = await client.query(createUserSQL, [
+      userParams.first_name,
+      userParams.last_name,
+      userParams.email,
+      userParams.password,
+      userParams.phone,
+      userParams.role_id,
+    ]);
 
     const user = result.rows[0];
     req.flash(
@@ -55,8 +49,6 @@ const register = async (req, res, next) => {
       `${user.first_name} ${user.last_name}'s account created successfully!`
     );
 
-
-    
     req.login(user, async (err) => {
       if (err) {
         console.log("Error logging in after registration:", err);
@@ -65,22 +57,26 @@ const register = async (req, res, next) => {
       res.locals.user = user;
 
       res.redirect("/home");
-      
+
       setImmediate(async () => {
         try {
-          
-          const templateData = { 
-            userName: `${user.first_name} ${user.last_name}`, 
+          const templateData = {
+            userName: `${user.first_name} ${user.last_name}`,
             email: user.email,
           };
-          await sendEmail(user.email, 'Thank You for Registering', 'welcome-message', templateData, null, user.id);
-          console.log('Welcome email sent successfully!');
+          await sendEmail(
+            user.email,
+            "Thank You for Registering",
+            "welcome-message",
+            templateData,
+            null,
+            user.id
+          );
+          console.log("Welcome email sent successfully!");
         } catch (emailError) {
-          console.error('Error sending welcome email:', emailError.message);
+          console.error("Error sending welcome email:", emailError.message);
         }
       });
-
-      
     });
   } catch (error) {
     console.log(`Error creating user: ${error.message}`);
@@ -91,7 +87,6 @@ const register = async (req, res, next) => {
     return res.redirect("/register");
   }
 };
-
 
 const deleteUser = async (req, res, next) => {
   const userId = req.params.id;
@@ -114,7 +109,6 @@ const deleteUser = async (req, res, next) => {
     return next(error);
   }
 };
-
 
 const authenticate = (req, res, next) => {
   passport.authenticate("local", (error, user, info) => {
@@ -149,7 +143,6 @@ const authenticate = (req, res, next) => {
   })(req, res, next);
 };
 
-
 const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
@@ -158,9 +151,8 @@ const logout = (req, res, next) => {
   });
 };
 
-
 const verifyJWT = async (req, res, next) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; 
+  const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       error: true,
@@ -169,7 +161,7 @@ const verifyJWT = async (req, res, next) => {
   }
 
   try {
-    const payload = jsonWebToken.verify(token, "secret_encoding_passphrase"); 
+    const payload = jsonWebToken.verify(token, "secret_encoding_passphrase");
     const result = await client.query(getUserByIdSQL, [payload.data]);
     const user = result.rows[0];
 
@@ -180,7 +172,7 @@ const verifyJWT = async (req, res, next) => {
       });
     }
 
-    req.user = user; 
+    req.user = user;
     next();
   } catch (error) {
     return res.status(StatusCodes.UNAUTHORIZED).json({

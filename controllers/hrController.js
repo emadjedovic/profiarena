@@ -266,9 +266,29 @@ const fetchApplicationById = async (req, res) => {
     );
     const applicationScore = appScoreResult.rows[0];
 
+    const latestInterviewResult = await client.query(
+      `
+      SELECT 
+        i.proposed_time, 
+        i.city, 
+        i.street_address, 
+        i.is_online,
+        s.status_desc AS interview_status_desc
+      FROM "Interview_Schedule" i
+      JOIN "Interview_Status" s ON i.interview_status_id = s.id
+      WHERE i.application_id = $1
+      ORDER BY i.proposed_time DESC 
+      LIMIT 1;
+    `,
+      [applicationId]
+    );
+
+    const latestInterview = latestInterviewResult.rows[0] || null;
+
     res.render("hr/application", {
       application,
       applicationScore,
+      latestInterview,
     });
   } catch (err) {
     console.error("Error fetching application details:", err);

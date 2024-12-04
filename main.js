@@ -12,8 +12,11 @@ const path = require("path");
 const { formatDate } = require("./utils/dateFormating");
 const { connect, client } = require("./db/connect");
 const { createTables } = require("./db/schema");
-const { getUserByEmailSQL, getUserByIdSQL} = require("./db/queries/userQueries");
-require('dotenv').config();
+const {
+  getUserByEmailSQL,
+  getUserByIdSQL,
+} = require("./db/queries/userQueries");
+require("dotenv").config();
 
 const setupDatabase = async () => {
   await connect();
@@ -22,19 +25,13 @@ const setupDatabase = async () => {
 
 setupDatabase();
 
-
 const pgSession = require("connect-pg-simple")(expressSession);
 
 const app = express();
 
-
 app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
-
-
 app.use(express.static("public"));
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 app.use(layouts);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -45,17 +42,16 @@ app.use(
 );
 app.use(cookieParser("secret_passcode"));
 
-
 app.use(
   expressSession({
     store: new pgSession({
-      pool: client, 
-      tableName: "session", 
+      pool: client,
+      tableName: "session",
     }),
     secret: "secret_passcode",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 600000 }, 
+    cookie: { maxAge: 600000 },
   })
 );
 
@@ -92,7 +88,6 @@ const checkLoginStatus = (req, res, next) => {
 
 app.use(checkLoginStatus);
 
-
 passport.use(
   new LocalStrategy(
     {
@@ -113,14 +108,13 @@ passport.use(
           return done(null, false, { message: "Invalid password" });
         }
 
-        return done(null, user); 
+        return done(null, user);
       } catch (error) {
         return done(error);
       }
     }
   )
 );
-
 
 passport.serializeUser((user, done) => {
   done(null, user.id);

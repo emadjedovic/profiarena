@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Application Rejected</title>
 </head>
+
 <body>
   <p>Dear <%= first_name %> <%= last_name %>,</p>
   <p>Thank you for your application for the <strong><%= job_title %></strong> position at <strong><%= job_company %></strong>.</p>
   <p>After careful consideration, we regret to inform you that we will not be proceeding with your application at this time.</p>
   <p>We appreciate the time you invested in applying and encourage you to keep an eye on future opportunities with us.</p>
-
-  <!--Added this!-->
   <p><%= message_to_talent  %></p>
-  
+
   <p><%= job_company %></p>
 </body>
+
 </html>
