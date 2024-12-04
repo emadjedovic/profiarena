@@ -466,7 +466,9 @@ const fetchInterviewsByHrId = async (req, res) => {
   const hrId = req.user.id;
 
   try {
-    const result = await client.query(interviewQueries.getInterviewsByHRSQL, [hrId]);
+    const result = await client.query(interviewQueries.getInterviewsByHRSQL, [
+      hrId,
+    ]);
 
     console.log(result.rows); // Log the database query result
 
@@ -489,16 +491,18 @@ const fetchInterviewsByHrId = async (req, res) => {
               hour12: false, // Use 24-hour format
             }
           ), // Format date for proposed time
-          isFinished: interview.application_status_id == 5 || interview.application_status_id == 6, // Add a flag if finished
+          isFinished:
+            interview.application_status_id == 5 ||
+            interview.application_status_id == 6, // Add a flag if finished
         },
       };
 
       // Apply custom class or background color if interview is finished (status_id = 4)
       if (interview.interview_status_id === 4) {
         event.classNames = event.classNames || [];
-        event.classNames.push('finished-interview'); // Add custom class for finished interview
-        event.backgroundColor = 'green'; // Set background color for finished interview
-        event.textColor = 'white'; // Change text color to white
+        event.classNames.push("finished-interview"); // Add custom class for finished interview
+        event.backgroundColor = "green"; // Set background color for finished interview
+        event.textColor = "white"; // Change text color to white
       }
 
       return event;
@@ -513,7 +517,6 @@ const fetchInterviewsByHrId = async (req, res) => {
     res.status(500).send("An error occurred while fetching interviews.");
   }
 };
-
 
 const shortlistedApplication = async (req, res, next) => {
   const application_id = req.params.applicationId;
@@ -662,26 +665,46 @@ const updateInterview = async (req, res) => {
     );
 
     // Get associated application_id
-    const appResult = await client.query(
+    const intResult = await client.query(
       `
-    SELECT "application_id", 
-           (SELECT "application_status_id" FROM "Application" WHERE "id" = "Interview_Schedule"."application_id") AS current_application_status_id
+    SELECT 
+      "application_id", 
+      (SELECT "application_status_id" FROM "Application" WHERE "id" = "Interview_Schedule"."application_id") AS current_application_status_id,
+      (SELECT "talent_id" FROM "Application" WHERE "id" = "Interview_Schedule"."application_id") AS talent_id
     FROM "Interview_Schedule" 
     WHERE "id" = $1;
   `,
       [id]
     );
-    const { application_id: applicationId, current_application_status_id } = appResult.rows[0];
+    const {
+      application_id: applicationId,
+      current_application_status_id,
+      talent_id: talentId,
+    } = intResult.rows[0];
 
+    if (application_status_id === "5") {
+      await sendRejectedEmail(applicationId, talentId, req.user.id);
+      console.log("Rejected email sent");
+    }
+
+    if (application_status_id === "6") {
+      await sendAcceptedEmail(applicationId, talentId, req.user.id);
+      console.log("Accepted email sent");
+    }
 
     // Determine the application_status_id to use
     const finalApplicationStatusId =
-    application_status_id && application_status_id !== "" ? application_status_id : current_application_status_id;
+      application_status_id && application_status_id !== ""
+        ? application_status_id
+        : current_application_status_id;
 
-    
-    console.log("before update app query", [finalApplicationStatusId, message_to_talent, applicationId]);
+    console.log("before update app query", [
+      finalApplicationStatusId,
+      message_to_talent,
+      applicationId,
+    ]);
 
-  // Update the Application table
+    // Update the Application table
     await client.query(
       `
   UPDATE "Application"

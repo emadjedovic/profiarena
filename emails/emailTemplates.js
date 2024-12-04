@@ -279,6 +279,8 @@ const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
 
     const { first_name, last_name, job_title, job_company, message_to_talent } = appResult.rows[0];
 
+    console.log("Message to talent: ", message_to_talent);
+
     let subject = `Accepted for "${job_title}" at ${job_company}`;
     let templateName = "accepted";
 
