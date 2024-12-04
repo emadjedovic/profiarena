@@ -1,0 +1,170 @@
+<div class="container">
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Total Applications</h5>
+          <p class="card-text"><%= stats.totalApplications %></p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Average Candidate Score</h5>
+          <p class="card-text"><%= stats.avgCandidateScore ? stats.avgCandidateScore.toFixed(2) : 'N/A' %></p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Average Selection Time (hours)</h5>
+          <p class="card-text">
+            <%= stats.avgSelectionTime !== null && !isNaN(stats.avgSelectionTime)
+              ? stats.avgSelectionTime.toFixed(2)
+              : 'N/A' %>
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="row mt-5">
+    <div class="col-md-6">
+      <h5>Applications Per Job Posting</h5>
+      <canvas id="applicationsPerJobChart"></canvas>
+    </div>
+    <div class="col-md-6">
+      <h5>Average Candidate Score Per Job Posting</h5>
+      <canvas id="avgScorePerJobChart"></canvas>
+    </div>
+    <div class="col-md-12 mt-4">
+      <h5>Average Selection Time Per Job Posting</h5>
+      <canvas id="avgSelectionTimeChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <h2>Job Posting Analysis</h2>
+
+  <!-- Dropdown to Select Job Posting -->
+  <div class="row">
+    <div class="col-md-4">
+      <label for="jobPostingSelect" class="form-label">Select Job Posting:</label>
+      <select id="jobPostingSelect" class="form-select">
+        <option value="" selected disabled>Select a Job Posting</option>
+        <% stats.jobPostings.forEach(job => { %>
+        <option value="<%= job.id %>"><%= job.title %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <!-- Analysis Section -->
+  <div id="jobPostingAnalysis" class="mt-5" style="display: none;">
+    <h5>Analysis for Job Posting</h5>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Applications</td>
+          <td id="applicationCount">N/A</td>
+        </tr>
+        <tr>
+          <td>Average Candidate Score</td>
+          <td id="avgCandidateScore">N/A</td>
+        </tr>
+        <tr>
+          <td>Average Selection Time (hours)</td>
+          <td id="avgSelectionTime">N/A</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Data for Applications Per Job Posting
+  const applicationsPerJobData = {
+    labels: JSON.parse('<%- JSON.stringify(stats.applicationsPerJob.map(item => `Job ${item.job_posting_id}`)) %>'),
+    datasets: [{
+      label: 'Applications',
+      data: JSON.parse('<%- JSON.stringify(stats.applicationsPerJob.map(item => item.application_count)) %>'),
+      backgroundColor: 'rgba(54, 162, 235, 0.2)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  // Data for Average Scores Per Job Posting
+  const avgScoresPerJobData = {
+    labels: JSON.parse('<%- JSON.stringify(stats.avgScoresPerJob.map(item => `Job ${item.job_posting_id}`)) %>'),
+    datasets: [{
+      label: 'Average Score',
+      data: JSON.parse('<%- JSON.stringify(stats.avgScoresPerJob.map(item => item.avg_candidate_score)) %>'),
+      backgroundColor: 'rgba(255, 99, 132, 0.2)',
+      borderColor: 'rgba(255, 99, 132, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  // Data for Average Selection Time Per Job Posting
+  const avgSelectionTimeData = {
+    labels: JSON.parse('<%- JSON.stringify(stats.avgSelectionTimePerJob.map(item => `Job ${item.job_posting_id}`)) %>'),
+    datasets: [{
+      label: 'Avg Selection Time (hours)',
+      data: JSON.parse('<%- JSON.stringify(stats.avgSelectionTimePerJob.map(item => item.avg_time)) %>'),
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const ctx1 = document.getElementById('applicationsPerJobChart').getContext('2d');
+  new Chart(ctx1, {
+    type: 'bar',
+    data: applicationsPerJobData
+  });
+
+  const ctx2 = document.getElementById('avgScorePerJobChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: avgScoresPerJobData
+  });
+
+  const ctx3 = document.getElementById('avgSelectionTimeChart').getContext('2d');
+  new Chart(ctx3, {
+    type: 'line',
+    data: avgSelectionTimeData
+  });
+
+  document.getElementById('jobPostingSelect').addEventListener('change', async function() {
+    const jobPostingId = this.value;
+
+    if (!jobPostingId) return;
+
+    try {
+      const response = await fetch(`/hr/job-posting-analysis/${jobPostingId}`);
+      const analysis = await response.json();
+
+      document.getElementById('jobPostingAnalysis').style.display = 'block';
+      document.getElementById('applicationCount').innerText = analysis.applicationCount || 'N/A';
+      document.getElementById('avgCandidateScore').innerText = analysis.avgCandidateScore ? analysis.avgCandidateScore.toFixed(2) : 'N/A';
+      document.getElementById('avgSelectionTime').innerText = analysis.avgSelectionTime ? analysis.avgSelectionTime.toFixed(2) : 'N/A';
+    } catch (error) {
+      console.error("Failed to fetch job posting analysis:", error);
+    }
+  });
+</script>

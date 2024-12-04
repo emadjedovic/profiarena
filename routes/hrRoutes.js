@@ -55,16 +55,16 @@ router.post("/accept-application/:applicationId", acceptApplication);
 router.post("/reject-application/:applicationId", rejectApplication);
 router.post("/shortlist-application/:applicationId", shortlistedApplication);
 
-const {getReportsPage, generatePDF} = require('../controllers/pdfController');
-const {getDashboardData} = require('../controllers/dashboardController');
+const { getReportsPage, generatePDF } = require("../controllers/pdfController");
+const {
+  getStatisticsData,
+  getJobPostingAnalysis,
+} = require("../controllers/statisticsController");
 
-// Route for PDF Reports
-// Route to show the report page
-router.get('/reports', getReportsPage);
-// Route to generate and download the PDF report for a specific job posting
-router.get('/reports/generate/:jobPostingId', generatePDF);
+router.get("/reports", getReportsPage);
+router.get("/reports/generate/:jobPostingId", generatePDF);
 
-// Route for Dashboard
-router.get('/dashboard', getDashboardData);
+router.get("/statistics", getStatisticsData);
+router.get("/job-posting-analysis/:jobPostingId", getJobPostingAnalysis);
 
 module.exports = router;

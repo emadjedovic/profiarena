@@ -9,7 +9,7 @@
       <ul class="navbar-nav mx-5">
         
         <li class="nav-item">
-          <a class="nav-link <%= currentPath === '/' ? 'active text-decoration-underline' : '' %>" href="/">Home</a>
+          <a class="nav-link <%= currentPath === '/home' ? 'active text-decoration-underline' : '' %>" href="/">Home</a>
         </li>
 
         <% if (loggedIn && currentUser.role_id === 1) { %>
@@ -26,7 +26,7 @@
           <a class="nav-link <%= currentPath === '/hr/reports' ? 'active text-decoration-underline' : '' %>" href="/hr/reports">PDF Reports</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link <%= currentPath === '/hr/dashboard' ? 'active text-decoration-underline' : '' %>" href="/hr/dashboard">Dashboard</a>
+          <a class="nav-link <%= currentPath === '/hr/statistics' ? 'active text-decoration-underline' : '' %>" href="/hr/statistics">Statistics</a>
         </li>
         <% } %>
 
