@@ -49,13 +49,23 @@
     }
 
     function openEditInterviewModal(event) {
-      const modal = document.getElementById("editInterviewModal");
-      document.getElementById("interview_id").value = event.id;
-      document.getElementById("interview_status_id").value = event.extendedProps.status_id || '';
-      document.getElementById("review").value = event.extendedProps.review || '';
-      document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
-      $(modal).modal('show');
-    }
+  const modal = document.getElementById("editInterviewModal");
+
+  // Set interview ID
+  document.getElementById("interview_id").value = event.id;
+
+  // Configure the "Finished" checkbox
+  const finishedCheckbox = document.getElementById("interview_status_id");
+  finishedCheckbox.checked = event.extendedProps.status_id == 4; // Check if "Finished"
+  finishedCheckbox.dataset.currentStatusId = event.extendedProps.status_id; // Store the current status ID
+
+  // Set review and proposed time
+  document.getElementById("review").value = event.extendedProps.review || '';
+  document.getElementById("proposed_time").value = event.start.toISOString().slice(0, 16);
+
+  $(modal).modal('show');
+}
+
 
     calendar.render();
   });

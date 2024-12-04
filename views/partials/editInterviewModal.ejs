@@ -54,6 +54,14 @@ document
     console.error("Interview ID is missing!");
   }
 
+  // Handle "Finished" checkbox logic
+  const finishedCheckbox = document.getElementById("interview_status_id");
+    if (finishedCheckbox.checked) {
+      data.interview_status_id = finishedCheckbox.value; // Send "4" if checked
+    } else {
+      data.interview_status_id = null; // Send null if unchecked
+    }
+
   if (!data.proposed_time) {
   data.proposed_time = null; // Explicitly set to null if empty
 }

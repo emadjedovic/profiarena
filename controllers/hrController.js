@@ -618,12 +618,12 @@ const updateInterview = async (req, res) => {
   const { interview_status_id, review, proposed_time } = req.body;
 
   try {
-    // Update interview in the database
+    // Update the interview in the database
     await client.query(
       `
       UPDATE "Interview_Schedule"
       SET 
-        interview_status_id = $1, 
+        interview_status_id = COALESCE($1, interview_status_id), 
         review = $2, 
         proposed_time = COALESCE($3, proposed_time), 
         updated_at = CURRENT_TIMESTAMP
