@@ -21,12 +21,14 @@ const {
   deleteInterview,
   createInterviewCalendar,
 } = require("../controllers/hrController");
+const {fetchAllTalents}= require("../controllers/allTalentsController");
 
 router.post("/create-job-posting", createJobPosting);
 router.get("/profile", (req, res) => {
   res.render("hr/profile");
 });
 router.get("/talents", fetchTalents);
+router.get("/all-talents", fetchAllTalents);
 router.get("/my-job-postings", fetchJobPostingsByHrId);
 router.get("/calendar", fetchInterviewsByHrId);
 
@@ -54,5 +56,17 @@ router.post("/create-interview/:applicationId", createInterview);
 router.post("/accept-application/:applicationId", acceptApplication);
 router.post("/reject-application/:applicationId", rejectApplication);
 router.post("/shortlist-application/:applicationId", shortlistedApplication);
+
+const { getReportsPage, generatePDF } = require("../controllers/pdfController");
+const {
+  getStatisticsData,
+  getJobPostingAnalysis,
+} = require("../controllers/statisticsController");
+
+router.get("/reports", getReportsPage);
+router.get("/reports/generate/:jobPostingId", generatePDF);
+
+router.get("/statistics", getStatisticsData);
+router.get("/job-posting-analysis/:jobPostingId", getJobPostingAnalysis);
 
 module.exports = router;

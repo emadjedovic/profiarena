@@ -23,13 +23,11 @@
 
       events: events,
 
-      // Day click handler
       dateClick: function(info) {
-        const clickedDate = info.dateStr; // date in YYYY-MM-DD format
+        const clickedDate = info.dateStr;
         openAddInterviewModal(clickedDate);
       },
 
-      // Event click handler for editing
       eventClick: function(info) {
         const interview = info.event;
         if (!interview.id) {
@@ -43,7 +41,7 @@
     function openAddInterviewModal(clickedDate) {
       const modal = document.getElementById("addInterviewModal");
       const proposedTimeInput = document.getElementById("proposed_time");
-      proposedTimeInput.value = clickedDate + "T09:00"; // Set a default time (e.g., 9:00 AM)
+      proposedTimeInput.value = clickedDate + "T09:00";
       $(modal).modal('show');
     }
 
@@ -68,7 +66,7 @@
 
       modalFields.forEach((field) => {
         if (field.id !== "deleteInterviewBtn") {
-          field.disabled = isFinished; // Disable all except delete button
+          field.disabled = isFinished;
         }
       });
 

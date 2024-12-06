@@ -76,7 +76,7 @@ The HRM system is designed to streamline recruitment and selection processes whi
 5. **Real-Time Application Tracking**:  
    - Allow talents to monitor their application statuses.  
 6. **Reports and Statistics**:  
-   - Generate detailed reports and display dashboards with recruitment insights.  
+   - Generate detailed reports and display statisticss with recruitment insights.  
 
 ---
 
@@ -93,7 +93,7 @@ The HRM system is designed to streamline recruitment and selection processes whi
 
 1. **PDF Reports**:  
    - Generate comprehensive PDF reports for job postings and talent evaluations.  
-2. **Interactive Dashboard**:  
+2. **Interactive Statistics**:  
    - Visualize recruitment data with charts and graphs (e.g., number of applications, talent scores).  
 3. **Advanced Filtering**:  
    - Filter talents by experience, skills, application statuses, and other criteria.  

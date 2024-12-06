@@ -74,20 +74,18 @@
         console.error("Interview ID is missing!");
       }
 
-      // Handle "Finished" checkbox logic
       const finishedCheckbox = document.getElementById("interview_status_id");
       if (finishedCheckbox.checked) {
-        data.interview_status_id = finishedCheckbox.value; // Send "4" if checked
+        data.interview_status_id = finishedCheckbox.value;
       } else {
-        data.interview_status_id = null; // Send null if unchecked
+        data.interview_status_id = null;
       }
 
-      // Send application status and message to talent
       data.application_status_id = document.getElementById("application_status_id").value;
       data.message_to_talent = document.getElementById("message_to_talent").value;
 
       if (!data.proposed_time) {
-        data.proposed_time = null; // Explicitly set to null if empty
+        data.proposed_time = null;
       }
 
       fetch(`/hr/interviews/${data.id}`, {
@@ -102,24 +100,21 @@
           const event = calendar.getEventById(updatedInterview.id);
 
           if (event) {
-            console.log("Event found:", event);
 
-            // Update the event properties
             event.setProp("title", `${updatedInterview.talent_first_name} ${updatedInterview.talent_last_name} - ${updatedInterview.status_desc}`);
             if (updatedInterview.proposed_time) {
               const newStartTime = new Date(updatedInterview.proposed_time);
-              event.setStart(newStartTime); // Update start time
+              event.setStart(newStartTime);
             }
 
-            // Update extended properties
             event.setExtendedProp("interview_status_id", updatedInterview.interview_status_id);
             event.setExtendedProp("review", updatedInterview.review);
             event.setExtendedProp("application_status_id", updatedInterview.application_status_id);
             event.setExtendedProp("message_to_talent", updatedInterview.message_to_talent);
             event.setExtendedProp("current_proposed_time", updatedInterview.current_proposed_time);
 
-            // Force a calendar refresh
-            calendar.refetchEvents(); // Refresh events after updating
+            calendar.refetchEvents();
+
           } else {
             console.error("Event not found in the calendar");
           }

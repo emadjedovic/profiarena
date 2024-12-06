@@ -1,5 +1,4 @@
 const { client } = require("../db/connect");
-const multer = require("multer");
 const { getDateRange } = require("../utils/deadline");
 
 const {
@@ -342,11 +341,9 @@ const { sendAppliedEmail } = require("../emails/emailTemplates");
 const confirmInterview = async (req, res) => {
   const token = req.params.token;
   try {
-    // Decode the JWT token to get interview and talent details
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { interviewId, talentId } = decoded;
 
-    // Fetch the interview details
     const interviewResult = await client.query(
       interviewQueries.getInterviewByIdSQL,
       [interviewId]
@@ -359,7 +356,6 @@ const confirmInterview = async (req, res) => {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
-    // Update the interview status to "Confirmed" (status_id=2)
     await client.query(interviewQueries.updateInterviewScheduleSQL, [
       interviewId,
       null,
@@ -382,15 +378,12 @@ const confirmInterview = async (req, res) => {
       status_desc,
     } = interviewData;
 
-    // Format the proposed interview time
     const formattedTime = new Date(proposed_time).toLocaleString();
 
-    // Determine interview location
     const location = is_online
       ? "Online Interview"
       : `${city}, ${street_address}`;
 
-    // Fetch detailed application information
     const applicationResult = await client.query(getApplicationByIdSQL, [
       interviewData.application_id,
     ]);
@@ -401,7 +394,6 @@ const confirmInterview = async (req, res) => {
 
     const applicationData = applicationResult.rows[0];
 
-    // Render confirmation page with necessary details
     res.render("talent/interviewConfirmed", {
       jobTitle: applicationData.job_title,
       company: applicationData.job_company,
@@ -421,11 +413,9 @@ const confirmInterview = async (req, res) => {
 const rejectInterview = async (req, res) => {
   const token = req.params.token;
   try {
-    // Decode the JWT token to get interview and talent details
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const { interviewId, talentId } = decoded;
 
-    // Fetch the interview details
     const interviewResult = await client.query(
       interviewQueries.getInterviewByIdSQL,
       [interviewId]
@@ -438,7 +428,6 @@ const rejectInterview = async (req, res) => {
       return res.status(404).send("Interview not found or unauthorized");
     }
 
-    // Update the interview status to "Rejected" (status_id=3)
     await client.query(interviewQueries.updateInterviewScheduleSQL, [
       interviewId,
       null,
@@ -457,7 +446,6 @@ const rejectInterview = async (req, res) => {
       status_desc,
     } = interviewData;
 
-    // Fetch detailed application information
     const applicationResult = await client.query(getApplicationByIdSQL, [
       interviewData.application_id,
     ]);
@@ -468,7 +456,6 @@ const rejectInterview = async (req, res) => {
 
     const applicationData = applicationResult.rows[0];
 
-    // Render rejection page with necessary details
     res.render("talent/interviewRejected", {
       jobTitle: applicationData.job_title,
       company: applicationData.job_company,
@@ -508,8 +495,6 @@ const fetchInterviewsByTalentId = async (req, res) => {
 };
 
 const getFeedbackForm = async (req, res) => {
-  console.log("Query parameters:", req.query); // Debug log
-
   const { applicationId, token } = req.query;
 
   if (!applicationId || !token) {
@@ -518,7 +503,6 @@ const getFeedbackForm = async (req, res) => {
   }
 
   try {
-    // Validate the token and application ID
     const validationResult = await client.query(
       `SELECT * FROM "Application" WHERE id = $1 AND feedback_token = $2`,
       [applicationId, token]
@@ -528,7 +512,6 @@ const getFeedbackForm = async (req, res) => {
       return res.status(400).send("Invalid or expired link.");
     }
 
-    // Fetch detailed application information
     const applicationResult = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
@@ -539,11 +522,10 @@ const getFeedbackForm = async (req, res) => {
 
     const applicationData = applicationResult.rows[0];
 
-    // Render the feedback form with additional application data
     res.render("talent/feedbackForm", {
       applicationId,
       token,
-      application: applicationData, // Pass application details to the view
+      application: applicationData,
     });
   } catch (error) {
     console.error("Error rendering feedback form:", error.message);
@@ -551,12 +533,10 @@ const getFeedbackForm = async (req, res) => {
   }
 };
 
-// Handle feedback submission
 const submitFeedback = async (req, res) => {
   const { applicationId, token, feedback } = req.body;
 
   try {
-    // Validate the token and application ID
     const result = await client.query(
       `SELECT * FROM "Application" WHERE id = $1 AND feedback_token = $2`,
       [applicationId, token]
@@ -566,7 +546,6 @@ const submitFeedback = async (req, res) => {
       return res.status(400).send("Invalid or expired link.");
     }
 
-    // Append feedback to the existing talent_feedback
     await client.query(
       `UPDATE "Application" 
    SET talent_feedback = COALESCE(talent_feedback, '') || '\n' || $1 
@@ -574,13 +553,11 @@ const submitFeedback = async (req, res) => {
       [feedback, applicationId]
     );
 
-    // Optionally, remove the token after successful feedback submission
     await client.query(
       `UPDATE "Application" SET feedback_token = NULL WHERE id = $1`,
       [applicationId]
     );
 
-    // Fetch detailed application information
     const applicationResult = await client.query(getApplicationByIdSQL, [
       applicationId,
     ]);
@@ -591,7 +568,6 @@ const submitFeedback = async (req, res) => {
 
     const applicationData = applicationResult.rows[0];
 
-    // Render a pretty confirmation page after saving feedback
     res.render("talent/feedbackConfirmation", {
       jobTitle: applicationData.job_title,
       company: applicationData.job_company,

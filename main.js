@@ -20,7 +20,7 @@ require("dotenv").config();
 
 const setupDatabase = async () => {
   await connect();
-  // await createTables();
+  // createTables();
 };
 
 setupDatabase();
@@ -32,6 +32,7 @@ const app = express();
 app.use(favicon(path.join(__dirname, "public", "favicon2.ico")));
 app.use(express.static("public"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use('/reports', express.static(path.join(__dirname, 'reports')));
 app.use(layouts);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

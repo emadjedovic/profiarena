@@ -1,0 +1,13 @@
+<div class="container">
+  <p>Generate and download detailed reports about candidates and job postings.</p>
+
+
+  <% jobPostings.forEach((job) => { %>
+  <div class="mb-3">
+    <h4><%= job.title %></h4>
+    <p><%= job.company %></p>
+
+    <a href="/hr/reports/generate/<%= job.id %>" class="btn btn-primary">Download Report for <%= job.title %></a>
+  </div>
+  <% }) %>
+</div>

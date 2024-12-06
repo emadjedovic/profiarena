@@ -482,6 +482,21 @@ const addComment = async (req, res, next) => {
   }
 };
 
+const getInterviewColorClass = (statusId) => {
+  switch (statusId) {
+    case 1:
+      return "interview-status-1";
+    case 2:
+      return "interview-status-2";
+    case 3:
+      return "interview-status-3";
+    case 4:
+      return "interview-status-4";
+    default:
+      return "interview-status-default";
+  }
+};
+
 const fetchInterviewsByHrId = async (req, res) => {
   const hrId = req.user.id;
 
@@ -490,8 +505,6 @@ const fetchInterviewsByHrId = async (req, res) => {
       hrId,
     ]);
 
-    console.log(result.rows); // Log the database query result
-
     const events = result.rows.map((interview) => {
       const event = {
         id: interview.id,
@@ -499,31 +512,28 @@ const fetchInterviewsByHrId = async (req, res) => {
         start: new Date(interview.proposed_time).toISOString(),
         allDay: false,
         extendedProps: {
-          interview_status_id: interview.interview_status_id, // Store status in extendedProps
+          interview_status_id: interview.interview_status_id,
           application_status_id: interview.application_status_id,
-          review: interview.review || "", // Add review to extendedProps
+          review: interview.review || "",
           current_proposed_time: formatDate(
             new Date(interview.proposed_time),
             "en-GB",
             {
               hour: "2-digit",
               minute: "2-digit",
-              hour12: false, // Use 24-hour format
+              hour12: false,
             }
-          ), // Format date for proposed time
+          ),
           isFinished:
             interview.application_status_id == 5 ||
-            interview.application_status_id == 6, // Add a flag if finished
+            interview.application_status_id == 6,
         },
       };
 
-      // Apply custom class or background color if interview is finished (status_id = 4)
-      if (interview.interview_status_id === 4) {
-        event.classNames = event.classNames || [];
-        event.classNames.push("finished-interview"); // Add custom class for finished interview
-        event.backgroundColor = "green"; // Set background color for finished interview
-        event.textColor = "white"; // Change text color to white
-      }
+      const statusClass = getInterviewColorClass(interview.interview_status_id);
+
+      event.classNames = event.classNames || [];
+      event.classNames.push(statusClass);
 
       return event;
     });
@@ -544,7 +554,6 @@ const shortlistedApplication = async (req, res, next) => {
   try {
     await client.query(setStatusSQL, [4, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
-    console.log(result.rows[0].talent_id);
     await sendShortlistedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
   } catch (error) {
@@ -559,7 +568,14 @@ const acceptApplication = async (req, res, next) => {
   try {
     await client.query(setStatusSQL, [6, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
-    console.log(result.rows[0].talent_id);
+
+    await client.query(
+      `UPDATE "Application"
+SET "selected_at" = CURRENT_TIMESTAMP
+WHERE "id" = $1;
+`,
+      [application_id]
+    );
     await sendAcceptedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
   } catch (error) {
@@ -574,7 +590,14 @@ const rejectApplication = async (req, res, next) => {
   try {
     await client.query(setStatusSQL, [5, application_id]);
     const result = await client.query(getAppByIdSimple, [application_id]);
-    console.log(result.rows[0].talent_id);
+
+    await client.query(
+      `UPDATE "Application"
+SET "rejected_at" = CURRENT_TIMESTAMP
+WHERE "id" = $1;
+`,
+      [application_id]
+    );
     await sendRejectedEmail(application_id, result.rows[0].talent_id, hr_id);
     res.redirect("back");
   } catch (error) {
@@ -589,7 +612,6 @@ const createInterviewCalendar = async (req, res) => {
   const hr_id = req.user.id;
 
   try {
-    // Get the talent_id from the Application table
     const talentResult = await client.query(
       'SELECT talent_id FROM "Application" WHERE id = $1 LIMIT 1;',
       [application_id]
@@ -602,7 +624,6 @@ const createInterviewCalendar = async (req, res) => {
 
     const talent_id = talentResult.rows[0].talent_id;
 
-    // Insert interview into the database
     const insertResult = await client.query(
       interviewQueries.createInterviewScheduleSQL,
       [
@@ -618,7 +639,6 @@ const createInterviewCalendar = async (req, res) => {
 
     const newInterview = insertResult.rows[0];
 
-    // Fetch additional details for the new interview (e.g., talent name and status description)
     const talentNameResult = await client.query(
       'SELECT first_name, last_name FROM "User" WHERE id = $1',
       [talent_id]
@@ -632,7 +652,6 @@ const createInterviewCalendar = async (req, res) => {
     const talent = talentNameResult.rows[0];
     const status = interviewStatusResult.rows[0];
 
-    // Include additional details in the response
     newInterview.talent_first_name = talent.first_name;
     newInterview.talent_last_name = talent.last_name;
     newInterview.status_desc = status.status_desc;
@@ -651,7 +670,7 @@ const createInterviewCalendar = async (req, res) => {
       rejectionLink
     );
 
-    return res.json(newInterview); // Send the new interview data back
+    return res.json(newInterview);
   } catch (err) {
     console.error("Error adding interview:", err.message);
     return res.status(500).send("Error adding interview: " + err.message);
@@ -670,7 +689,6 @@ const updateInterview = async (req, res) => {
   } = req.body;
 
   try {
-    // Update the interview in the database
     await client.query(
       `
       UPDATE "Interview_Schedule"
@@ -684,7 +702,6 @@ const updateInterview = async (req, res) => {
       [interview_status_id, review, proposed_time, id]
     );
 
-    // Get associated application_id
     const intResult = await client.query(
       `
     SELECT 
@@ -703,28 +720,34 @@ const updateInterview = async (req, res) => {
     } = intResult.rows[0];
 
     if (application_status_id === "5") {
+      await client.query(
+        `UPDATE "Application"
+      SET "rejected_at" = CURRENT_TIMESTAMP
+      WHERE "id" = $1;
+      `,
+        [applicationId]
+      );
       await sendRejectedEmail(applicationId, talentId, req.user.id);
       console.log("Rejected email sent");
     }
 
     if (application_status_id === "6") {
+      await client.query(
+        `UPDATE "Application"
+      SET "selected_at" = CURRENT_TIMESTAMP
+      WHERE "id" = $1;
+      `,
+        [applicationId]
+      );
       await sendAcceptedEmail(applicationId, talentId, req.user.id);
       console.log("Accepted email sent");
     }
 
-    // Determine the application_status_id to use
     const finalApplicationStatusId =
       application_status_id && application_status_id !== ""
         ? application_status_id
         : current_application_status_id;
 
-    console.log("before update app query", [
-      finalApplicationStatusId,
-      message_to_talent,
-      applicationId,
-    ]);
-
-    // Update the Application table
     await client.query(
       `
   UPDATE "Application"
@@ -734,9 +757,6 @@ const updateInterview = async (req, res) => {
       [finalApplicationStatusId, message_to_talent, applicationId]
     );
 
-    console.log("after update app query");
-
-    // Fetch the updated interview data from the database
     const result = await client.query(
       `
       SELECT id, application_id, proposed_time, is_online, city, street_address, interview_status_id, review
@@ -746,11 +766,43 @@ const updateInterview = async (req, res) => {
       [id]
     );
 
-    console.log("before const updatedInterview");
-
     const updatedInterview = result.rows[0];
 
+    const talentResult = await client.query(
+      'SELECT talent_id FROM "Application" WHERE id = $1 LIMIT 1;',
+      [applicationId]
+    );
+
+    if (talentResult.rows.length === 0) {
+      console.error("Talent not found for the given application");
+      return res.status(404).send("Talent not found for the given application");
+    }
+
+    const talent_id = talentResult.rows[0].talent_id;
+
+    const talentNameResult = await client.query(
+      'SELECT first_name, last_name FROM "User" WHERE id = $1',
+      [talent_id]
+    );
+
+    const interviewStatusResult = await client.query(
+      'SELECT status_desc FROM "Interview_Status" WHERE id = $1',
+      [updatedInterview.interview_status_id]
+    );
+
+    const talent = talentNameResult.rows[0];
+    const status = interviewStatusResult.rows[0];
+
+    updatedInterview.talent_first_name = talent.first_name;
+    updatedInterview.talent_last_name = talent.last_name;
+    updatedInterview.status_desc = status.status_desc;
+
     if (updatedInterview) {
+      if (updatedInterview.proposed_time) {
+        updatedInterview.proposed_time = new Date(
+          updatedInterview.proposed_time
+        ).toISOString();
+      }
       res.json(updatedInterview);
     } else {
       res.status(404).send("Interview not found");
@@ -761,15 +813,12 @@ const updateInterview = async (req, res) => {
   }
 };
 
-// FIX THIS MAYBE
 const deleteInterview = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Delete the interview from the database
     await client.query('DELETE FROM "Interview_Schedule" WHERE id = $1;', [id]);
 
-    // Fetch updated events to render in the calendar
     const result = await client.query(`
       SELECT id, application_id, proposed_time, is_online, city, street_address 
       FROM "Interview_Schedule";

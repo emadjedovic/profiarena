@@ -8,6 +8,24 @@ INSERT INTO "Role" ("name") VALUES
     ('hr'),
     ('talent');
 
+DROP TABLE IF EXISTS "Application_Status" CASCADE;
+
+CREATE TABLE
+    "Application_Status" (
+        "id" SERIAL PRIMARY KEY,
+        "status_desc" VARCHAR(50) NOT NULL UNIQUE
+    );
+
+INSERT INTO
+    "Application_Status" ("status_desc")
+VALUES
+    ('applied'),
+    ('viewed'),
+    ('invited'),
+    ('shortlisted'),
+    ('rejected'),
+    ('accepted')
+
 DROP TABLE IF EXISTS "User" CASCADE;
 
 CREATE TABLE "User" (
@@ -22,48 +40,41 @@ CREATE TABLE "User" (
     "address" TEXT,
     "date_of_birth" DATE,
     "about" TEXT,
-    "education" TEXT[],       
-    "skills" TEXT[],           
-    "languages" TEXT[],        
-    "socials" TEXT[],         
-    "projects" TEXT,        
-    "cv" VARCHAR(255),        
-    "certificates" VARCHAR(255)[],
+    "education" TEXT [],
+    "skills" TEXT [],
+    "languages" TEXT [],
+    "socials" TEXT [],
+    "projects" TEXT,
+    "cv" VARCHAR(255),
+    "certificates" VARCHAR(255) [],
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_user_education ON "User" USING gin ("education");
+CREATE INDEX idx_user_skills ON "User" USING gin ("skills");
 
 DROP TABLE IF EXISTS "Job_Posting" CASCADE;
-CREATE TABLE "Job_Posting" (
-    "id" SERIAL PRIMARY KEY,
-    "company" VARCHAR(100) NOT NULL,
-    "title" VARCHAR(100) NOT NULL,
-    "description" TEXT NOT NULL DEFAULT 'No description',
-    "hr_id" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-    "city" VARCHAR(50) NOT NULL,
-    "street_address" VARCHAR(100),
-    "application_deadline" DATE NOT NULL,
-    "is_archived" BOOLEAN DEFAULT FALSE,
-    "cv_field" BOOLEAN DEFAULT FALSE,
-    "cover_letter_field" BOOLEAN DEFAULT FALSE,
-    "projects_field" BOOLEAN DEFAULT FALSE,
-    "certificates_field" BOOLEAN DEFAULT FALSE
-);
 
-DROP TABLE IF EXISTS "Application_Status" CASCADE;
-CREATE TABLE "Application_Status" (
-    "id" SERIAL PRIMARY KEY,
-    "status_desc" VARCHAR(50) NOT NULL
-);
-
-INSERT INTO "Application_Status" ("status_desc") VALUES
-    ('applied'),
-    ('viewed'),
-    ('invited'),
-    ('shortlisted'),
-    ('rejected');
+CREATE TABLE
+    "Job_Posting" (
+        "id" SERIAL PRIMARY KEY,
+        "company" VARCHAR(100) NOT NULL,
+        "title" VARCHAR(100) NOT NULL,
+        "description" TEXT NOT NULL DEFAULT 'No description',
+        "hr_id" INTEGER NOT NULL REFERENCES "User" ("id") ON DELETE CASCADE,
+        "city" VARCHAR(50) NOT NULL,
+        "street_address" VARCHAR(100),
+        "application_deadline" DATE NOT NULL,
+        "is_archived" BOOLEAN DEFAULT FALSE,
+        "cv_field" BOOLEAN DEFAULT FALSE,
+        "cover_letter_field" BOOLEAN DEFAULT FALSE,
+        "projects_field" BOOLEAN DEFAULT FALSE,
+        "certificates_field" BOOLEAN DEFAULT FALSE
+    );
 
 DROP TABLE IF EXISTS "Application" CASCADE;
+
 CREATE TABLE "Application" (
     "id" SERIAL PRIMARY KEY,
     "talent_id" INT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
@@ -75,23 +86,62 @@ CREATE TABLE "Application" (
     "cv" VARCHAR(255),
     "cover_letter" VARCHAR(255),
     "projects" TEXT,
-    "certificates" VARCHAR(255)[]
+    "certificates" VARCHAR(255) [],
+    "talent_feedback" TEXT,
+    "message_to_talent" TEXT,
+    "feedback_token" TEXT
 );
 
+
+CREATE INDEX idx_application_status ON "Application" ("application_status_id");
+
 DROP TABLE IF EXISTS "Application_Score" CASCADE;
-CREATE TABLE "Application_Score" (
+
+CREATE TABLE
+    "Application_Score" (
+        "id" SERIAL PRIMARY KEY,
+        "application_id" INT NOT NULL REFERENCES "Application" ("id") ON DELETE CASCADE,
+        "hr_id" INT NOT NULL REFERENCES "User" ("id") ON DELETE CASCADE,
+        "talent_id" INT NOT NULL REFERENCES "User" ("id") ON DELETE CASCADE,
+        "education_score" INT CHECK (education_score BETWEEN 1 AND 5),
+        "skills_score" INT CHECK (skills_score BETWEEN 1 AND 5),
+        "experience_score" INT CHECK (experience_score BETWEEN 1 AND 5),
+        "languages_score" INT CHECK (languages_score BETWEEN 1 AND 5),
+        "certificate_score" INT CHECK (certificate_score BETWEEN 1 AND 5),
+        "projects_score" INT CHECK (projects_score BETWEEN 1 AND 5),
+        "cover_letter_score" INT CHECK (cover_letter_score BETWEEN 1 AND 5),
+        "total_score" NUMERIC(5, 2),
+        "comments" TEXT DEFAULT 'No added comments.'
+    );
+
+DROP TABLE IF EXISTS "Interview_Schedule" CASCADE;
+
+CREATE TABLE "Interview_Schedule" (
     "id" SERIAL PRIMARY KEY,
-    "application_id" INT NOT NULL REFERENCES "Application"("id") ON DELETE CASCADE,
-    "hr_id" INT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-    "talent_id" INT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-    "education_score" INT CHECK (education_score BETWEEN 1 AND 5),
-    "skills_score" INT CHECK (skills_score BETWEEN 1 AND 5),
-    "experience_score" INT CHECK (experience_score BETWEEN 1 AND 5),
-    "languages_score" INT CHECK (languages_score BETWEEN 1 AND 5),
-    "certificate_score" INT CHECK (certificate_score BETWEEN 1 AND 5),
-    "projects_score" INT CHECK (projects_score BETWEEN 1 AND 5),
-    "cover_letter_score" INT CHECK (cover_letter_score BETWEEN 1 AND 5),
-    "total_score" NUMERIC(5, 2),
-    "comments" TEXT DEFAULT 'No added comments.'
+    "application_id" INT NOT NULL REFERENCES "Application" ("id") ON DELETE CASCADE,
+    "hr_id" INT NOT NULL REFERENCES "User" ("id") ON DELETE CASCADE,
+    "talent_id" INT NOT NULL REFERENCES "User" ("id") ON DELETE CASCADE,
+    "proposed_time" TIMESTAMP NOT NULL,
+    "is_online" BOOLEAN NOT NULL DEFAULT FALSE,
+    "city" VARCHAR(50),
+    "street_address" VARCHAR(100),
+    "interview_status_id" INT NOT NULL DEFAULT 1 REFERENCES "Interview_Status" ("id"),
+    "review" TEXT,
+    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+DROP TABLE IF EXISTS "Interview_Status" CASCADE;
+
+CREATE TABLE "Interview_Status" (
+    "id" SERIAL PRIMARY KEY,
+    "status_desc" VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO "Interview_Status" ("status_desc") VALUES
+    ('not_confirmed'),
+    ('time_confirmed'),
+    ('time_rejected'),
+    ('finished');
+
 
