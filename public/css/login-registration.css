@@ -1,4 +1,4 @@
-/* General Page Styling */
+
 body {
     margin: 0;
     font-family: "Roboto", sans-serif;
@@ -14,7 +14,7 @@ body {
     max-width: 900px;
   }
   
-  /* Form Styling */
+  
   form label {
     font-weight: bold;
   }
@@ -28,7 +28,7 @@ body {
     padding: 10px 20px;
   }
   
-  /* Social Media Icons */
+  
   .list-inline-item a:hover {
     color: #007bff;
   }

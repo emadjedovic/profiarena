@@ -1,20 +1,19 @@
-<!-- Main content -->
 <div class="container">
   <div class="row justify-content-center">
     <div class="col-lg-8 col-md-10 col-sm-12">
-      
-        <% if (loggedIn) { %>
-          <div class="text-center p-5 mb-4" style="background-color: #f8f9fa; border-radius: 10px;">
-            <h1 class="display-4 text-primary">Hello, <%= currentUser.first_name %> <%= currentUser.last_name %>. <br> Welcome to ProfiArena!</h1>
-            <p class="lead">Your one-stop platform for recruitment and job opportunities.</p>
-        <% } else { %>
-            <div class="text-center p-5 mb-4" style="background-color: #f8f9fa; border-radius: 10px;">
-                <h1 class="display-4 text-primary">Welcome to ProfiArena!</h1>
-                <p class="lead">Your one-stop platform for recruitment and job opportunities.</p>
-          <p>Please <a href="/login">login</a> to access all features of the platform.</p>
-        <% } %>
-      </div>
 
+      <% if (loggedIn) { %>
+      <div class="text-center p-5 mb-4" style="background-color: #f8f9fa; border-radius: 10px;">
+        <h1 class="display-4 text-primary">Hello, <%= currentUser.first_name %> <%= currentUser.last_name %>. <br> Welcome to ProfiArena!</h1>
+        <p class="lead">Your one-stop platform for recruitment and job opportunities.</p>
+        <% } else { %>
+        <div class="text-center p-5 mb-4" style="background-color: #f8f9fa; border-radius: 10px;">
+          <h1 class="display-4 text-primary">Welcome to ProfiArena!</h1>
+          <p class="lead">Your one-stop platform for recruitment and job opportunities.</p>
+          <p>Please <a href="/login">login</a> to access all features of the platform.</p>
+          <% } %>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>

@@ -18,7 +18,7 @@
               ? stats.avgCandidateScore.toFixed(2)
               : 'N/A' %>
           </p>
-          
+
         </div>
       </div>
     </div>
@@ -37,7 +37,7 @@
     </div>
   </div>
 
-  <!-- Charts Section -->
+
   <div class="row mt-5">
     <div class="col-md-6">
       <h5>Applications Per Job Posting</h5>
@@ -57,7 +57,7 @@
 <div class="container mt-5">
   <h2>Job Posting Analysis</h2>
 
-  <!-- Dropdown to Select Job Posting -->
+
   <div class="row">
     <div class="col-md-4">
       <label for="jobPostingSelect" class="form-label">Select Job Posting:</label>
@@ -70,7 +70,7 @@
     </div>
   </div>
 
-  <!-- Analysis Section -->
+
   <div id="jobPostingAnalysis" class="mt-5" style="display: none;">
     <h5>Analysis for Job Posting</h5>
     <table class="table table-striped">
@@ -101,7 +101,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Data for Applications Per Job Posting
   const applicationsPerJobData = {
     labels: JSON.parse('<%- JSON.stringify(stats.applicationsPerJob.map(item => `Job ${item.job_posting_id}`)) %>'),
     datasets: [{
@@ -113,7 +112,6 @@
     }]
   };
 
-  // Data for Average Scores Per Job Posting
   const avgScoresPerJobData = {
     labels: JSON.parse('<%- JSON.stringify(stats.avgScoresPerJob.map(item => `Job ${item.job_posting_id}`)) %>'),
     datasets: [{
@@ -125,7 +123,6 @@
     }]
   };
 
-  // Data for Average Selection Time Per Job Posting
   const avgSelectionTimeData = {
     labels: JSON.parse('<%- JSON.stringify(stats.avgSelectionTimePerJob.map(item => `Job ${item.job_posting_id}`)) %>'),
     datasets: [{

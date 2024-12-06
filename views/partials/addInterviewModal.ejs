@@ -46,7 +46,7 @@
       const formData = new FormData(this);
       const data = Object.fromEntries(formData);
 
-      // explicitly sets data.is_online to true if the checkbox is checked and false otherwise
+
       data.is_online = document.getElementById("is_online").checked;
 
       fetch("/hr/interviews", {

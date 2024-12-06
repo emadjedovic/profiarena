@@ -80,10 +80,10 @@ const sendInvitedEmail = async (
     let subject = `Invited for "${job_title}" at ${job_company}`;
     let templateName = "invited";
 
-    // Generate feedback token
+    
     const feedbackToken = crypto.randomBytes(16).toString("hex");
 
-    // Save the token to the Application table
+    
     await client.query(
       `UPDATE "Application" SET feedback_token = $1 WHERE id = $2`,
       [feedbackToken, applicationId]
@@ -256,10 +256,10 @@ const sendAcceptedEmail = async (applicationId, talentId, senderId) => {
     let subject = `Accepted for "${job_title}" at ${job_company}`;
     let templateName = "accepted";
 
-    // Generate feedback token
+    
     const feedbackToken = crypto.randomBytes(16).toString("hex");
 
-    // Save the token to the Application table
+    
     await client.query(
       `UPDATE "Application" SET feedback_token = $1 WHERE id = $2`,
       [feedbackToken, applicationId]

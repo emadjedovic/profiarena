@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
     background-color: gainsboro;
@@ -11,11 +12,13 @@ h2 {
 .main-container {
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Full height of the viewport */
+    min-height: 100vh;
+    
 }
 
 .container {
-    flex: 1; /* This makes the container fill the available space */
+    flex: 1;
+    
 }
 
 .flashes {
@@ -42,20 +45,49 @@ h2 {
 }
 
 .table td a {
-    margin-right: 10px; /* Space between the link and the delete button */
-  }
+    margin-right: 10px;
+    
+}
 
-  #calendar {
-    max-width: 90vw; /* Limit the width of the calendar */
-    margin: 0 auto; /* Center align the calendar */
-    padding: 20px; /* Add some padding */
-    background-color: #fff; /* Set a white background */
-    border: 1px solid #ddd; /* Add a subtle border */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a shadow for better visibility */
-  }
-  
-  .finished-interview {
+#calendar {
+    max-width: 90vw;
+    
+    margin: 0 auto;
+    
+    padding: 20px;
+    
+    background-color: #fff;
+    
+    border: 1px solid #ddd;
+    
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+}
+
+
+.interview-status-1 {
+    background-color: yellow !important;
+    color: black !important;
+    
+}
+
+.interview-status-2 {
     background-color: green !important;
     color: white !important;
-  }
-  
+}
+
+.interview-status-3 {
+    background-color: red !important;
+    color: white !important;
+}
+
+.interview-status-4 {
+    background-color: blue !important;
+    color: white !important;
+}
+
+
+.interview-status-default {
+    background-color: gray !important;
+    color: white !important;
+}

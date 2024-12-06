@@ -5,7 +5,6 @@ const getStatisticsData = async (req, res) => {
   const hrId = req.user.id;
 
   try {
-    // Fetch all job postings for the logged-in HR user
     const jobPostingsResult = await client.query(
       `
       SELECT id, title 
@@ -16,20 +15,18 @@ const getStatisticsData = async (req, res) => {
     );
     stats.jobPostings = jobPostingsResult.rows;
 
-    // Total applications for all job postings
     const totalApplicationsResult = await client.query(
       `SELECT COUNT(*) AS total FROM "Application"`
     );
     stats.totalApplications = totalApplicationsResult.rows[0].total || 0;
 
-    // Average candidate score for all job postings
     const avgScoreResult = await client.query(
       `SELECT AVG(total_score) AS avg_score FROM "Application_Score"`
     );
-    // Ensure avgCandidateScore is always a number
-stats.avgCandidateScore = parseFloat(avgScoreResult.rows[0]?.avg_score || 0);
 
-    console.log("stats.avgCandidateScore: ", stats.avgCandidateScore);
+    stats.avgCandidateScore = parseFloat(
+      avgScoreResult.rows[0]?.avg_score || 0
+    );
 
     const applicationsPerJobResult = await client.query(`
       SELECT job_posting_id, COUNT(*) AS application_count
@@ -37,10 +34,8 @@ stats.avgCandidateScore = parseFloat(avgScoreResult.rows[0]?.avg_score || 0);
       GROUP BY job_posting_id;
     `);
 
-    // Safely assign the result to stats.applicationsPerJob
     stats.applicationsPerJob = applicationsPerJobResult.rows || [];
 
-    // Average selection time for all applications
     const avgSelectionTimeResult = await client.query(`
       SELECT AVG(EXTRACT(EPOCH FROM (selected_at - submitted_at)) / 3600) AS avg_time
       FROM "Application"
@@ -48,9 +43,8 @@ stats.avgCandidateScore = parseFloat(avgScoreResult.rows[0]?.avg_score || 0);
     `);
     stats.avgSelectionTime = avgSelectionTimeResult.rows[0].avg_time
       ? parseFloat(avgSelectionTimeResult.rows[0].avg_time)
-      : null; // Default to null if the value is invalid
+      : null;
 
-    // Average selection time per job posting
     const avgSelectionTimePerJobResult = await client.query(`
       SELECT job_posting_id,
              AVG(EXTRACT(EPOCH FROM (selected_at - submitted_at)) / 3600) AS avg_time
@@ -60,7 +54,6 @@ stats.avgCandidateScore = parseFloat(avgScoreResult.rows[0]?.avg_score || 0);
     `);
     stats.avgSelectionTimePerJob = avgSelectionTimePerJobResult.rows;
 
-    // Candidate quality metrics per job posting
     const avgScoresPerJobResult = await client.query(`
       SELECT a.job_posting_id,
              AVG(s.total_score) AS avg_candidate_score
@@ -69,7 +62,7 @@ stats.avgCandidateScore = parseFloat(avgScoreResult.rows[0]?.avg_score || 0);
       GROUP BY a.job_posting_id;
     `);
 
-    stats.avgScoresPerJob = avgScoresPerJobResult.rows; // Pass the rows to the frontend
+    stats.avgScoresPerJob = avgScoresPerJobResult.rows;
 
     res.render("hr/statistics", { stats, currentPath: req.originalUrl });
   } catch (error) {
@@ -91,7 +84,6 @@ const getJobPostingAnalysis = async (req, res) => {
   try {
     const analysis = {};
 
-    // Fetch analysis data for the specific job posting
     const applicationCountResult = await client.query(
       `
           SELECT COUNT(*) AS application_count 
@@ -117,7 +109,6 @@ const getJobPostingAnalysis = async (req, res) => {
     analysis.avgCandidateScore = parseFloat(
       avgScoreResult.rows[0]?.avg_candidate_score || 0
     );
-    console.log("analysis.avgCandidateScore: ", analysis.avgCandidateScore);
 
     const avgSelectionTimeResult = await client.query(
       `

@@ -3,8 +3,6 @@ const { client } = require("../db/connect");
 const fetchAllTalents = async (req, res) => {
   try {
     const { search } = req.query;
-
-    // Base query for fetching users with role_id 2 (talents)
     let SQLquery = `
       SELECT 
         u.id, u.first_name, u.last_name, u.email, u.phone, u.address, u.date_of_birth, 
@@ -14,8 +12,6 @@ const fetchAllTalents = async (req, res) => {
     `;
 
     const values = [];
-
-    // If search input is provided, add conditions to match across multiple fields
     if (search) {
       const searchPattern = `%${search}%`;
       SQLquery += `
@@ -44,7 +40,7 @@ const fetchAllTalents = async (req, res) => {
     res.render("hr/all-talents", {
       currentUser: req.user,
       talents: results.rows,
-      search, // Pass the search query back to the view
+      search,
     });
   } catch (error) {
     console.error("Error fetching talents:", error);
