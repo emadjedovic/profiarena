@@ -1,91 +1,51 @@
 <div class="container">
-  <h1 class="text-center">All Talents</h1>
+  <h1 class="text-center mb-4">Browse Talents</h1>
 
-  <!-- Filter Form -->
-  <form action="/hr/all-talents" method="GET" class="mb-4">
-    <div class="row">
-      <div class="col-md-4">
-        <label for="education" class="form-label">Education</label>
-        <input
-          type="text"
-          id="education"
-          name="education"
-          class="form-control"
-          placeholder="e.g., Bachelor, Master"
-          value="<%= filters.education || '' %>"
-        />
-      </div>
-      <div class="col-md-4">
-        <label for="skills" class="form-label">Skills</label>
-        <input
-          type="text"
-          id="skills"
-          name="skills"
-          class="form-control"
-          placeholder="e.g., JavaScript, Node.js"
-          value="<%= filters.skills || '' %>"
-        />
-      </div>
-      <div class="col-md-4">
-        <label for="status" class="form-label">Application Status</label>
-        <select id="status" name="status" class="form-select">
-          <option value="" <%= !filters.status ? 'selected' : '' %>>All</option>
-          <option value="1" <%= filters.status == 1 ? 'selected' : '' %>>Applied</option>
-          <option value="2" <%= filters.status == 2 ? 'selected' : '' %>>Viewed</option>
-          <option value="3" <%= filters.status == 3 ? 'selected' : '' %>>Invited</option>
-          <option value="4" <%= filters.status == 4 ? 'selected' : '' %>>Shortlisted</option>
-          <option value="5" <%= filters.status == 5 ? 'selected' : '' %>>Rejected</option>
-          <option value="6" <%= filters.status == 6 ? 'selected' : '' %>>Accepted</option>
-        </select>
-      </div>
-    </div>
-    <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
-  </form>
+  <!-- Search Form -->
+<form method="GET" action="/hr/all-talents" class="mb-4">
+  <div class="input-group" style="max-width: 400px; margin: 0 auto;">
+    <input 
+      type="text" 
+      name="search" 
+      class="form-control" 
+      placeholder="Search talents..." 
+      value="<%= search || '' %>" 
+    />
+    
+  <button type="submit" class="btn btn-primary">Search</button>
+  </div>    
+</form>
+
 
   <!-- Talents Table -->
+  <% if (talents && talents.length > 0) { %>
   <table class="table table-striped table-bordered">
     <thead>
       <tr>
-        <th>Name</th>
+        <th>First Name</th>
+        <th>Last Name</th>
         <th>Email</th>
+        <th>Phone</th>
+        <th>Address</th>
+        <th>Date of Birth</th>
         <th>Education</th>
-        <th>Skills</th>
-        <th>Application Status</th>
-        <th>Submitted At</th>
       </tr>
     </thead>
     <tbody>
-      <% if (talents.length > 0) { %>
-        <% talents.forEach(talent => { %>
-          <tr>
-            <td><%= talent.first_name %> <%= talent.last_name %></td>
-            <td><%= talent.email %></td>
-            <td><%= talent.education ? talent.education.join(", ") : "N/A" %></td>
-            <td><%= talent.skills ? talent.skills.join(", ") : "N/A" %></td>
-            <td>
-              <% 
-  const statusMap = {
-    1: "Applied",
-    2: "Viewed",
-    3: "Invited",
-    4: "Shortlisted",
-    5: "Rejected",
-    6: "Accepted"
-  };
-%>
-
-<%= statusMap[talent.application_status_id] || "Unknown" %>
-
-            </td>
-            <td><%= formatDate(talent.submitted_at, "en-US", { month: "long", year: "numeric" }) %></td>
-
-          </tr>
-        <% }) %>
-      <% } else { %>
-        <tr>
-          <td colspan="6" class="text-center">No talents found.</td>
-        </tr>
-      <% } %>
+      <% talents.forEach(talent => { %>
+      <tr>
+        <td><%= talent.first_name %></td>
+        <td><%= talent.last_name %></td>
+        <td><%= talent.email %></td>
+        <td><%= talent.phone || "N/A" %></td>
+        <td><%= talent.address || "N/A" %></td>
+        <td><%= talent.date_of_birth ? new Date(talent.date_of_birth).toLocaleDateString() : "N/A" %></td>
+        <td><%= talent.education ? talent.education.join(", ") : "N/A" %></td>
+      </tr>
+      <% }); %>
     </tbody>
   </table>
+  <% } else { %>
+  <p>No talents found.</p>
+  <% } %>
 </div>

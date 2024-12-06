@@ -26,7 +26,10 @@ const getStatisticsData = async (req, res) => {
     const avgScoreResult = await client.query(
       `SELECT AVG(total_score) AS avg_score FROM "Application_Score"`
     );
-    stats.avgCandidateScore = avgScoreResult.rows[0].avg_score || 0;
+    // Ensure avgCandidateScore is always a number
+stats.avgCandidateScore = parseFloat(avgScoreResult.rows[0]?.avg_score || 0);
+
+    console.log("stats.avgCandidateScore: ", stats.avgCandidateScore);
 
     const applicationsPerJobResult = await client.query(`
       SELECT job_posting_id, COUNT(*) AS application_count
@@ -114,6 +117,7 @@ const getJobPostingAnalysis = async (req, res) => {
     analysis.avgCandidateScore = parseFloat(
       avgScoreResult.rows[0]?.avg_candidate_score || 0
     );
+    console.log("analysis.avgCandidateScore: ", analysis.avgCandidateScore);
 
     const avgSelectionTimeResult = await client.query(
       `
