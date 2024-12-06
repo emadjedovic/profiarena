@@ -40,26 +40,19 @@
 
   <div class="row mt-5">
     <div class="col-md-6">
-      <h5>Applications Per Job Posting</h5>
+      <h4>Applications Per Job Posting</h4>
       <canvas id="applicationsPerJobChart"></canvas>
     </div>
     <div class="col-md-6">
-      <h5>Average Candidate Score Per Job Posting</h5>
+      <h4>Average Candidate Score Per Job Posting</h4>
       <canvas id="avgScorePerJobChart"></canvas>
     </div>
-    <div class="col-md-12 mt-4">
-      <h5>Average Selection Time Per Job Posting</h5>
+    <div class="col-md-6 mt-4">
+      <h4>Average Selection Time Per Job Posting</h4>
       <canvas id="avgSelectionTimeChart"></canvas>
     </div>
-  </div>
-</div>
-
-<div class="container mt-5">
-  <h2>Job Posting Analysis</h2>
-
-
-  <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6 mt-4">
+      <h4>Job Posting Analysis</h4>
       <label for="jobPostingSelect" class="form-label">Select Job Posting:</label>
       <select id="jobPostingSelect" class="form-select">
         <option value="" selected disabled>Select a Job Posting</option>
@@ -67,36 +60,39 @@
         <option value="<%= job.id %>"><%= job.title %></option>
         <% }) %>
       </select>
+
+      <div id="jobPostingAnalysis" class="mt-5" style="display: none;">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Applications</td>
+              <td id="applicationCount">N/A</td>
+            </tr>
+            <tr>
+              <td>Average Candidate Score</td>
+              <td id="avgCandidateScore">N/A</td>
+            </tr>
+            <tr>
+              <td>Average Selection Time (hours)</td>
+              <td id="avgSelectionTime">N/A</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </div>
-
-
-  <div id="jobPostingAnalysis" class="mt-5" style="display: none;">
-    <h5>Analysis for Job Posting</h5>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Metric</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Applications</td>
-          <td id="applicationCount">N/A</td>
-        </tr>
-        <tr>
-          <td>Average Candidate Score</td>
-          <td id="avgCandidateScore">N/A</td>
-        </tr>
-        <tr>
-          <td>Average Selection Time (hours)</td>
-          <td id="avgSelectionTime">N/A</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 </div>
+</div>
+
+
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
