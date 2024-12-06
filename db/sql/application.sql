@@ -16,3 +16,5 @@ CREATE TABLE "Application" (
     "message_to_talent" TEXT,
     "feedback_token" TEXT
 );
+
+CREATE INDEX idx_application_status ON "Application" ("application_status_id");

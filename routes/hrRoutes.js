@@ -21,12 +21,14 @@ const {
   deleteInterview,
   createInterviewCalendar,
 } = require("../controllers/hrController");
+const {fetchAllTalents}= require("../controllers/allTalentsController");
 
 router.post("/create-job-posting", createJobPosting);
 router.get("/profile", (req, res) => {
   res.render("hr/profile");
 });
 router.get("/talents", fetchTalents);
+router.get("/all-talents", fetchAllTalents);
 router.get("/my-job-postings", fetchJobPostingsByHrId);
 router.get("/calendar", fetchInterviewsByHrId);
 

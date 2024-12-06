@@ -22,3 +22,6 @@ CREATE TABLE "User" (
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_user_education ON "User" USING gin ("education");
+CREATE INDEX idx_user_skills ON "User" USING gin ("skills");

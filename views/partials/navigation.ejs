@@ -28,6 +28,9 @@
         <li class="nav-item">
           <a class="nav-link <%= currentPath === '/hr/statistics' ? 'active text-decoration-underline' : '' %>" href="/hr/statistics">Statistics</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link <%= currentPath === '/hr/all-talents' ? 'active text-decoration-underline' : '' %>" href="/hr/all-talents">All Talents</a>
+        </li>
         <% } %>
 
         <% if (loggedIn && currentUser.role_id === 2) { %>

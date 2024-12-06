@@ -16,3 +16,4 @@ CREATE TABLE
         "total_score" NUMERIC(5, 2),
         "comments" TEXT DEFAULT 'No added comments.'
     );
+

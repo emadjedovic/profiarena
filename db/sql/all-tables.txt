@@ -51,6 +51,9 @@ CREATE TABLE "User" (
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_user_education ON "User" USING gin ("education");
+CREATE INDEX idx_user_skills ON "User" USING gin ("skills");
+
 DROP TABLE IF EXISTS "Job_Posting" CASCADE;
 
 CREATE TABLE
@@ -88,6 +91,9 @@ CREATE TABLE "Application" (
     "message_to_talent" TEXT,
     "feedback_token" TEXT
 );
+
+
+CREATE INDEX idx_application_status ON "Application" ("application_status_id");
 
 DROP TABLE IF EXISTS "Application_Score" CASCADE;
 
