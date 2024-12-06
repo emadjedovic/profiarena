@@ -770,7 +770,41 @@ const updateInterview = async (req, res) => {
 
     const updatedInterview = result.rows[0];
 
+    // Step 4: Fetch additional details for the updated interview (talent name and status description)
+    const talentResult = await client.query(
+      'SELECT talent_id FROM "Application" WHERE id = $1 LIMIT 1;',
+      [applicationId]
+    );
+
+    if (talentResult.rows.length === 0) {
+      console.error("Talent not found for the given application");
+      return res.status(404).send("Talent not found for the given application");
+    }
+
+    const talent_id = talentResult.rows[0].talent_id;
+
+    const talentNameResult = await client.query(
+      'SELECT first_name, last_name FROM "User" WHERE id = $1',
+      [talent_id]
+    );
+
+    const interviewStatusResult = await client.query(
+      'SELECT status_desc FROM "Interview_Status" WHERE id = $1',
+      [updatedInterview.interview_status_id]
+    );
+
+    const talent = talentNameResult.rows[0];
+    const status = interviewStatusResult.rows[0];
+
+    // Step 5: Add the additional details to the updated interview object
+    updatedInterview.talent_first_name = talent.first_name;
+    updatedInterview.talent_last_name = talent.last_name;
+    updatedInterview.status_desc = status.status_desc;
+
     if (updatedInterview) {
+      if (updatedInterview.proposed_time) {
+        updatedInterview.proposed_time = new Date(updatedInterview.proposed_time).toISOString();
+      }
       res.json(updatedInterview);
     } else {
       res.status(404).send("Interview not found");
@@ -781,7 +815,6 @@ const updateInterview = async (req, res) => {
   }
 };
 
-// FIX THIS MAYBE
 const deleteInterview = async (req, res) => {
   const { id } = req.params;
 
