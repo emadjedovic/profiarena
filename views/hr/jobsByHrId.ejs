@@ -1,16 +1,13 @@
-
 <%- include('../partials/createJobModal') %>
 <hr>
 
 <div class="row mb-4">
   <div class="col">
     <form action="/hr/my-job-postings" method="GET" class="form-inline">
-      
       <input type="text" class="form-control mr-2 w-75" name="search" placeholder="Search by title, company, city, description, or address" value="<%= searchQuery || '' %>" />
   </div>
 
   <div class="col">
-    
     <button type="submit" class="btn btn-primary">Filter</button>
   </div>
 </div>

@@ -24,10 +24,8 @@ async function sendEmail(
   const templatePath = path.join(__dirname, "templates", `${templateName}.ejs`);
 
   try {
-    
     let senderEmail;
 
-    
     if (senderId) {
       const senderResult = await client.query(
         `SELECT email FROM "User" WHERE id = $1`,
@@ -36,7 +34,6 @@ async function sendEmail(
       senderEmail = senderResult.rows[0]?.email || process.env.EMAIL_USER;
       console.log("senderEmail: ", senderEmail);
     } else {
-      
       senderEmail = process.env.EMAIL_USER;
     }
 
@@ -46,16 +43,13 @@ async function sendEmail(
     });
 
     const mailOptions = {
-      from: senderEmail, 
+      from: senderEmail,
       to,
       subject,
       html: renderedTemplate,
       attachments: attachments,
     };
 
-    
-    
-    
     if (
       ["applied", "viewed", "shortlisted", "rejected"].includes(templateName)
     ) {

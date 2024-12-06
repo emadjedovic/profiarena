@@ -92,7 +92,6 @@ CREATE TABLE "Application" (
     "feedback_token" TEXT
 );
 
-
 CREATE INDEX idx_application_status ON "Application" ("application_status_id");
 
 DROP TABLE IF EXISTS "Application_Score" CASCADE;
@@ -143,5 +142,4 @@ INSERT INTO "Interview_Status" ("status_desc") VALUES
     ('time_confirmed'),
     ('time_rejected'),
     ('finished');
-
 

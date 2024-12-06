@@ -1,18 +1,14 @@
 <div class="container">
   <h1 class="text-center mb-4">Browse Talents</h1>
 
-
   <form method="GET" action="/hr/all-talents" class="mb-4">
-    <div class="input-group" style="max-width: 400px; margin: 0 auto;">
+    <div class="input-group" style="max-width: 400px; margin: 0 auto">
       <input type="text" name="search" class="form-control" placeholder="Search talents..." value="<%= search || '' %>" />
-
       <button type="submit" class="btn btn-primary">Search</button>
     </div>
   </form>
 
-
-
-  <% if (talents && talents.length > 0) { %>
+  <% if (talents && talents.length> 0) { %>
   <table class="table table-striped table-bordered">
     <thead>
       <tr>
@@ -26,15 +22,29 @@
       </tr>
     </thead>
     <tbody>
-      <% talents.forEach(talent => { %>
+      <% talents.forEach(talent=> { %>
       <tr>
-        <td><%= talent.first_name %></td>
-        <td><%= talent.last_name %></td>
-        <td><%= talent.email %></td>
-        <td><%= talent.phone || "N/A" %></td>
-        <td><%= talent.address || "N/A" %></td>
-        <td><%= talent.date_of_birth ? new Date(talent.date_of_birth).toLocaleDateString() : "N/A" %></td>
-        <td><%= talent.education ? talent.education.join(", ") : "N/A" %></td>
+        <td>
+          <%= talent.first_name %>
+        </td>
+        <td>
+          <%= talent.last_name %>
+        </td>
+        <td>
+          <%= talent.email %>
+        </td>
+        <td>
+          <%= talent.phone || "N/A" %>
+        </td>
+        <td>
+          <%= talent.address || "N/A" %>
+        </td>
+        <td>
+          <%= talent.date_of_birth ? new Date(talent.date_of_birth).toLocaleDateString() : "N/A" %>
+        </td>
+        <td>
+          <%= talent.education ? talent.education.join(", ") : " N/A" %>
+        </td>
       </tr>
       <% }); %>
     </tbody>

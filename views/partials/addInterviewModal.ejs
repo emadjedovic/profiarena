@@ -46,7 +46,6 @@
       const formData = new FormData(this);
       const data = Object.fromEntries(formData);
 
-
       data.is_online = document.getElementById("is_online").checked;
 
       fetch("/hr/interviews", {

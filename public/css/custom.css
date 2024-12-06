@@ -12,12 +12,12 @@ h2 {
 .main-container {
     display: flex;
     flex-direction: column;
-    min-height:100vh;
+    min-height: 100vh;
 }
 
 .container {
     flex: 1;
-    
+
 }
 
 .flashes {
@@ -45,29 +45,28 @@ h2 {
 
 .table td a {
     margin-right: 10px;
-    
+
 }
 
 #calendar {
     max-width: 90vw;
-    
-    margin: 0 auto;
-    
-    padding: 20px;
-    
-    background-color: #fff;
-    
-    border: 1px solid #ddd;
-    
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    
-}
 
+    margin: 0 auto;
+
+    padding: 20px;
+
+    background-color: #fff;
+
+    border: 1px solid #ddd;
+
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+}
 
 .interview-status-1 {
     background-color: yellow !important;
     color: black !important;
-    
+
 }
 
 .interview-status-2 {
@@ -84,7 +83,6 @@ h2 {
     background-color: blue !important;
     color: white !important;
 }
-
 
 .interview-status-default {
     background-color: gray !important;
